@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -86,3 +86,236 @@
     text-shadow: 0 2px 0 #7a4e1c, 0 0 16px rgba(255, 180, 80, 0.5);
   }
 }
+
+@layer components {
+  .field {
+    @apply w-full border-2 bg-[#1b1411] px-3 py-2 text-sm text-[#f7e7c5];
+    border-radius: 4px;
+    border-color: #7b5732 #3a2415 #24140c #a87a3e;
+  }
+  .pixelated { image-rendering: pixelated; }
+}
+
+@layer components {
+  .preview-stage {
+    @apply relative grid place-items-center overflow-hidden border-2 bg-[#0f0b08];
+    width: min(100%, 260px);
+    aspect-ratio: 1;
+    border-radius: 4px;
+    border-color: #7b5732 #3a2415 #24140c #a87a3e;
+  }
+  .preview-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .preview-base {
+    position: absolute;
+    width: 58%;
+    max-height: 86%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 12px 0 rgba(0, 0, 0, 0.28));
+  }
+  .preview-occupation {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 74px;
+    height: 74px;
+    object-fit: cover;
+    object-position: left top;
+    image-rendering: pixelated;
+    opacity: 0.9;
+    border: 2px solid #7b5732;
+    background: #1b1411;
+  }
+  .face-mark {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    width: 28px;
+    height: 12px;
+    transform: translateX(-50%);
+    border-top: 3px solid #2a1a12;
+    border-bottom: 2px solid rgba(42, 26, 18, 0.65);
+  }
+  .face-calm { border-radius: 999px; }
+  .face-brave { transform: translateX(-50%) rotate(-5deg); }
+  .face-sharp { transform: translateX(-50%) skewX(-14deg); }
+  .tone-amber { box-shadow: 0 0 16px rgba(245, 198, 107, 0.45); }
+  .tone-teal { box-shadow: 0 0 16px rgba(45, 212, 191, 0.45); }
+  .tone-crimson { box-shadow: 0 0 16px rgba(248, 113, 113, 0.45); }
+}
+
+@layer components {
+  .title-screen {
+    position: relative;
+    min-height: 100svh;
+    overflow: hidden;
+    display: grid;
+    place-items: end center;
+    padding: clamp(16px, 3vw, 36px);
+    background: #08071a;
+    isolation: isolate;
+  }
+
+  .title-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    transform: scale(1.03);
+    animation: titleDrift 18s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+
+  .title-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(5, 6, 24, 0.08) 0%, rgba(5, 6, 24, 0.22) 42%, rgba(5, 6, 24, 0.84) 100%),
+      radial-gradient(circle at 50% 44%, transparent 0%, rgba(0, 0, 0, 0.22) 62%, rgba(0, 0, 0, 0.68) 100%);
+    z-index: 1;
+  }
+
+  .aurora-sweep {
+    position: absolute;
+    inset: -20% -10% 35% -10%;
+    background:
+      linear-gradient(105deg, transparent 8%, rgba(133, 82, 255, 0.16) 24%, transparent 42%),
+      linear-gradient(75deg, transparent 16%, rgba(55, 231, 218, 0.18) 34%, transparent 58%);
+    mix-blend-mode: screen;
+    filter: blur(10px);
+    animation: auroraFlow 9s ease-in-out infinite alternate;
+    z-index: 2;
+  }
+
+  .star-field {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.92) 0 1px, transparent 1.5px),
+      radial-gradient(circle, rgba(125,238,255,0.72) 0 1px, transparent 1.5px);
+    background-size: 120px 120px, 190px 190px;
+    background-position: 0 0, 40px 80px;
+    opacity: 0.45;
+    mix-blend-mode: screen;
+    z-index: 3;
+  }
+
+  .star-field-a { animation: starFloatA 16s linear infinite; }
+  .star-field-b {
+    opacity: 0.25;
+    background-size: 80px 80px, 150px 150px;
+    animation: starFloatB 22s linear infinite;
+  }
+
+  .crystal-glow {
+    position: absolute;
+    width: 28vw;
+    max-width: 360px;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(94, 241, 255, 0.34), rgba(94, 241, 255, 0.08) 38%, transparent 68%);
+    filter: blur(8px);
+    mix-blend-mode: screen;
+    animation: crystalPulse 2.8s ease-in-out infinite alternate;
+    z-index: 4;
+  }
+
+  .crystal-glow-left { left: -7vw; bottom: -6vw; }
+  .crystal-glow-right { right: -6vw; bottom: -4vw; animation-delay: 0.7s; }
+
+  .title-menu {
+    width: min(100%, 390px);
+    transform: translateY(0);
+    animation: menuRise 800ms ease-out both, menuFloat 4.8s ease-in-out 900ms infinite alternate;
+    backdrop-filter: blur(6px);
+    background: rgba(27, 20, 17, 0.86);
+    position: relative;
+    z-index: 10;
+  }
+
+  @media (min-width: 900px) {
+    .title-screen {
+      place-items: center end;
+      padding-right: clamp(48px, 7vw, 120px);
+    }
+    .title-menu { margin-top: 18vh; }
+  }
+
+  @media (max-width: 640px) {
+    .title-art { object-position: center top; }
+    .title-menu { width: min(100%, 360px); }
+  }
+}
+
+@keyframes titleDrift {
+  from { transform: scale(1.03) translate3d(-0.4%, -0.4%, 0); }
+  to { transform: scale(1.08) translate3d(0.6%, 0.5%, 0); }
+}
+
+@keyframes auroraFlow {
+  from { transform: translateX(-4%) skewX(-6deg); opacity: 0.7; }
+  to { transform: translateX(5%) skewX(5deg); opacity: 1; }
+}
+
+@keyframes starFloatA {
+  from { background-position: 0 0, 40px 80px; }
+  to { background-position: 80px 130px, -60px 240px; }
+}
+
+@keyframes starFloatB {
+  from { background-position: 120px 40px, 0 0; }
+  to { background-position: -40px 220px, 120px 180px; }
+}
+
+@keyframes crystalPulse {
+  from { opacity: 0.38; transform: scale(0.92); }
+  to { opacity: 0.82; transform: scale(1.08); }
+}
+
+@keyframes menuRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes menuFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+@layer components {
+  .title-info {
+    max-height: 210px;
+    overflow: auto;
+    animation: panelReveal 180ms ease-out both;
+  }
+
+  .title-toggle {
+    width: 34px;
+    height: 18px;
+    accent-color: #f5c66b;
+  }
+
+  .reduce-title-motion .title-art,
+  .reduce-title-motion .aurora-sweep,
+  .reduce-title-motion .star-field,
+  .reduce-title-motion .crystal-glow,
+  .reduce-title-motion .title-menu {
+    animation: none !important;
+  }
+}
+
+@keyframes panelReveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
