@@ -14,17 +14,28 @@ const ART = {
 const GRASS_FRAME = 0
 const TREE_FRAME = 28
 
+// เว็บอาจ deploy อยู่ใต้ subpath (เช่น GitHub Pages /RPG-O-NET-P.6/) จึงต้องเติม base URL
+// ให้ path ของไฟล์ asset แทนการใช้ path แบบ absolute ตรงๆ ('/...') ซึ่งจะชี้ไปที่ root โดเมนเสมอ
+// ค่า base มาจาก Nuxt app.baseURL ที่ส่งต่อมาจาก GameCanvas.client.vue (useRuntimeConfig)
+let assetBase = '/'
+export function setAssetBase(base: string) {
+  assetBase = base.endsWith('/') ? base : `${base}/`
+}
+function assetPath(path: string): string {
+  return `${assetBase}${path}`.replace(/\/{2,}/g, '/')
+}
+
 export function preloadSharedAssets(scene: Phaser.Scene) {
   if (scene.textures.exists('tiny_town')) return
-  scene.load.spritesheet('tiny_town', '/tiny-town/tilemap_packed.png', { frameWidth: SRC, frameHeight: SRC })
+  scene.load.spritesheet('tiny_town', assetPath('tiny-town/tilemap_packed.png'), { frameWidth: SRC, frameHeight: SRC })
 
-  scene.load.spritesheet('hero_walk', '/player-sprites/overworld/warrior_walk.png', { frameWidth: 32, frameHeight: 32 })
-  scene.load.spritesheet('hero_idle', '/player-sprites/overworld/warrior_idle.png', { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('hero_walk', assetPath('player-sprites/overworld/warrior_walk.png'), { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('hero_idle', assetPath('player-sprites/overworld/warrior_idle.png'), { frameWidth: 32, frameHeight: 32 })
 
-  scene.load.spritesheet('anim_goblin_idle', '/mob-sprites/orc-idle.png', { frameWidth: 32, frameHeight: 32 })
-  scene.load.spritesheet('anim_skeleton_idle', '/mob-sprites/skeleton-idle.png', { frameWidth: 32, frameHeight: 32 })
-  scene.load.spritesheet('anim_slime_idle', '/mob-sprites/slime-idle.png', { frameWidth: 64, frameHeight: 64 })
-  scene.load.image('mob_dragon', '/mob-sprites/dragon.png')
+  scene.load.spritesheet('anim_goblin_idle', assetPath('mob-sprites/orc-idle.png'), { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('anim_skeleton_idle', assetPath('mob-sprites/skeleton-idle.png'), { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('anim_slime_idle', assetPath('mob-sprites/slime-idle.png'), { frameWidth: 64, frameHeight: 64 })
+  scene.load.image('mob_dragon', assetPath('mob-sprites/dragon.png'))
 }
 
 function tileImg(scene: Phaser.Scene, frame: number) {
