@@ -12,7 +12,7 @@
       <div class="grid gap-4 p-4 md:grid-cols-[220px_1fr]">
         <div class="glass-panel p-3">
           <div class="mb-3 flex items-end justify-between">
-            <img :src="player.heroClass.sprite" class="h-24 object-contain pixelated" alt="hero">
+            <img :src="assetPath(player.heroClass.sprite)" class="h-24 object-contain pixelated" alt="hero">
             <div class="text-right text-xs">
               <div>{{ player.heroClass.name }}</div>
               <div>SPD {{ player.speed }} / KNO {{ player.knowledge }}</div>
@@ -57,6 +57,8 @@ import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/q
 import { getWorldState } from '~/data/world'
 import { usePlayerStore } from '~/stores/player'
 
+const runtimeConfig = useRuntimeConfig()
+
 const player = usePlayerStore()
 const active = ref(false)
 const floor = ref(1)
@@ -72,6 +74,11 @@ const playerHpPct = computed(() => Math.max(0, Math.round((player.hp / player.ma
 const monsterHpPct = computed(() => Math.max(0, Math.round((monster.hp / monster.maxHp) * 100)))
 const hasPotion = computed(() => (player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0)
 
+function assetPath(path: string) {
+  const cleanPath = path.replace(/^\/+/, '')
+  const base = runtimeConfig.app.baseURL.endsWith('/') ? runtimeConfig.app.baseURL : `${runtimeConfig.app.baseURL}/`
+  return `${base}${cleanPath}`
+}
 function loadQuestion() {
   const [q] = getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)
   Object.assign(question, q)
@@ -166,3 +173,6 @@ function winBattle() {
   setTimeout(() => finish(true), 900)
 }
 </script>
+
+
+
