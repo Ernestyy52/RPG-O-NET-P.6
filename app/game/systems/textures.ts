@@ -2,44 +2,62 @@ import Phaser from 'phaser'
 import type { Biome } from '../../data/biomes'
 
 const TILE = 32
+const SRC = 16
+const KSCALE = TILE / SRC
 
-// พาเลตต์สีกลาง ใช้วาดตัวละคร/มอนสเตอร์แบบพิกเซลอาร์ตด้วยโค้ดล้วน (ไม่มีไฟล์ภาพภายนอก)
 const ART = {
   outline: 0x2a1e1c,
-  metalLight: 0xf0ead8,
-  metalShadow: 0x4a5a6a,
   goldLight: 0xffe08a,
 }
 
-function buildGrass(scene: Phaser.Scene, biome: Biome) {
-  const g = scene.add.graphics()
-  g.fillStyle(biome.grass.base, 1).fillRect(0, 0, TILE, TILE)
-  g.fillStyle(biome.grass.dark, 0.5)
-  g.fillRect(0, TILE - 4, TILE, 4)
-  g.fillRect(TILE - 4, 0, 4, TILE)
-  // ใบหญ้าสุ่มจุดเล็กๆ ให้ดูมีพื้นผิว
-  g.fillStyle(biome.grass.light, 0.6)
-  for (let i = 0; i < 5; i++) {
-    const x = 3 + ((i * 7) % (TILE - 6))
-    const y = 3 + ((i * 11) % (TILE - 6))
-    g.fillRect(x, y, 2, 2)
-  }
-  g.generateTexture(`${biome.id}_grass`, TILE, TILE)
+// เฟรมในสไปรท์ชีต tiny-town (12 คอลัมน์ x 11 แถว, 16px ต่อเฟรม)
+const GRASS_FRAME = 0
+const TREE_FRAME = 28
+
+export function preloadSharedAssets(scene: Phaser.Scene) {
+  if (scene.textures.exists('tiny_town')) return
+  scene.load.spritesheet('tiny_town', '/tiny-town/tilemap_packed.png', { frameWidth: SRC, frameHeight: SRC })
+
+  scene.load.spritesheet('hero_walk', '/player-sprites/overworld/warrior_walk.png', { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('hero_idle', '/player-sprites/overworld/warrior_idle.png', { frameWidth: 32, frameHeight: 32 })
+
+  scene.load.spritesheet('anim_goblin_idle', '/mob-sprites/orc-idle.png', { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('anim_skeleton_idle', '/mob-sprites/skeleton-idle.png', { frameWidth: 32, frameHeight: 32 })
+  scene.load.spritesheet('anim_slime_idle', '/mob-sprites/slime-idle.png', { frameWidth: 64, frameHeight: 64 })
+  scene.load.image('mob_dragon', '/mob-sprites/dragon.png')
+}
+
+function tileImg(scene: Phaser.Scene, frame: number) {
+  const img = scene.make.image({ key: 'tiny_town', frame }, false)
+  img.setOrigin(0, 0)
+  img.setScale(KSCALE)
+  return img
+}
+
+function washGfx(scene: Phaser.Scene, w: number, h: number, color: number, alpha: number) {
+  const g = scene.make.graphics({ x: 0, y: 0 }, false)
+  g.fillStyle(color, alpha).fillRect(0, 0, w, h)
+  return g
+}
+
+function bakeFrame(scene: Phaser.Scene, key: string, frame: number, wash: { color: number; alpha: number }) {
+  const rt = scene.make.renderTexture({ width: TILE, height: TILE }, false)
+  const img = tileImg(scene, frame)
+  rt.draw(img, 0, 0)
+  img.destroy()
+  const g = washGfx(scene, TILE, TILE, wash.color, wash.alpha)
+  rt.draw(g, 0, 0)
   g.destroy()
+  rt.saveTexture(key)
+  rt.destroy()
+}
+
+function buildGrass(scene: Phaser.Scene, biome: Biome) {
+  bakeFrame(scene, `${biome.id}_grass`, GRASS_FRAME, { color: biome.grass.base, alpha: 0.35 })
 }
 
 function buildTree(scene: Phaser.Scene, biome: Biome) {
-  const g = scene.add.graphics()
-  const cx = TILE / 2
-  // ลำต้น
-  g.fillStyle(biome.tree.trunk, 1).fillRect(cx - 3, TILE - 10, 6, 10)
-  // พุ่มใบ 3 ชั้น (เข้ม-กลาง-สว่าง) ให้ดูมีมิติ
-  g.fillStyle(biome.tree.leafDark, 1).fillCircle(cx, TILE - 16, 13)
-  g.fillStyle(biome.tree.leaf, 1).fillCircle(cx - 2, TILE - 19, 11)
-  g.fillStyle(biome.tree.leafLight, 1).fillCircle(cx - 4, TILE - 23, 6)
-  g.lineStyle(1, ART.outline, 0.4).strokeCircle(cx, TILE - 16, 13)
-  g.generateTexture(`${biome.id}_tree`, TILE, TILE)
-  g.destroy()
+  bakeFrame(scene, `${biome.id}_tree`, TREE_FRAME, { color: biome.tree.leaf, alpha: 0.3 })
 }
 
 function buildWall(scene: Phaser.Scene, biome: Biome) {
@@ -64,6 +82,7 @@ function buildStairs(scene: Phaser.Scene) {
 }
 
 function buildShadow(scene: Phaser.Scene) {
+  if (scene.textures.exists('shadow_blob')) return
   const w = 24
   const h = 10
   const tex = scene.textures.createCanvas('shadow_blob', w, h)
@@ -78,51 +97,8 @@ function buildShadow(scene: Phaser.Scene) {
   tex!.refresh()
 }
 
-function buildHero(scene: Phaser.Scene) {
-  const g = scene.add.graphics()
-  const w = 24
-  const h = 26
-  // ตัว (เสื้อผ้าสีน้ำเงิน)
-  g.fillStyle(0x2f5fb0, 1).fillRoundedRect(4, 10, w - 8, h - 12, 3)
-  g.fillStyle(0x4a7fd6, 0.9).fillRect(5, 11, 6, 3)
-  // หัว
-  g.fillStyle(0xf0c896, 1).fillCircle(w / 2, 8, 7)
-  // ผม
-  g.fillStyle(0x3a2a1c, 1).fillRect(w / 2 - 7, 1, 14, 6)
-  g.lineStyle(1, ART.outline, 0.5).strokeRoundedRect(4, 10, w - 8, h - 12, 3)
-  g.generateTexture('player', w, h)
-  g.destroy()
-}
-
-function buildMonster(scene: Phaser.Scene) {
-  const g = scene.add.graphics()
-  const w = 24
-  const h = 22
-  g.fillStyle(0x7a2a26, 1).fillCircle(w / 2, h / 2, 10)
-  g.fillStyle(0xc0443b, 1).fillCircle(w / 2 - 2, h / 2 - 2, 8)
-  g.fillStyle(0xffffff, 1).fillCircle(w / 2 - 4, h / 2 - 3, 2)
-  g.fillStyle(0xffffff, 1).fillCircle(w / 2 + 3, h / 2 - 3, 2)
-  g.fillStyle(0x1a1210, 1).fillCircle(w / 2 - 4, h / 2 - 3, 1)
-  g.fillStyle(0x1a1210, 1).fillCircle(w / 2 + 3, h / 2 - 3, 1)
-  g.lineStyle(1, ART.outline, 0.5).strokeCircle(w / 2, h / 2, 10)
-  g.generateTexture('monster', w, h)
-  g.destroy()
-}
-
-function buildBoss(scene: Phaser.Scene) {
-  const g = scene.add.graphics()
-  const w = 30
-  const h = 28
-  g.fillStyle(0x4a1e5c, 1).fillCircle(w / 2, h / 2, 13)
-  g.fillStyle(0x8e55c7, 1).fillCircle(w / 2 - 2, h / 2 - 2, 10)
-  g.fillStyle(0x7fd6ff, 1).fillCircle(w / 2 - 5, h / 2 - 4, 3)
-  g.fillStyle(0x7fd6ff, 1).fillCircle(w / 2 + 4, h / 2 - 4, 3)
-  g.lineStyle(2, ART.goldLight, 0.7).strokeCircle(w / 2, h / 2, 13)
-  g.generateTexture('boss', w, h)
-  g.destroy()
-}
-
 function buildBuilding(scene: Phaser.Scene) {
+  if (scene.textures.exists('town_building')) return
   const w = TILE * 2
   const h = TILE * 2
   const g = scene.add.graphics()
@@ -134,6 +110,47 @@ function buildBuilding(scene: Phaser.Scene) {
   g.destroy()
 }
 
+function buildHeroAnimations(scene: Phaser.Scene) {
+  if (scene.anims.exists('hero_idle_down')) return
+  const dirs = ['down', 'left', 'right', 'up'] as const
+  dirs.forEach((dir, row) => {
+    scene.anims.create({
+      key: `hero_idle_${dir}`,
+      frames: scene.anims.generateFrameNumbers('hero_idle', { start: row * 12, end: row * 12 + 11 }),
+      frameRate: 6,
+      repeat: -1,
+    })
+    scene.anims.create({
+      key: `hero_walk_${dir}`,
+      frames: scene.anims.generateFrameNumbers('hero_walk', { start: row * 6, end: row * 6 + 5 }),
+      frameRate: 10,
+      repeat: -1,
+    })
+  })
+}
+
+function buildMonsterAnimations(scene: Phaser.Scene) {
+  if (scene.anims.exists('goblin_idle')) return
+  scene.anims.create({
+    key: 'goblin_idle',
+    frames: scene.anims.generateFrameNumbers('anim_goblin_idle', { start: 0, end: 3 }),
+    frameRate: 4,
+    repeat: -1,
+  })
+  scene.anims.create({
+    key: 'skeleton_idle',
+    frames: scene.anims.generateFrameNumbers('anim_skeleton_idle', { start: 0, end: 3 }),
+    frameRate: 4,
+    repeat: -1,
+  })
+  scene.anims.create({
+    key: 'slime_idle',
+    frames: scene.anims.generateFrameNumbers('anim_slime_idle', { start: 0, end: 5 }),
+    frameRate: 6,
+    repeat: -1,
+  })
+}
+
 export function buildBiomeTextures(scene: Phaser.Scene, biome: Biome) {
   if (scene.textures.exists(`${biome.id}_grass`)) return
   buildGrass(scene, biome)
@@ -142,11 +159,16 @@ export function buildBiomeTextures(scene: Phaser.Scene, biome: Biome) {
 }
 
 export function buildSharedTextures(scene: Phaser.Scene) {
-  if (scene.textures.exists('player')) return
   buildStairs(scene)
   buildShadow(scene)
-  buildHero(scene)
-  buildMonster(scene)
-  buildBoss(scene)
   buildBuilding(scene)
+  buildHeroAnimations(scene)
+  buildMonsterAnimations(scene)
+}
+
+export const MONSTER_KINDS = ['goblin', 'skeleton', 'slime'] as const
+export type MonsterKind = (typeof MONSTER_KINDS)[number]
+
+export function monsterAnimKey(kind: MonsterKind): string {
+  return `${kind}_idle`
 }

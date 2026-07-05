@@ -2,7 +2,13 @@ import Phaser from 'phaser'
 import { gameEvents } from '../systems/eventBus'
 import { getFloorConfig } from '../../data/floors'
 import { biomeForFloor } from '../../data/biomes'
-import { buildBiomeTextures, buildSharedTextures } from '../systems/textures'
+import {
+  preloadSharedAssets,
+  buildBiomeTextures,
+  buildSharedTextures,
+  MONSTER_KINDS,
+  monsterAnimKey,
+} from '../systems/textures'
 
 const TILE = 32
 const MAP_W = 15
@@ -14,6 +20,7 @@ export class TowerScene extends Phaser.Scene {
   private monsters!: Phaser.Physics.Arcade.Group
   private floor = 1
   private inBattle = false
+  private facing: 'down' | 'left' | 'right' | 'up' = 'down'
 
   constructor() {
     super('TowerScene')
@@ -25,15 +32,16 @@ export class TowerScene extends Phaser.Scene {
   }
 
   preload() {
-    const biome = biomeForFloor(this.floor)
-    buildBiomeTextures(this, biome)
-    buildSharedTextures(this)
+    preloadSharedAssets(this)
   }
 
   create() {
     const config = getFloorConfig(this.floor)
     const biome = biomeForFloor(this.floor)
     const isTownFloor = this.floor % 10 === 1
+
+    buildBiomeTextures(this, biome)
+    buildSharedTextures(this)
 
     this.cameras.main.setBackgroundColor(biome.bg)
 
@@ -73,18 +81,28 @@ export class TowerScene extends Phaser.Scene {
     const stairs = this.physics.add.staticSprite((MAP_W - 2) * TILE, TILE * 2, 'tile-stairs')
     stairs.setDepth(1)
 
-    this.add.image(TILE * 2, TILE * (MAP_H - 2) + 6, 'shadow_blob').setDepth((MAP_H - 2) * TILE - 1)
-    this.player = this.physics.add.sprite(TILE * 2, TILE * (MAP_H - 2), 'player')
+    this.add.image(TILE * 2, TILE * (MAP_H - 2) + 14, 'shadow_blob').setDepth((MAP_H - 2) * TILE - 1)
+    this.player = this.physics.add.sprite(TILE * 2, TILE * (MAP_H - 2), 'hero_idle')
     this.player.setCollideWorldBounds(true)
+    this.player.play('hero_idle_down')
     this.physics.add.collider(this.player, walls)
 
     this.monsters = this.physics.add.group()
     for (let i = 0; i < config.monsterCount; i++) {
       const mx = Phaser.Math.Between(4, MAP_W - 4) * TILE
       const my = Phaser.Math.Between(3, MAP_H - 3) * TILE
-      const monster = this.monsters.create(mx, my, config.isBossFloor ? 'boss' : 'monster')
-      monster.setDepth(my)
-      monster.setData('config', config)
+      if (config.isBossFloor) {
+        const boss = this.monsters.create(mx, my, 'mob_dragon') as Phaser.Physics.Arcade.Sprite
+        boss.setScale(0.6)
+        boss.setDepth(my)
+        boss.setData('config', config)
+      } else {
+        const kind = MONSTER_KINDS[Phaser.Math.Between(0, MONSTER_KINDS.length - 1)]
+        const monster = this.monsters.create(mx, my, `anim_${kind}_idle`) as Phaser.Physics.Arcade.Sprite
+        monster.play(monsterAnimKey(kind))
+        monster.setDepth(my)
+        monster.setData('config', config)
+      }
     }
 
     this.physics.add.overlap(this.player, this.monsters, (_p, m) => this.onEncounterMonster(m as Phaser.Physics.Arcade.Sprite))
@@ -111,10 +129,27 @@ export class TowerScene extends Phaser.Scene {
     }
     const speed = 120
     this.player.setVelocity(0)
-    if (this.cursors.left?.isDown) this.player.setVelocityX(-speed)
-    else if (this.cursors.right?.isDown) this.player.setVelocityX(speed)
-    if (this.cursors.up?.isDown) this.player.setVelocityY(-speed)
-    else if (this.cursors.down?.isDown) this.player.setVelocityY(speed)
+    let moving = false
+    if (this.cursors.left?.isDown) {
+      this.player.setVelocityX(-speed)
+      this.facing = 'left'
+      moving = true
+    } else if (this.cursors.right?.isDown) {
+      this.player.setVelocityX(speed)
+      this.facing = 'right'
+      moving = true
+    }
+    if (this.cursors.up?.isDown) {
+      this.player.setVelocityY(-speed)
+      this.facing = 'up'
+      moving = true
+    } else if (this.cursors.down?.isDown) {
+      this.player.setVelocityY(speed)
+      this.facing = 'down'
+      moving = true
+    }
+    const anim = `hero_${moving ? 'walk' : 'idle'}_${this.facing}`
+    if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
   }
 
