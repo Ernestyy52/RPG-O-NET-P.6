@@ -1,7 +1,8 @@
 import Phaser from 'phaser'
+import type { HeroClassId } from '~/data/classes'
 import { TowerScene } from './scenes/TowerScene'
 
-export function createGame(parent: HTMLElement, startFloor: number): Phaser.Game {
+export function createGame(parent: HTMLElement, startFloor: number, classId: HeroClassId): Phaser.Game {
   const game = new Phaser.Game({
     type: Phaser.AUTO,
     width: 480,
@@ -15,6 +16,6 @@ export function createGame(parent: HTMLElement, startFloor: number): Phaser.Game
     },
     scene: [TowerScene],
   })
-  game.scene.start('TowerScene', { floor: startFloor })
+  game.scene.start('TowerScene', { floor: startFloor, classId })
   return game
 }

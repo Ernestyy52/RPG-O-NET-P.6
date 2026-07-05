@@ -9,11 +9,13 @@ export interface FloorConfig {
   monsterAtk: number
   expReward: number
   goldReward: number
+  isTownFloor: boolean
 }
 
-// สูตร scaling: ความยากเพิ่มขึ้นแบบ exponential เล็กน้อยตามชั้น เพื่อให้ 100 ชั้นมีความท้าทายต่อเนื่อง
+// เธชเธนเธ•เธฃ scaling: เธเธงเธฒเธกเธขเธฒเธเน€เธเธดเนเธกเธเธถเนเธเนเธเธ exponential เน€เธฅเนเธเธเนเธญเธขเธ•เธฒเธกเธเธฑเนเธ เน€เธเธทเนเธญเนเธซเน 100 เธเธฑเนเธเธกเธตเธเธงเธฒเธกเธ—เนเธฒเธ—เธฒเธขเธ•เนเธญเน€เธเธทเนเธญเธ
 export function getFloorConfig(floor: number): FloorConfig {
   const isBossFloor = floor % 10 === 0
+  const isTownFloor = floor > 1 && floor % 10 === 1
   const monsterLevel = Math.max(1, Math.round(floor * 1.2))
   const baseHp = 20 + floor * 8
   const baseAtk = 3 + Math.floor(floor * 1.5)
@@ -21,7 +23,8 @@ export function getFloorConfig(floor: number): FloorConfig {
   return {
     floor,
     isBossFloor,
-    monsterCount: isBossFloor ? 1 : 2 + Math.floor(floor / 20),
+    isTownFloor,
+    monsterCount: isTownFloor ? 0 : isBossFloor ? 1 : 2 + Math.floor(floor / 20),
     monsterLevel,
     monsterHp: isBossFloor ? Math.round(baseHp * 4) : baseHp,
     monsterAtk: isBossFloor ? Math.round(baseAtk * 2) : baseAtk,
@@ -31,6 +34,6 @@ export function getFloorConfig(floor: number): FloorConfig {
 }
 
 export function getQuestionDifficulty(floor: number): number {
-  // ป.6 O-NET: ไล่ระดับความยากคำถาม 1-5 ตามช่วงชั้น
+  // เธ.6 O-NET: เนเธฅเนเธฃเธฐเธ”เธฑเธเธเธงเธฒเธกเธขเธฒเธเธเธณเธ–เธฒเธก 1-5 เธ•เธฒเธกเธเนเธงเธเธเธฑเนเธ
   return Math.min(5, Math.ceil(floor / 20))
 }

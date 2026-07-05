@@ -17,7 +17,7 @@ onMounted(async () => {
   await nextTick()
   if (!containerRef.value) return
   setAssetBase(config.app.baseURL)
-  game = createGame(containerRef.value, player.currentFloor)
+  game = createGame(containerRef.value, player.currentFloor, player.classId)
 })
 
 onBeforeUnmount(() => {

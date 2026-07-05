@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import type { HeroClassId } from '../../data/classes'
 import { gameEvents } from '../systems/eventBus'
 import { getFloorConfig } from '../../data/floors'
 import { biomeForFloor } from '../../data/biomes'
@@ -21,6 +22,7 @@ export class TowerScene extends Phaser.Scene {
   private floor = 1
   private inBattle = false
   private facing: 'down' | 'left' | 'right' | 'up' = 'down'
+  private classId: HeroClassId = 'warrior'
 
   constructor() {
     super('TowerScene')
@@ -38,21 +40,21 @@ export class TowerScene extends Phaser.Scene {
   create() {
     const config = getFloorConfig(this.floor)
     const biome = biomeForFloor(this.floor)
-    const isTownFloor = this.floor % 10 === 1
+    const isTownFloor = config.isTownFloor
 
     buildBiomeTextures(this, biome)
     buildSharedTextures(this)
 
     this.cameras.main.setBackgroundColor(biome.bg)
 
-    // พื้นหญ้าตามไบโอมของช่วงชั้นนั้น
+    // เธเธทเนเธเธซเธเนเธฒเธ•เธฒเธกเนเธเนเธญเธกเธเธญเธเธเนเธงเธเธเธฑเนเธเธเธฑเนเธ
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
         this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_grass`).setDepth(0)
       }
     }
 
-    // กำแพงขอบแมพ
+    // เธเธณเนเธเธเธเธญเธเนเธกเธ
     const walls = this.physics.add.staticGroup()
     for (let x = 0; x < MAP_W; x++) {
       walls.create(x * TILE + TILE / 2, TILE / 2, `${biome.id}_wall`).setDepth(1)
@@ -63,7 +65,7 @@ export class TowerScene extends Phaser.Scene {
       walls.create((MAP_W - 1) * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_wall`).setDepth(1)
     }
 
-    // ต้นไม้กระจายในแมพเป็นสิ่งกีดขวาง (เว้นชั้นเมือง ใช้อาคารแทน)
+    // เธ•เนเธเนเธกเนเธเธฃเธฐเธเธฒเธขเนเธเนเธกเธเน€เธเนเธเธชเธดเนเธเธเธตเธ”เธเธงเธฒเธ (เน€เธงเนเธเธเธฑเนเธเน€เธกเธทเธญเธ เนเธเนเธญเธฒเธเธฒเธฃเนเธ—เธ)
     if (isTownFloor) {
       this.add.image(TILE * 11, TILE * 4, 'town_building').setDepth(2).setOrigin(0.5, 0.75)
     } else {
@@ -77,14 +79,14 @@ export class TowerScene extends Phaser.Scene {
       }
     }
 
-    // บันไดขึ้นชั้นถัดไป
+    // เธเธฑเธเนเธ”เธเธถเนเธเธเธฑเนเธเธ–เธฑเธ”เนเธ
     const stairs = this.physics.add.staticSprite((MAP_W - 2) * TILE, TILE * 2, 'tile-stairs')
     stairs.setDepth(1)
 
     this.add.image(TILE * 2, TILE * (MAP_H - 2) + 14, 'shadow_blob').setDepth((MAP_H - 2) * TILE - 1)
-    this.player = this.physics.add.sprite(TILE * 2, TILE * (MAP_H - 2), 'hero_idle')
+    this.player = this.physics.add.sprite(TILE * 2, TILE * (MAP_H - 2), `hero_idle_${this.classId}`)
     this.player.setCollideWorldBounds(true)
-    this.player.play('hero_idle_down')
+    this.player.play(`hero_idle_${this.classId}_down`)
     this.physics.add.collider(this.player, walls)
 
     this.monsters = this.physics.add.group()
@@ -110,7 +112,7 @@ export class TowerScene extends Phaser.Scene {
 
     this.cursors = this.input.keyboard!.createCursorKeys()
 
-    this.add.text(8, 8, `${biome.name} - Floor ${this.floor}${config.isBossFloor ? ' - BOSS' : ''}`, {
+    this.add.text(8, 8, `${biome.name} - Floor ${this.floor}${config.isTownFloor ? ' - TOWN' : config.isBossFloor ? ' - BOSS' : ''}`, {
       fontSize: '13px',
       fontFamily: 'monospace',
       color: '#f7e7c5',
@@ -148,7 +150,7 @@ export class TowerScene extends Phaser.Scene {
       this.facing = 'down'
       moving = true
     }
-    const anim = `hero_${moving ? 'walk' : 'idle'}_${this.facing}`
+    const anim = `hero_${moving ? 'walk' : 'idle'}_${this.classId}_${this.facing}`
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
   }
@@ -163,7 +165,7 @@ export class TowerScene extends Phaser.Scene {
   private handleBattleEnd = (payload: { won: boolean }) => {
     this.inBattle = false
     if (!payload.won) {
-      // แพ้ = หมดสติ ฟื้นที่ชั้นเดิม ไม่เสียเซฟ
+      // เนเธเน = เธซเธกเธ”เธชเธ•เธด เธเธทเนเธเธ—เธตเนเธเธฑเนเธเน€เธ”เธดเธก เนเธกเนเน€เธชเธตเธขเน€เธเธ
       this.scene.restart({ floor: this.floor })
     }
   }

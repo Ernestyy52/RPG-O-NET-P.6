@@ -10,13 +10,13 @@ const ART = {
   goldLight: 0xffe08a,
 }
 
-// เฟรมในสไปรท์ชีต tiny-town (12 คอลัมน์ x 11 แถว, 16px ต่อเฟรม)
+// เน€เธเธฃเธกเนเธเธชเนเธเธฃเธ—เนเธเธตเธ• tiny-town (12 เธเธญเธฅเธฑเธกเธเน x 11 เนเธ–เธง, 16px เธ•เนเธญเน€เธเธฃเธก)
 const GRASS_FRAME = 0
 const TREE_FRAME = 28
 
-// เว็บอาจ deploy อยู่ใต้ subpath (เช่น GitHub Pages /RPG-O-NET-P.6/) จึงต้องเติม base URL
-// ให้ path ของไฟล์ asset แทนการใช้ path แบบ absolute ตรงๆ ('/...') ซึ่งจะชี้ไปที่ root โดเมนเสมอ
-// ค่า base มาจาก Nuxt app.baseURL ที่ส่งต่อมาจาก GameCanvas.client.vue (useRuntimeConfig)
+// เน€เธงเนเธเธญเธฒเธ deploy เธญเธขเธนเนเนเธ•เน subpath (เน€เธเนเธ GitHub Pages /RPG-O-NET-P.6/) เธเธถเธเธ•เนเธญเธเน€เธ•เธดเธก base URL
+// เนเธซเน path เธเธญเธเนเธเธฅเน asset เนเธ—เธเธเธฒเธฃเนเธเน path เนเธเธ absolute เธ•เธฃเธเน ('/...') เธเธถเนเธเธเธฐเธเธตเนเนเธเธ—เธตเน root เนเธ”เน€เธกเธเน€เธชเธกเธญ
+// เธเนเธฒ base เธกเธฒเธเธฒเธ Nuxt app.baseURL เธ—เธตเนเธชเนเธเธ•เนเธญเธกเธฒเธเธฒเธ GameCanvas.client.vue (useRuntimeConfig)
 let assetBase = '/'
 export function setAssetBase(base: string) {
   assetBase = base.endsWith('/') ? base : `${base}/`
@@ -29,8 +29,11 @@ export function preloadSharedAssets(scene: Phaser.Scene) {
   if (scene.textures.exists('tiny_town')) return
   scene.load.spritesheet('tiny_town', assetPath('tiny-town/tilemap_packed.png'), { frameWidth: SRC, frameHeight: SRC })
 
-  scene.load.spritesheet('hero_walk', assetPath('player-sprites/overworld/warrior_walk.png'), { frameWidth: 32, frameHeight: 32 })
-  scene.load.spritesheet('hero_idle', assetPath('player-sprites/overworld/warrior_idle.png'), { frameWidth: 32, frameHeight: 32 })
+  const heroClasses = ['warrior', 'mage', 'archer', 'guardian']
+  for (const heroClass of heroClasses) {
+    scene.load.spritesheet(`hero_walk_${heroClass}`, assetPath(`player-sprites/overworld/${heroClass}_walk.png`), { frameWidth: 32, frameHeight: 32 })
+    scene.load.spritesheet(`hero_idle_${heroClass}`, assetPath(`player-sprites/overworld/${heroClass}_idle.png`), { frameWidth: 32, frameHeight: 32 })
+  }
 
   scene.load.spritesheet('anim_goblin_idle', assetPath('mob-sprites/orc-idle.png'), { frameWidth: 32, frameHeight: 32 })
   scene.load.spritesheet('anim_skeleton_idle', assetPath('mob-sprites/skeleton-idle.png'), { frameWidth: 32, frameHeight: 32 })
@@ -122,22 +125,25 @@ function buildBuilding(scene: Phaser.Scene) {
 }
 
 function buildHeroAnimations(scene: Phaser.Scene) {
-  if (scene.anims.exists('hero_idle_down')) return
+  if (scene.anims.exists('hero_idle_warrior_down')) return
   const dirs = ['down', 'left', 'right', 'up'] as const
-  dirs.forEach((dir, row) => {
-    scene.anims.create({
-      key: `hero_idle_${dir}`,
-      frames: scene.anims.generateFrameNumbers('hero_idle', { start: row * 12, end: row * 12 + 11 }),
-      frameRate: 6,
-      repeat: -1,
+  const heroClasses = ['warrior', 'mage', 'archer', 'guardian']
+  for (const heroClass of heroClasses) {
+    dirs.forEach((dir, row) => {
+      scene.anims.create({
+        key: `hero_idle_${heroClass}_${dir}`,
+        frames: scene.anims.generateFrameNumbers(`hero_idle_${heroClass}`, { start: row * 12, end: row * 12 + 11 }),
+        frameRate: 6,
+        repeat: -1,
+      })
+      scene.anims.create({
+        key: `hero_walk_${heroClass}_${dir}`,
+        frames: scene.anims.generateFrameNumbers(`hero_walk_${heroClass}`, { start: row * 6, end: row * 6 + 5 }),
+        frameRate: 10,
+        repeat: -1,
+      })
     })
-    scene.anims.create({
-      key: `hero_walk_${dir}`,
-      frames: scene.anims.generateFrameNumbers('hero_walk', { start: row * 6, end: row * 6 + 5 }),
-      frameRate: 10,
-      repeat: -1,
-    })
-  })
+  }
 }
 
 function buildMonsterAnimations(scene: Phaser.Scene) {

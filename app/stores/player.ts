@@ -1,81 +1,183 @@
 import { defineStore } from 'pinia'
+import { getHeroClass, type HeroClassId } from '~/data/classes'
+import { findShopItem, getItemById, type EquipmentSlot } from '~/data/equipment'
+import { SKILL_TREE } from '~/data/skills'
 
-export interface ShopItem {
-  id: string
-  name: string
-  cost: number
-  effect: { hpBonus?: number; atkBonus?: number }
-}
-
-export const SHOP_ITEMS: ShopItem[] = [
-  { id: 'sword1', name: 'Iron Sword', cost: 50, effect: { atkBonus: 3 } },
-  { id: 'sword2', name: 'Steel Sword', cost: 150, effect: { atkBonus: 8 } },
-  { id: 'armor1', name: 'Leather Armor', cost: 50, effect: { hpBonus: 15 } },
-  { id: 'armor2', name: 'Chainmail', cost: 150, effect: { hpBonus: 40 } },
-]
+export type GenderId = 'male' | 'female'
 
 interface PlayerState {
+  isAuthenticated: boolean
+  accountName: string
+  characterCreated: boolean
   name: string
+  gender: GenderId
+  classId: HeroClassId
+  appearance: { face: string; hair: string; color: string }
   level: number
   exp: number
   gold: number
   currentFloor: number
-  maxHp: number
   hp: number
-  atk: number
-  inventory: string[]
+  skillPoints: number
+  learnedSkills: string[]
+  inventory: Record<string, number>
+  equipment: Partial<Record<EquipmentSlot, string>>
 }
 
 function expToNextLevel(level: number): number {
-  return Math.round(30 * Math.pow(level, 1.5))
+  return Math.round(30 * Math.pow(level, 1.45))
+}
+
+function addStats(base: Record<string, number>, stats?: Record<string, number | undefined>) {
+  if (!stats) return
+  for (const [key, value] of Object.entries(stats)) base[key] = (base[key] ?? 0) + (value ?? 0)
 }
 
 export const usePlayerStore = defineStore('player', {
   state: (): PlayerState => ({
-    name: 'Hero',
+    isAuthenticated: false,
+    accountName: '',
+    characterCreated: false,
+    name: '',
+    gender: 'male',
+    classId: 'warrior',
+    appearance: { face: 'calm', hair: 'short', color: 'amber' },
     level: 1,
     exp: 0,
-    gold: 0,
+    gold: 90,
     currentFloor: 1,
-    maxHp: 50,
-    hp: 50,
-    atk: 5,
-    inventory: [],
+    hp: 72,
+    skillPoints: 0,
+    learnedSkills: [],
+    inventory: { potion_s: 2 },
+    equipment: {},
   }),
   getters: {
+    heroClass: (state) => getHeroClass(state.classId),
     expNeeded: (state) => expToNextLevel(state.level),
+    baseSprite: (state) => state.gender === 'female' ? '/character-assets/base_female.png' : '/character-assets/base_male.png',
+    portraitSprite: (state) => state.gender === 'female' ? '/character-assets/base_female.png' : '/character-assets/base_male.png',
+    displayName: (state) => state.name || 'Hero',
+    stats: (state) => {
+      const heroClass = getHeroClass(state.classId)
+      const stats: Record<string, number> = { ...heroClass.base }
+      const levelUps = Math.max(0, state.level - 1)
+      addStats(stats, Object.fromEntries(Object.entries(heroClass.growth).map(([key, value]) => [key, value * levelUps])))
+      for (const id of state.learnedSkills) addStats(stats, SKILL_TREE.find((skill) => skill.id === id)?.stats)
+      for (const id of Object.values(state.equipment)) {
+        if (!id) continue
+        const item = getItemById(id)
+        addStats(stats, item?.kind === 'equipment' ? item.stats : undefined)
+      }
+      return {
+        maxHp: Math.round(stats.hp),
+        atk: Math.round(stats.atk),
+        def: Math.round(stats.def),
+        mag: Math.round(stats.mag),
+        speed: Math.round(stats.speed),
+        knowledge: Math.round(stats.knowledge),
+      }
+    },
+    maxHp(): number { return this.stats.maxHp },
+    atk(): number { return this.stats.atk },
+    def(): number { return this.stats.def },
+    speed(): number { return this.stats.speed },
+    knowledge(): number { return this.stats.knowledge },
+    consumables: (state) => Object.entries(state.inventory).filter(([, qty]) => qty > 0),
   },
   actions: {
+    login(accountName: string) {
+      this.accountName = accountName.trim() || 'Player'
+      this.isAuthenticated = true
+    },
+    logout() {
+      this.isAuthenticated = false
+    },
+    createCharacter(payload: { name: string; gender: GenderId; classId: HeroClassId; face: string; hair: string; color: string }) {
+      this.name = payload.name.trim() || 'Hero'
+      this.gender = payload.gender
+      this.classId = payload.classId
+      this.appearance = { face: payload.face, hair: payload.hair, color: payload.color }
+      this.level = 1
+      this.exp = 0
+      this.gold = 90
+      this.currentFloor = 1
+      this.skillPoints = 0
+      this.learnedSkills = []
+      this.inventory = { potion_s: 2 }
+      this.equipment = {}
+      this.characterCreated = true
+      this.hp = this.maxHp
+    },
+    resetCharacter() {
+      this.characterCreated = false
+    },
+    setClass(classId: HeroClassId) {
+      this.classId = classId
+      this.hp = this.maxHp
+    },
+    setGender(gender: GenderId) {
+      this.gender = gender
+    },
+    setAppearance(key: 'face' | 'hair' | 'color', value: string) {
+      this.appearance[key] = value
+    },
     gainRewards(exp: number, gold: number) {
       this.exp += exp
       this.gold += gold
       while (this.exp >= expToNextLevel(this.level)) {
         this.exp -= expToNextLevel(this.level)
         this.level += 1
-        this.maxHp += 10
-        this.atk += 2
+        this.skillPoints += 1
         this.hp = this.maxHp
       }
     },
     takeDamage(amount: number) {
-      this.hp = Math.max(0, this.hp - amount)
+      this.hp = Math.max(0, this.hp - Math.max(1, Math.round(amount - this.def * 0.55)))
     },
-    heal() {
-      this.hp = this.maxHp
+    heal(amount?: number) {
+      this.hp = Math.min(this.maxHp, this.hp + (amount ?? this.maxHp))
+    },
+    hospital() {
+      const cost = Math.min(this.gold, Math.max(10, this.currentFloor * 3))
+      this.gold -= cost
+      this.heal()
     },
     advanceFloor() {
       this.currentFloor += 1
+      if (this.hp > this.maxHp) this.hp = this.maxHp
+    },
+    addItem(itemId: string, qty = 1) {
+      this.inventory[itemId] = (this.inventory[itemId] ?? 0) + qty
     },
     buyItem(itemId: string) {
-      const item = SHOP_ITEMS.find((i) => i.id === itemId)
-      if (!item || this.gold < item.cost || this.inventory.includes(itemId)) return false
+      const item = findShopItem(this.currentFloor, itemId)
+      if (!item || this.gold < item.cost) return false
       this.gold -= item.cost
-      this.inventory.push(itemId)
-      if (item.effect.hpBonus) {
-        this.maxHp += item.effect.hpBonus
-        this.hp += item.effect.hpBonus
+      if (item.kind === 'equipment') {
+        this.inventory[item.id] = 1
+        this.equipment[item.slot] = item.id
+        this.hp = Math.min(this.hp, this.maxHp)
+      } else {
+        this.addItem(item.id)
       }
-      if (item.effect.atkBonus) this.atk += item.effect.atkBonus
+      return true
+    },
+    useConsumable(itemId: string) {
+      const item = findShopItem(this.currentFloor, itemId)
+      if (!item || item.kind !== 'consumable' || !this.inventory[itemId]) return false
+      this.inventory[itemId] -= 1
+      if (item.effect.heal) this.heal(item.effect.heal)
+      return true
+    },
+    learnSkill(skillId: string) {
+      const skill = SKILL_TREE.find((node) => node.id === skillId)
+      if (!skill || this.learnedSkills.includes(skillId) || this.skillPoints < skill.cost) return false
+      const previousRank = skill.rank === 1 || this.learnedSkills.includes(`${skill.branch}_${skill.rank - 1}`)
+      if (!previousRank) return false
+      this.skillPoints -= skill.cost
+      this.learnedSkills.push(skillId)
+      this.hp = Math.min(this.maxHp, this.hp + (skill.stats.hp ?? 0))
       return true
     },
   },
