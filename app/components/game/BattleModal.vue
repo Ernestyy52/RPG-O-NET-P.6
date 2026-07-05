@@ -1,26 +1,29 @@
 <template>
   <div v-if="active" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-    <div class="w-full max-w-md rounded-xl bg-slate-900 p-6 text-white shadow-xl border border-slate-700">
-      <h2 class="mb-1 text-lg font-bold">Floor {{ floor }} - Battle!</h2>
-      <p class="mb-4 text-sm text-slate-300">HP: {{ player.hp }} / {{ player.maxHp }}</p>
-
-      <p class="mb-4 font-medium">{{ question.prompt }}</p>
-
-      <div class="grid grid-cols-1 gap-2">
-        <button
-          v-for="(choice, i) in question.choices"
-          :key="i"
-          class="rounded border border-slate-600 px-3 py-2 text-left hover:bg-slate-700 disabled:opacity-50"
-          :disabled="answered"
-          @click="answer(i)"
-        >
-          {{ choice }}
-        </button>
+    <div class="pixel-window w-full max-w-md">
+      <div class="pixel-titlebar">
+        <h2 class="gold-text text-lg font-bold">Floor {{ floor }} - Battle!</h2>
+        <span class="text-sm">HP {{ player.hp }}/{{ player.maxHp }}</span>
       </div>
+      <div class="p-4">
+        <p class="mb-4 font-medium">{{ question.prompt }}</p>
 
-      <p v-if="answered" class="mt-4 text-sm" :class="lastCorrect ? 'text-green-400' : 'text-red-400'">
-        {{ lastCorrect ? 'ถูกต้อง!' : 'ผิด!' }}
-      </p>
+        <div class="grid grid-cols-1 gap-2">
+          <button
+            v-for="(choice, i) in question.choices"
+            :key="i"
+            class="btn-secondary text-left disabled:opacity-50"
+            :disabled="answered"
+            @click="answer(i)"
+          >
+            {{ choice }}
+          </button>
+        </div>
+
+        <p v-if="answered" class="mt-4 text-sm" :class="lastCorrect ? 'text-green-400' : 'text-red-400'">
+          {{ lastCorrect ? 'ถูกต้อง!' : 'ผิด!' }}
+        </p>
+      </div>
     </div>
   </div>
 </template>

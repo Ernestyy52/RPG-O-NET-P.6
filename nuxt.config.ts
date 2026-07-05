@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: false,
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  css: ['~/assets/css/main.css'],
   app: {
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
   },
