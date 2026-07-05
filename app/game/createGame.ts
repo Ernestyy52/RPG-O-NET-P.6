@@ -8,6 +8,7 @@ export function createGame(parent: HTMLElement, startFloor: number): Phaser.Game
     height: 352,
     parent,
     pixelArt: true,
+    render: { preserveDrawingBuffer: true },
     physics: {
       default: 'arcade',
       arcade: { gravity: { x: 0, y: 0 }, debug: false },
