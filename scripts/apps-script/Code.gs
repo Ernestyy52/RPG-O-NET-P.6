@@ -5,6 +5,9 @@ const SHEET_PLAYERS = 'Players'
 const SHEET_LEADERBOARD = 'Leaderboard'
 
 function doGet(e) {
+  if (!e || !e.parameter) {
+    return jsonResponse({ error: 'no parameter — call this via an HTTP GET request, not the editor Run button' })
+  }
   const action = e.parameter.action
   if (action === 'load') return loadPlayer(e.parameter.name)
   if (action === 'leaderboard') return getLeaderboard()
@@ -12,6 +15,9 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  if (!e || !e.postData) {
+    return jsonResponse({ error: 'no postData — call this via an HTTP POST request, not the editor Run button' })
+  }
   const body = JSON.parse(e.postData.contents)
   if (body.action === 'save') return savePlayer(body.data)
   return jsonResponse({ error: 'unknown action' })
