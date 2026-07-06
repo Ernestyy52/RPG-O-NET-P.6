@@ -55,6 +55,7 @@ import { gameEvents } from '~/game/systems/eventBus'
 import { getFloorConfig, getQuestionDifficulty } from '~/data/floors'
 import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/questions'
 import { getWorldState } from '~/data/world'
+import { rollLoot } from '~/data/loot'
 import { usePlayerStore } from '~/stores/player'
 
 const runtimeConfig = useRuntimeConfig()
@@ -117,6 +118,7 @@ function heroDamage(multiplier = 1) {
 function answer(index: number) {
   locked.value = true
   if (index === question.answerIndex) {
+    player.recordCorrectAnswer()
     const damage = heroDamage(1)
     monster.hp = Math.max(0, monster.hp - damage)
     log.value = `Correct. You attack for ${damage} damage.`
@@ -169,8 +171,11 @@ function monsterAttack(multiplier = 1) {
 
 function winBattle() {
   player.gainRewards(config.value.expReward, config.value.goldReward)
-  log.value = `Victory. +${config.value.expReward} EXP, +${config.value.goldReward} gold.`
-  setTimeout(() => finish(true), 900)
+  const drops = rollLoot(floor.value, config.value.isBossFloor)
+  for (const drop of drops) player.addItem(drop.itemId, drop.qty)
+  const dropText = drops.length ? ` Dropped: ${drops.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
+  log.value = `Victory. +${config.value.expReward} EXP, +${config.value.goldReward} gold.${dropText}`
+  setTimeout(() => finish(true), 1100)
 }
 </script>
 

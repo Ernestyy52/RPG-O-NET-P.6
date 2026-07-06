@@ -22,6 +22,7 @@ interface PlayerState {
   learnedSkills: string[]
   inventory: Record<string, number>
   equipment: Partial<Record<EquipmentSlot, string>>
+  correctAnswers: number
 }
 
 function expToNextLevel(level: number): number {
@@ -51,6 +52,7 @@ export const usePlayerStore = defineStore('player', {
     learnedSkills: [],
     inventory: { potion_s: 2 },
     equipment: {},
+    correctAnswers: 0,
   }),
   getters: {
     heroClass: (state) => getHeroClass(state.classId),
@@ -106,6 +108,7 @@ export const usePlayerStore = defineStore('player', {
       this.learnedSkills = []
       this.inventory = { potion_s: 2 }
       this.equipment = {}
+      this.correctAnswers = 0
       this.characterCreated = true
       this.hp = this.maxHp
     },
@@ -149,6 +152,12 @@ export const usePlayerStore = defineStore('player', {
     },
     addItem(itemId: string, qty = 1) {
       this.inventory[itemId] = (this.inventory[itemId] ?? 0) + qty
+    },
+    consumeItems(itemId: string, qty: number) {
+      this.inventory[itemId] = Math.max(0, (this.inventory[itemId] ?? 0) - qty)
+    },
+    recordCorrectAnswer() {
+      this.correctAnswers += 1
     },
     buyItem(itemId: string) {
       const item = findShopItem(this.currentFloor, itemId)

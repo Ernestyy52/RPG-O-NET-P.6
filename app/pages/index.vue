@@ -147,12 +147,14 @@
             </div>
           </div>
         </div>
-        <GameHud @open-shop="shopOpen = true" @open-skills="skillsOpen = true" @open-town="townOpen = true" />
+        <GameHud @open-shop="itemShopOpen = true" @open-skills="skillsOpen = true" @open-town="townOpen = true" />
         <div class="pixel-window overflow-hidden"><ClientOnly><GameCanvas /></ClientOnly></div>
+        <p v-if="notice" class="glass-panel gold-text mt-2 p-2 text-center text-xs">{{ notice }}</p>
         <GameBattleModal />
-        <GameShopModal :open="shopOpen" @close="shopOpen = false" />
+        <GameShopModal :open="itemShopOpen" kind-filter="consumable" @close="itemShopOpen = false" />
+        <GameShopModal :open="equipShopOpen" kind-filter="equipment" @close="equipShopOpen = false" />
         <GameSkillTreeModal :open="skillsOpen" @close="skillsOpen = false" />
-        <GameTownModal :open="townOpen" @close="townOpen = false" @shop="townOpen = false; shopOpen = true" @guild="townOpen = false; skillsOpen = true" />
+        <GameTownModal :open="townOpen" @close="townOpen = false" @shop="townOpen = false; itemShopOpen = true" @guild="townOpen = false; skillsOpen = true" />
       </section>
     </div>
   </div>
@@ -166,9 +168,12 @@ import { gameEvents } from '~/game/systems/eventBus'
 import { usePlayerStore, type GenderId } from '~/stores/player'
 import { useSheetsSync } from '~/composables/useSheetsSync'
 
-const shopOpen = ref(false)
+const itemShopOpen = ref(false)
+const equipShopOpen = ref(false)
 const skillsOpen = ref(false)
 const townOpen = ref(false)
+const notice = ref('')
+let noticeTimer: ReturnType<typeof setTimeout> | undefined
 const loginName = ref('')
 const loginPassword = ref('')
 const activeTitlePanel = ref<'how' | 'settings' | 'news' | 'credits' | ''>('')
@@ -213,5 +218,16 @@ function resetGameData() {
 function finishCharacter() { player.createCharacter({ ...draft }); savePlayer({ ...player.$state }) }
 
 gameEvents.on('floor:advance', () => { player.advanceFloor(); savePlayer({ ...player.$state }) })
+gameEvents.on('town:hospital', () => { player.hospital(); showNotice('Hospital: HP fully restored.') })
+gameEvents.on('town:item-shop', () => { itemShopOpen.value = true })
+gameEvents.on('town:equipment-shop', () => { equipShopOpen.value = true })
+gameEvents.on('town:guild', () => { skillsOpen.value = true })
+gameEvents.on('notice', (payload) => showNotice(payload.text))
+
+function showNotice(text: string) {
+  notice.value = text
+  if (noticeTimer) clearTimeout(noticeTimer)
+  noticeTimer = setTimeout(() => { notice.value = '' }, 3200)
+}
 </script>
 

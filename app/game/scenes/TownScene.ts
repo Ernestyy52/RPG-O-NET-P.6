@@ -1,0 +1,180 @@
+import Phaser from 'phaser'
+import type { HeroClassId } from '../../data/classes'
+import { biomeForFloor } from '../../data/biomes'
+import { gameEvents } from '../systems/eventBus'
+import {
+  preloadSharedAssets,
+  preloadTownAssets,
+  buildBiomeTextures,
+  buildSharedTextures,
+  buildTownTextures,
+} from '../systems/textures'
+
+const TILE = 32
+const MAP_W = 26
+const MAP_H = 19
+
+interface BuildingSpot {
+  key: string
+  x: number
+  y: number
+  originY: number
+  label: string
+  event: 'town:hospital' | 'town:item-shop' | 'town:equipment-shop' | 'town:guild'
+  scale?: number
+}
+
+export class TownScene extends Phaser.Scene {
+  private player!: Phaser.Physics.Arcade.Sprite
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
+  private floor = 1
+  private classId: HeroClassId = 'warrior'
+  private facing: 'down' | 'left' | 'right' | 'up' = 'down'
+  private lastInteract = 0
+
+  constructor() {
+    super('TownScene')
+  }
+
+  init(data: { floor?: number; classId?: HeroClassId }) {
+    this.floor = data.floor ?? 1
+    this.classId = data.classId ?? 'warrior'
+  }
+
+  preload() {
+    preloadSharedAssets(this)
+    preloadTownAssets(this)
+  }
+
+  create() {
+    const biome = biomeForFloor(this.floor)
+    buildBiomeTextures(this, biome)
+    buildSharedTextures(this)
+    buildTownTextures(this)
+
+    this.cameras.main.setBackgroundColor(biome.bg)
+
+    for (let y = 0; y < MAP_H; y++) {
+      for (let x = 0; x < MAP_W; x++) {
+        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_grass`).setDepth(0)
+      }
+    }
+
+    const walls = this.physics.add.staticGroup()
+    for (let x = 0; x < MAP_W; x++) {
+      walls.create(x * TILE + TILE / 2, TILE / 2, `${biome.id}_wall`).setDepth(1)
+      walls.create(x * TILE + TILE / 2, (MAP_H - 1) * TILE + TILE / 2, `${biome.id}_wall`).setDepth(1)
+    }
+    for (let y = 0; y < MAP_H; y++) {
+      walls.create(TILE / 2, y * TILE + TILE / 2, `${biome.id}_wall`).setDepth(1)
+      walls.create((MAP_W - 1) * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_wall`).setDepth(1)
+    }
+
+    // ต้นไม้ประดับมุมเมือง
+    const treeSpots: [number, number][] = [[3, 3], [MAP_W - 4, 3], [3, MAP_H - 4], [MAP_W - 4, MAP_H - 4], [MAP_W / 2, 3]]
+    for (const [tx, ty] of treeSpots) {
+      const tree = walls.create(tx * TILE + TILE / 2, ty * TILE + TILE / 2, `${biome.id}_tree`)
+      tree.setDepth(ty * TILE)
+      tree.body.setSize(TILE * 0.5, TILE * 0.3).setOffset(TILE * 0.25, TILE * 0.6)
+    }
+
+    // คบเพลิง/อัญมณีตกแต่งข้างทางเดินหลัก
+    const decorSpots: [number, number, string][] = [
+      [6, MAP_H - 3, 'decor_torch'], [MAP_W - 7, MAP_H - 3, 'decor_torch'],
+      [MAP_W / 2 - 4, MAP_H / 2, 'decor_gem_cyan'], [MAP_W / 2 + 4, MAP_H / 2, 'decor_gem_orange'],
+    ]
+    for (const [dx, dy, key] of decorSpots) {
+      this.add.image(dx * TILE, dy * TILE, key).setScale(0.34).setDepth(dy * TILE)
+    }
+
+    const buildings: BuildingSpot[] = [
+      { key: 'town_hospital', x: 6, y: 5, originY: 0.75, label: 'Hospital', event: 'town:hospital' },
+      { key: 'town_guild_hall', x: MAP_W - 7, y: 5, originY: 0.8, label: 'Guild Hall', event: 'town:guild', scale: 0.9 },
+      { key: 'town_item_shop', x: 6, y: MAP_H - 7, originY: 0.85, label: 'Item Shop', event: 'town:item-shop' },
+      { key: 'town_equipment_shop', x: MAP_W - 7, y: MAP_H - 7, originY: 0.75, label: 'Equipment Shop', event: 'town:equipment-shop' },
+    ]
+
+    const interactZones = this.physics.add.staticGroup()
+    for (const b of buildings) {
+      const px = b.x * TILE
+      const py = b.y * TILE
+      const sprite = this.add.image(px, py, b.key).setOrigin(0.5, b.originY).setDepth(py)
+      if (b.scale) sprite.setScale(b.scale)
+      this.add.text(px, py + 14, b.label, {
+        fontSize: '11px',
+        fontFamily: 'monospace',
+        color: '#f7e7c5',
+        backgroundColor: '#1b1411cc',
+        padding: { x: 4, y: 2 },
+      }).setOrigin(0.5, 0).setDepth(py + 1)
+
+      const zone = interactZones.create(px, py + TILE * 0.6, undefined) as Phaser.Physics.Arcade.Sprite
+      zone.setVisible(false)
+      zone.body.setSize(TILE * 1.4, TILE)
+      zone.setData('event', b.event)
+    }
+
+    // ประตูดันเจี้ยนกลางเมือง
+    const gate = this.physics.add.staticSprite(MAP_W / 2 * TILE, (MAP_H - 5) * TILE, 'dungeon_gate')
+    gate.setOrigin(0.5, 0.8).setDepth(gate.y)
+
+    this.add.image(4 * TILE, (MAP_H - 3) * TILE + 6, 'shadow_blob').setDepth((MAP_H - 3) * TILE - 1)
+    this.player = this.physics.add.sprite(4 * TILE, (MAP_H - 3) * TILE, `hero_idle_${this.classId}`)
+    this.player.setCollideWorldBounds(true)
+    this.player.play(`hero_idle_${this.classId}_down`)
+    this.physics.add.collider(this.player, walls)
+
+    this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
+    this.cameras.main.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
+    this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
+
+    this.physics.add.overlap(this.player, interactZones, (_p, z) => {
+      const event = (z as Phaser.Physics.Arcade.Sprite).getData('event')
+      this.tryInteract(event)
+    })
+    this.physics.add.overlap(this.player, gate, () => this.tryInteract('enter-dungeon'))
+
+    this.cursors = this.input.keyboard!.createCursorKeys()
+
+    this.add.text(8, 8, `${biome.name} - Town (Floor ${this.floor})`, {
+      fontSize: '13px',
+      fontFamily: 'monospace',
+      color: '#f7e7c5',
+      backgroundColor: '#1b1411cc',
+      padding: { x: 6, y: 4 },
+    }).setScrollFactor(0).setDepth(100)
+
+    this.add.text(8, 30, 'Walk into a building to use it. Walk into the purple gate to enter the dungeon.', {
+      fontSize: '11px',
+      fontFamily: 'monospace',
+      color: '#f7e7c5',
+      backgroundColor: '#1b1411aa',
+      padding: { x: 6, y: 3 },
+    }).setScrollFactor(0).setDepth(100)
+  }
+
+  update() {
+    const speed = 120
+    this.player.setVelocity(0)
+    let moving = false
+    if (this.cursors.left?.isDown) { this.player.setVelocityX(-speed); this.facing = 'left'; moving = true }
+    else if (this.cursors.right?.isDown) { this.player.setVelocityX(speed); this.facing = 'right'; moving = true }
+    if (this.cursors.up?.isDown) { this.player.setVelocityY(-speed); this.facing = 'up'; moving = true }
+    else if (this.cursors.down?.isDown) { this.player.setVelocityY(speed); this.facing = 'down'; moving = true }
+    const anim = `hero_${moving ? 'walk' : 'idle'}_${this.classId}_${this.facing}`
+    if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
+    this.player.setDepth(this.player.y)
+  }
+
+  private tryInteract(event: string) {
+    const now = this.time.now
+    if (now - this.lastInteract < 800) return
+    this.lastInteract = now
+    if (event === 'enter-dungeon') {
+      gameEvents.emit('town:enter-dungeon', { floor: this.floor + 1 })
+      this.scene.start('TowerScene', { floor: this.floor + 1, classId: this.classId })
+      return
+    }
+    gameEvents.emit(event as 'town:hospital' | 'town:item-shop' | 'town:equipment-shop' | 'town:guild')
+  }
+}

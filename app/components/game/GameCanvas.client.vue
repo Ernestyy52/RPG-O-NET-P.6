@@ -27,8 +27,9 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .game-canvas {
-  width: 480px;
-  height: 352px;
+  width: 640px;
+  height: 480px;
+  max-width: 100%;
   image-rendering: pixelated;
 }
 </style>

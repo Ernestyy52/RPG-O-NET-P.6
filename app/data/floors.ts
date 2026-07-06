@@ -13,9 +13,13 @@ export interface FloorConfig {
 }
 
 // เธชเธนเธ•เธฃ scaling: เธเธงเธฒเธกเธขเธฒเธเน€เธเธดเนเธกเธเธถเนเธเนเธเธ exponential เน€เธฅเนเธเธเนเธญเธขเธ•เธฒเธกเธเธฑเนเธ เน€เธเธทเนเธญเนเธซเน 100 เธเธฑเนเธเธกเธตเธเธงเธฒเธกเธ—เนเธฒเธ—เธฒเธขเธ•เนเธญเน€เธเธทเนเธญเธ
+export function isTownFloor(floor: number): boolean {
+  return floor % 10 === 1
+}
+
 export function getFloorConfig(floor: number): FloorConfig {
   const isBossFloor = floor % 10 === 0
-  const isTownFloor = floor > 1 && floor % 10 === 1
+  const townFloor = isTownFloor(floor)
   const monsterLevel = Math.max(1, Math.round(floor * 1.2))
   const baseHp = 20 + floor * 8
   const baseAtk = 3 + Math.floor(floor * 1.5)
@@ -23,8 +27,8 @@ export function getFloorConfig(floor: number): FloorConfig {
   return {
     floor,
     isBossFloor,
-    isTownFloor,
-    monsterCount: isTownFloor ? 0 : isBossFloor ? 1 : 2 + Math.floor(floor / 20),
+    isTownFloor: townFloor,
+    monsterCount: townFloor ? 0 : isBossFloor ? 1 : 2 + Math.floor(floor / 20),
     monsterLevel,
     monsterHp: isBossFloor ? Math.round(baseHp * 4) : baseHp,
     monsterAtk: isBossFloor ? Math.round(baseAtk * 2) : baseAtk,

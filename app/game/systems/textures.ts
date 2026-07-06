@@ -41,6 +41,15 @@ export function preloadSharedAssets(scene: Phaser.Scene) {
   scene.load.image('mob_dragon', assetPath('mob-sprites/dragon.png'))
 }
 
+export function preloadTownAssets(scene: Phaser.Scene) {
+  if (scene.textures.exists('town_guild_hall')) return
+  scene.load.image('town_guild_hall', assetPath('exterior-props/guild_hall_exterior.png'))
+  scene.load.image('town_item_shop', assetPath('interior-props/shop_stall.png'))
+  scene.load.image('decor_torch', assetPath('quest-icons/torch.png'))
+  scene.load.image('decor_gem_cyan', assetPath('quest-icons/gem-cyan.png'))
+  scene.load.image('decor_gem_orange', assetPath('quest-icons/gem-orange.png'))
+}
+
 function tileImg(scene: Phaser.Scene, frame: number) {
   const img = scene.make.image({ key: 'tiny_town', frame }, false)
   img.setOrigin(0, 0)
@@ -124,6 +133,72 @@ function buildBuilding(scene: Phaser.Scene) {
   g.destroy()
 }
 
+function buildHospital(scene: Phaser.Scene) {
+  if (scene.textures.exists('town_hospital')) return
+  const w = TILE * 3
+  const h = TILE * 3
+  const g = scene.add.graphics()
+  g.fillStyle(0xe8e2d4, 1).fillRect(0, h * 0.35, w, h * 0.65)
+  g.fillStyle(0xc0432a, 1).fillTriangle(0, h * 0.35, w / 2, 0, w, h * 0.35)
+  // กากบาทสัญลักษณ์โรงพยาบาลทั่วไป (ไม่ใช่เครื่องหมายการค้าใดๆ)
+  g.fillStyle(0xd1382a, 1)
+  g.fillRect(w / 2 - 5, h * 0.5, 10, 26)
+  g.fillRect(w / 2 - 13, h * 0.5 + 8, 26, 10)
+  g.fillStyle(0x6a5a3e, 1).fillRect(w / 2 - 9, h - 22, 18, 22)
+  g.lineStyle(1, ART.outline, 0.5).strokeRect(0, h * 0.35, w, h * 0.65)
+  g.generateTexture('town_hospital', w, h)
+  g.destroy()
+}
+
+function buildEquipmentShop(scene: Phaser.Scene) {
+  if (scene.textures.exists('town_equipment_shop')) return
+  const w = TILE * 3
+  const h = TILE * 3
+  const g = scene.add.graphics()
+  g.fillStyle(0x5a6470, 1).fillRect(0, h * 0.35, w, h * 0.65)
+  g.fillStyle(0x8a94a0, 1).fillTriangle(0, h * 0.35, w / 2, 0, w, h * 0.35)
+  g.fillStyle(0xd9c060, 1)
+  g.fillTriangle(w / 2 - 12, h * 0.55, w / 2, h * 0.4, w / 2 + 12, h * 0.55)
+  g.fillRect(w / 2 - 2, h * 0.55, 4, 18)
+  g.fillStyle(0x3a3226, 1).fillRect(w / 2 - 9, h - 22, 18, 22)
+  g.lineStyle(1, ART.outline, 0.5).strokeRect(0, h * 0.35, w, h * 0.65)
+  g.generateTexture('town_equipment_shop', w, h)
+  g.destroy()
+}
+
+function buildDungeonGate(scene: Phaser.Scene) {
+  if (scene.textures.exists('dungeon_gate')) return
+  const w = TILE * 2
+  const h = TILE * 3
+  const g = scene.add.graphics()
+  g.fillStyle(0x2a2440, 1).fillRoundedRect(0, 0, w, h, 10)
+  g.fillStyle(0x120f1e, 1).fillRoundedRect(8, 10, w - 16, h - 14, 8)
+  g.fillStyle(0x9b8cff, 0.6).fillEllipse(w / 2, h - 20, w * 0.3, 16)
+  g.lineStyle(2, ART.goldLight, 0.7).strokeRoundedRect(0, 0, w, h, 10)
+  g.generateTexture('dungeon_gate', w, h)
+  g.destroy()
+}
+
+function buildBossDoors(scene: Phaser.Scene) {
+  if (scene.textures.exists('boss_door_locked')) return
+  const w = TILE
+  const h = TILE * 1.5
+  const gLocked = scene.add.graphics()
+  gLocked.fillStyle(0x4a2a22, 1).fillRect(0, 0, w, h)
+  gLocked.fillStyle(0x2a1712, 1).fillRect(4, 4, w - 8, h - 8)
+  gLocked.fillStyle(ART.goldLight, 1).fillCircle(w / 2, h * 0.55, 5)
+  gLocked.lineStyle(1, ART.outline, 0.6).strokeRect(0, 0, w, h)
+  gLocked.generateTexture('boss_door_locked', w, h)
+  gLocked.destroy()
+
+  const gOpen = scene.add.graphics()
+  gOpen.fillStyle(0x6a1e1e, 1).fillRect(0, 0, w, h)
+  gOpen.fillStyle(0xd1450f, 0.8).fillRect(4, 4, w - 8, h - 8)
+  gOpen.lineStyle(1, ART.goldLight, 0.8).strokeRect(0, 0, w, h)
+  gOpen.generateTexture('boss_door_open', w, h)
+  gOpen.destroy()
+}
+
 function buildHeroAnimations(scene: Phaser.Scene) {
   if (scene.anims.exists('hero_idle_warrior_down')) return
   const dirs = ['down', 'left', 'right', 'up'] as const
@@ -179,8 +254,15 @@ export function buildSharedTextures(scene: Phaser.Scene) {
   buildStairs(scene)
   buildShadow(scene)
   buildBuilding(scene)
+  buildBossDoors(scene)
   buildHeroAnimations(scene)
   buildMonsterAnimations(scene)
+}
+
+export function buildTownTextures(scene: Phaser.Scene) {
+  buildHospital(scene)
+  buildEquipmentShop(scene)
+  buildDungeonGate(scene)
 }
 
 export const MONSTER_KINDS = ['goblin', 'skeleton', 'slime'] as const
