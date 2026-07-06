@@ -27,9 +27,15 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .game-canvas {
-  width: 640px;
-  height: 480px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4 / 3;
+  image-rendering: pixelated;
+}
+
+.game-canvas :deep(canvas) {
+  width: 100% !important;
+  height: 100% !important;
   image-rendering: pixelated;
 }
 </style>

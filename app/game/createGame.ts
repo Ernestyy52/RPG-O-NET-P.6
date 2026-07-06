@@ -14,6 +14,12 @@ export function createGame(parent: HTMLElement, startFloor: number, classId: Her
     height: VIEWPORT_HEIGHT,
     parent,
     pixelArt: true,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: VIEWPORT_WIDTH,
+      height: VIEWPORT_HEIGHT,
+    },
     render: { preserveDrawingBuffer: true },
     physics: {
       default: 'arcade',
