@@ -6,18 +6,21 @@ export interface BossRequirement {
   keyItem?: { id: string; name: string; qty: number }
 }
 
-// เงื่อนไขปลดล็อกห้องบอสประจำแต่ละโลก (world = floor/10)
-// world 1 (บอสชั้น 10): ง่าย เช็คแค่เลเวล + จำนวนคำถามที่ตอบถูกสะสม
-// world 2 ขึ้นไป (บอสชั้น 20, 30, ...): เพิ่มเงื่อนไขเก็บเศษกุญแจที่ดรอปจากมอนสเตอร์ในโลกนั้น
-export function getBossRequirement(bossFloor: number): BossRequirement {
-  const world = Math.round(bossFloor / 10)
-  if (world <= 1) {
-    return { level: 3, correctAnswers: 10 }
+// เงื่อนไขปลดล็อกห้องบอส "ทุกชั้น" (ไม่ใช่แค่ทุก 10 ชั้น)
+// - ชั้นทั่วไป: เช็คเลเวล + จำนวนคำถามที่ตอบถูกสะสม (ปลดล็อกได้ด้วยการฟาร์มมอนสเตอร์ในชั้น)
+// - ชั้น milestone (ทุกๆ 10 ชั้น: บอสประจำโลก): เพิ่มเงื่อนไขเก็บเศษกุญแจที่ดรอปจากมอนสเตอร์โลกนั้น
+export function getBossRequirement(floor: number): BossRequirement {
+  const milestone = floor % 10 === 0
+  const world = Math.max(1, Math.ceil(floor / 10))
+  const base: BossRequirement = {
+    level: Math.max(1, Math.ceil(floor / 2)),
+    correctAnswers: floor * 3,
   }
-  const qty = 3 + (world - 2) * 2
+  if (!milestone) return base
+  const qty = 3 + Math.max(0, world - 1) * 2
   return {
-    level: 3 + (world - 1) * 3,
-    correctAnswers: 10 + (world - 1) * 15,
+    ...base,
+    level: base.level + 2,
     keyItem: { id: bossKeyItemId(world), name: bossKeyItemName(world), qty },
   }
 }

@@ -30,6 +30,11 @@ export const CONSUMABLES: ConsumableItem[] = [
   { id: 'guard_sigil', kind: 'consumable', name: 'Guard Sigil', cost: 80, minFloor: 11, effect: { shield: 1 } },
 ]
 
+/** ไอคอนไอเทม ตัดเฟรมเดียวจาก Main Character Asset (scripts/sprite-crop/build-items.cjs) */
+export function itemIconPath(id: string): string {
+  return `item-icons/${id}.png`
+}
+
 export function shopInventoryForFloor(floor: number): InventoryItem[] {
   return [...generateEquipmentForFloor(floor), ...CONSUMABLES.filter((item) => item.minFloor <= floor)]
 }

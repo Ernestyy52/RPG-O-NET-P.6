@@ -18,6 +18,8 @@ onMounted(async () => {
   if (!containerRef.value) return
   setAssetBase(config.app.baseURL)
   game = createGame(containerRef.value, player.currentFloor, player.classId)
+  // dev-only debug handle เธชเธณเธซเธฃเธฑเธ preview/verification (jump floor, inspect scenes) — ไม่ทำงานตอน production build
+  if (import.meta.dev) (window as unknown as { __game?: Phaser.Game }).__game = game
 })
 
 onBeforeUnmount(() => {

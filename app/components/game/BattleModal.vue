@@ -3,7 +3,7 @@
     <div class="pixel-window w-full max-w-3xl overflow-hidden">
       <div class="pixel-titlebar gap-3">
         <div>
-          <h2 class="gold-text text-lg font-bold">Floor {{ floor }} {{ config.isBossFloor ? 'Boss' : 'Battle' }}</h2>
+          <h2 class="gold-text text-lg font-bold">Floor {{ floor }} {{ isBossFight ? 'Boss' : 'Battle' }}</h2>
           <p class="text-xs opacity-75">{{ cefr }} / {{ world.description }} / Turn: {{ turn }}</p>
         </div>
         <span class="text-sm">HP {{ player.hp }}/{{ player.maxHp }}</span>
@@ -41,7 +41,7 @@
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero'" @click="support">Support</button>
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || !hasPotion" @click="usePotion">Item</button>
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero'" @click="counter">Counter</button>
-            <button class="btn-secondary text-xs" :disabled="locked || config.isBossFloor" @click="escape">Escape</button>
+            <button class="btn-secondary text-xs" :disabled="locked || isBossFight" @click="escape">Escape</button>
           </div>
         </div>
       </div>
@@ -70,7 +70,9 @@ const config = computed(() => getFloorConfig(floor.value))
 const cefr = computed(() => cefrForFloor(floor.value))
 const world = computed(() => getWorldState())
 const question = reactive<Question>({ id: '', category: 'vocabulary', cefr: 'Pre-A1', difficulty: 1, prompt: '', choices: [], answerIndex: 0 })
-const monster = reactive({ name: 'Slime', hp: 30, maxHp: 30, atk: 4, speed: 4, sprite: '/mob-sprites/slime-idle.png' })
+const monster = reactive({ name: 'Slime', hp: 30, maxHp: 30, atk: 4, speed: 4, sprite: assetPath('mob-sprites/mca/slime.png') })
+const enc = reactive<{ isBoss: boolean; expReward: number; goldReward: number }>({ isBoss: false, expReward: 0, goldReward: 0 })
+const isBossFight = computed(() => enc.isBoss)
 const playerHpPct = computed(() => Math.max(0, Math.round((player.hp / player.maxHp) * 100)))
 const monsterHpPct = computed(() => Math.max(0, Math.round((monster.hp / monster.maxHp) * 100)))
 const hasPotion = computed(() => (player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0)
@@ -85,14 +87,18 @@ function loadQuestion() {
   Object.assign(question, q)
 }
 
-function setupMonster() {
+function setupMonster(payload: import('~/game/systems/eventBus').EncounterInfo) {
   const cfg = config.value
-  monster.name = cfg.isBossFloor ? 'Floor Boss' : 'Dungeon Monster'
-  monster.maxHp = Math.round(cfg.monsterHp)
+  const boss = !!payload.isBoss
+  enc.isBoss = boss
+  enc.expReward = payload.expReward ?? cfg.expReward
+  enc.goldReward = payload.goldReward ?? cfg.goldReward
+  monster.name = payload.name ?? (boss ? 'Floor Boss' : 'Dungeon Monster')
+  monster.maxHp = Math.round(payload.hp ?? cfg.monsterHp)
   monster.hp = monster.maxHp
-  monster.atk = Math.round(cfg.monsterAtk * world.value.combatModifier.monsterAtk)
-  monster.speed = cfg.monsterLevel + (cfg.isBossFloor ? 4 : 0)
-  monster.sprite = cfg.isBossFloor ? '/mob-sprites/dragon-idle.png' : '/mob-sprites/slime-idle.png'
+  monster.atk = Math.round((payload.atk ?? cfg.monsterAtk) * world.value.combatModifier.monsterAtk)
+  monster.speed = (payload.speed ?? cfg.monsterLevel) + (boss ? 4 : 0)
+  monster.sprite = assetPath(payload.sprite ?? 'mob-sprites/mca/slime.png')
   turn.value = player.speed * world.value.combatModifier.playerSpeed >= monster.speed ? 'Hero' : 'Monster'
 }
 
@@ -100,7 +106,7 @@ gameEvents.on('battle:start', (payload) => {
   floor.value = payload.floor
   active.value = true
   locked.value = false
-  setupMonster()
+  setupMonster(payload)
   loadQuestion()
   log.value = turn.value === 'Hero' ? 'Your speed wins initiative. Answer correctly to attack.' : 'The monster is faster.'
   if (turn.value === 'Monster') setTimeout(monsterAttack, 700)
@@ -108,7 +114,7 @@ gameEvents.on('battle:start', (payload) => {
 
 function finish(won: boolean) {
   active.value = false
-  gameEvents.emit('battle:end', { won })
+  gameEvents.emit('battle:end', { won, isBoss: enc.isBoss })
 }
 
 function heroDamage(multiplier = 1) {
@@ -170,11 +176,11 @@ function monsterAttack(multiplier = 1) {
 }
 
 function winBattle() {
-  player.gainRewards(config.value.expReward, config.value.goldReward)
-  const drops = rollLoot(floor.value, config.value.isBossFloor)
+  player.gainRewards(enc.expReward, enc.goldReward)
+  const drops = rollLoot(floor.value, enc.isBoss)
   for (const drop of drops) player.addItem(drop.itemId, drop.qty)
   const dropText = drops.length ? ` Dropped: ${drops.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
-  log.value = `Victory. +${config.value.expReward} EXP, +${config.value.goldReward} gold.${dropText}`
+  log.value = `Victory. +${enc.expReward} EXP, +${enc.goldReward} gold.${dropText}`
   setTimeout(() => finish(true), 1100)
 }
 </script>

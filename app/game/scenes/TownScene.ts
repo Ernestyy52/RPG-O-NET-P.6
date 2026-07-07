@@ -1,14 +1,20 @@
 import Phaser from 'phaser'
 import type { HeroClassId } from '../../data/classes'
 import { biomeForFloor } from '../../data/biomes'
+import { getWorldState } from '../../data/world'
 import { gameEvents } from '../systems/eventBus'
+import { applyAtmosphere, addTorchFlicker } from '../systems/atmosphere'
 import {
   preloadSharedAssets,
   preloadTownAssets,
   buildBiomeTextures,
   buildSharedTextures,
   buildTownTextures,
+  heroKey,
+  heroAnim,
+  heroSheetSize,
 } from '../systems/textures'
+import { usePlayerStore } from '../../stores/player'
 
 const TILE = 32
 const MAP_W = 26
@@ -26,6 +32,7 @@ interface BuildingSpot {
 
 export class TownScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
+  private gender = 'male'
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private floor = 1
   private classId: HeroClassId = 'warrior'
@@ -84,7 +91,15 @@ export class TownScene extends Phaser.Scene {
       [MAP_W / 2 - 4, MAP_H / 2, 'decor_gem_cyan'], [MAP_W / 2 + 4, MAP_H / 2, 'decor_gem_orange'],
     ]
     for (const [dx, dy, key] of decorSpots) {
-      this.add.image(dx * TILE, dy * TILE, key).setScale(0.34).setDepth(dy * TILE)
+      const px = dx * TILE
+      const py = dy * TILE
+      const img = this.add.image(px, py, key).setScale(0.34).setDepth(py)
+      if (key === 'decor_torch') {
+        addTorchFlicker(this, px, py - 6, py + 1)
+      } else {
+        // อัญมณีเรืองแสง: เต้นเบาๆ
+        this.tweens.add({ targets: img, scale: { from: 0.3, to: 0.4 }, alpha: { from: 0.75, to: 1 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      }
     }
 
     const buildings: BuildingSpot[] = [
@@ -118,10 +133,15 @@ export class TownScene extends Phaser.Scene {
     const gate = this.physics.add.staticSprite(MAP_W / 2 * TILE, (MAP_H - 5) * TILE, 'dungeon_gate')
     gate.setOrigin(0.5, 0.8).setDepth(gate.y)
 
-    this.add.image(4 * TILE, (MAP_H - 3) * TILE + 6, 'shadow_blob').setDepth((MAP_H - 3) * TILE - 1)
-    this.player = this.physics.add.sprite(4 * TILE, (MAP_H - 3) * TILE, `hero_idle_${this.classId}`)
+    this.gender = usePlayerStore().gender
+    const size = heroSheetSize(this.classId, this.gender)
+    const scale = 48 / size.fh
+    this.add.image(4 * TILE, (MAP_H - 3) * TILE + 8, 'shadow_blob').setDepth((MAP_H - 3) * TILE - 1)
+    this.player = this.physics.add.sprite(4 * TILE, (MAP_H - 3) * TILE, heroKey(this.classId, this.gender))
+    this.player.setOrigin(0.5, 0.92).setScale(scale)
     this.player.setCollideWorldBounds(true)
-    this.player.play(`hero_idle_${this.classId}_down`)
+    this.player.play(heroAnim(this.classId, this.gender, 'idle', 'down'))
+    this.player.body.setSize(size.fw * 0.5, size.fh * 0.22).setOffset(size.fw * 0.25, size.fh * 0.72)
     this.physics.add.collider(this.player, walls)
 
     this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
@@ -151,6 +171,8 @@ export class TownScene extends Phaser.Scene {
       backgroundColor: '#1b1411aa',
       padding: { x: 6, y: 3 },
     }).setScrollFactor(0).setDepth(100)
+
+    applyAtmosphere(this, biome, getWorldState())
   }
 
   update() {
@@ -161,7 +183,7 @@ export class TownScene extends Phaser.Scene {
     else if (this.cursors.right?.isDown) { this.player.setVelocityX(speed); this.facing = 'right'; moving = true }
     if (this.cursors.up?.isDown) { this.player.setVelocityY(-speed); this.facing = 'up'; moving = true }
     else if (this.cursors.down?.isDown) { this.player.setVelocityY(speed); this.facing = 'down'; moving = true }
-    const anim = `hero_${moving ? 'walk' : 'idle'}_${this.classId}_${this.facing}`
+    const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
   }

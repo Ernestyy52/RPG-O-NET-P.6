@@ -1,0 +1,582 @@
+{
+  "base_male": {
+    "idle": {
+      "down": [
+        "assets/characters/base_male/idle/down/base_male_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_male/idle/left/base_male_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_male/idle/right/base_male_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_male/idle/up/base_male_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/base_male/attack/down/base_male_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_male/attack/left/base_male_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_male/attack/right/base_male_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_male/attack/up/base_male_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/base_male/hurt/down/base_male_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_male/hurt/left/base_male_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_male/hurt/right/base_male_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_male/hurt/up/base_male_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/base_male/death/down/base_male_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_male/death/left/base_male_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_male/death/right/base_male_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_male/death/up/base_male_death_up_00.png"
+      ]
+    }
+  },
+  "base_female": {
+    "idle": {
+      "down": [
+        "assets/characters/base_female/idle/down/base_female_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_female/idle/left/base_female_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_female/idle/right/base_female_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_female/idle/up/base_female_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/base_female/attack/down/base_female_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_female/attack/left/base_female_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_female/attack/right/base_female_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_female/attack/up/base_female_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/base_female/hurt/down/base_female_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_female/hurt/left/base_female_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_female/hurt/right/base_female_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_female/hurt/up/base_female_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/base_female/death/down/base_female_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/base_female/death/left/base_female_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/base_female/death/right/base_female_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/base_female/death/up/base_female_death_up_00.png"
+      ]
+    }
+  },
+  "warrior_male": {
+    "idle": {
+      "down": [
+        "assets/characters/warrior_male/idle/down/warrior_male_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_male/idle/left/warrior_male_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_male/idle/right/warrior_male_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_male/idle/up/warrior_male_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/warrior_male/attack/down/warrior_male_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_male/attack/left/warrior_male_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_male/attack/right/warrior_male_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_male/attack/up/warrior_male_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/warrior_male/hurt/down/warrior_male_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_male/hurt/left/warrior_male_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_male/hurt/right/warrior_male_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_male/hurt/up/warrior_male_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/warrior_male/death/down/warrior_male_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_male/death/left/warrior_male_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_male/death/right/warrior_male_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_male/death/up/warrior_male_death_up_00.png"
+      ]
+    }
+  },
+  "warrior_female": {
+    "idle": {
+      "down": [
+        "assets/characters/warrior_female/idle/down/warrior_female_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_female/idle/left/warrior_female_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_female/idle/right/warrior_female_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_female/idle/up/warrior_female_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/warrior_female/attack/down/warrior_female_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_female/attack/left/warrior_female_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_female/attack/right/warrior_female_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_female/attack/up/warrior_female_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/warrior_female/hurt/down/warrior_female_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_female/hurt/left/warrior_female_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_female/hurt/right/warrior_female_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_female/hurt/up/warrior_female_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/warrior_female/death/down/warrior_female_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/warrior_female/death/left/warrior_female_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/warrior_female/death/right/warrior_female_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/warrior_female/death/up/warrior_female_death_up_00.png"
+      ]
+    }
+  },
+  "archer_male": {
+    "idle": {
+      "down": [
+        "assets/characters/archer_male/idle/down/archer_male_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_male/idle/left/archer_male_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_male/idle/right/archer_male_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_male/idle/up/archer_male_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/archer_male/attack/down/archer_male_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_male/attack/left/archer_male_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_male/attack/right/archer_male_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_male/attack/up/archer_male_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/archer_male/hurt/down/archer_male_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_male/hurt/left/archer_male_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_male/hurt/right/archer_male_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_male/hurt/up/archer_male_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/archer_male/death/down/archer_male_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_male/death/left/archer_male_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_male/death/right/archer_male_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_male/death/up/archer_male_death_up_00.png"
+      ]
+    }
+  },
+  "archer_female": {
+    "idle": {
+      "down": [
+        "assets/characters/archer_female/idle/down/archer_female_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_female/idle/left/archer_female_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_female/idle/right/archer_female_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_female/idle/up/archer_female_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/archer_female/attack/down/archer_female_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_female/attack/left/archer_female_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_female/attack/right/archer_female_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_female/attack/up/archer_female_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/archer_female/hurt/down/archer_female_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_female/hurt/left/archer_female_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_female/hurt/right/archer_female_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_female/hurt/up/archer_female_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/archer_female/death/down/archer_female_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/archer_female/death/left/archer_female_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/archer_female/death/right/archer_female_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/archer_female/death/up/archer_female_death_up_00.png"
+      ]
+    }
+  },
+  "mage_male": {
+    "idle": {
+      "down": [
+        "assets/characters/mage_male/idle/down/mage_male_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_male/idle/left/mage_male_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_male/idle/right/mage_male_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_male/idle/up/mage_male_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/mage_male/attack/down/mage_male_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_male/attack/left/mage_male_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_male/attack/right/mage_male_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_male/attack/up/mage_male_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/mage_male/hurt/down/mage_male_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_male/hurt/left/mage_male_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_male/hurt/right/mage_male_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_male/hurt/up/mage_male_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/mage_male/death/down/mage_male_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_male/death/left/mage_male_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_male/death/right/mage_male_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_male/death/up/mage_male_death_up_00.png"
+      ]
+    }
+  },
+  "mage_female": {
+    "idle": {
+      "down": [
+        "assets/characters/mage_female/idle/down/mage_female_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_female/idle/left/mage_female_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_female/idle/right/mage_female_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_female/idle/up/mage_female_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/mage_female/attack/down/mage_female_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_female/attack/left/mage_female_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_female/attack/right/mage_female_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_female/attack/up/mage_female_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/mage_female/hurt/down/mage_female_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_female/hurt/left/mage_female_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_female/hurt/right/mage_female_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_female/hurt/up/mage_female_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/mage_female/death/down/mage_female_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/mage_female/death/left/mage_female_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/mage_female/death/right/mage_female_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/mage_female/death/up/mage_female_death_up_00.png"
+      ]
+    }
+  },
+  "guardian_male": {
+    "idle": {
+      "down": [
+        "assets/characters/guardian_male/idle/down/guardian_male_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_male/idle/left/guardian_male_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_male/idle/right/guardian_male_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_male/idle/up/guardian_male_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/guardian_male/attack/down/guardian_male_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_male/attack/left/guardian_male_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_male/attack/right/guardian_male_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_male/attack/up/guardian_male_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/guardian_male/hurt/down/guardian_male_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_male/hurt/left/guardian_male_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_male/hurt/right/guardian_male_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_male/hurt/up/guardian_male_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/guardian_male/death/down/guardian_male_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_male/death/left/guardian_male_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_male/death/right/guardian_male_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_male/death/up/guardian_male_death_up_00.png"
+      ]
+    }
+  },
+  "guardian_female": {
+    "idle": {
+      "down": [
+        "assets/characters/guardian_female/idle/down/guardian_female_idle_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_female/idle/left/guardian_female_idle_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_female/idle/right/guardian_female_idle_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_female/idle/up/guardian_female_idle_up_00.png"
+      ]
+    },
+    "attack": {
+      "down": [
+        "assets/characters/guardian_female/attack/down/guardian_female_attack_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_female/attack/left/guardian_female_attack_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_female/attack/right/guardian_female_attack_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_female/attack/up/guardian_female_attack_up_00.png"
+      ]
+    },
+    "hurt": {
+      "down": [
+        "assets/characters/guardian_female/hurt/down/guardian_female_hurt_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_female/hurt/left/guardian_female_hurt_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_female/hurt/right/guardian_female_hurt_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_female/hurt/up/guardian_female_hurt_up_00.png"
+      ]
+    },
+    "death": {
+      "down": [
+        "assets/characters/guardian_female/death/down/guardian_female_death_down_00.png"
+      ],
+      "left": [
+        "assets/characters/guardian_female/death/left/guardian_female_death_left_00.png"
+      ],
+      "right": [
+        "assets/characters/guardian_female/death/right/guardian_female_death_right_00.png"
+      ],
+      "up": [
+        "assets/characters/guardian_female/death/up/guardian_female_death_up_00.png"
+      ]
+    }
+  }
+}

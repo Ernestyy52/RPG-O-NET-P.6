@@ -11,8 +11,9 @@
 
       <div class="title-menu pixel-window">
         <div class="px-5 pb-2 pt-5 text-center">
-          <p class="text-xs uppercase tracking-[0.28em] text-cyan-100/80">SPIRAL'S ECHO</p>
-          <h1 class="gold-text mt-1 text-2xl font-bold sm:text-3xl">SPIRAL'S ECHO: THE FLOATING REALMS</h1>
+          <p class="text-xs uppercase tracking-[0.28em] text-cyan-100/80">{{ GAME_NAME_EN }}</p>
+          <h1 class="gold-text mt-1 text-2xl font-bold sm:text-3xl">{{ GAME_TITLE_EN }}</h1>
+          <p class="mt-1 text-base font-bold text-[#f5c66b]">{{ GAME_TITLE_TH }}</p>
           <p class="mt-1 text-sm text-[#f7e7c5]/80">O-NET English RPG Adventure</p>
         </div>
         <form class="space-y-3 p-4 pt-2" @submit.prevent="submitLogin">
@@ -62,7 +63,8 @@
     <div v-else class="mx-auto max-w-5xl p-4">
       <header class="mb-4 text-center">
         <p class="text-xs uppercase tracking-[0.32em] text-cyan-100/70">O-NET English RPG Adventure</p>
-        <h1 class="gold-text text-2xl font-bold sm:text-3xl">SPIRAL'S ECHO: THE FLOATING REALMS</h1>
+        <h1 class="gold-text text-2xl font-bold sm:text-3xl">{{ GAME_TITLE_EN }}</h1>
+        <p class="text-sm font-bold text-[#f5c66b]">{{ GAME_TITLE_TH }}</p>
       </header>
 
       <section v-if="!player.characterCreated" class="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -116,7 +118,7 @@
               <div class="mb-2 text-sm font-bold">Class</div>
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <button v-for="heroClass in classes" :key="heroClass.id" type="button" class="btn-secondary text-xs" :class="active(draft.classId === heroClass.id)" @click="draft.classId = heroClass.id">
-                  <img :src="assetPath(heroClass.sprite)" class="mx-auto mb-1 h-12 object-contain pixelated" alt="">
+                  <img :src="assetPath(classIcon(heroClass.id, draft.gender))" class="mx-auto mb-1 h-12 object-contain pixelated" alt="">
                   {{ heroClass.name }}
                 </button>
               </div>
@@ -135,7 +137,7 @@
                 <div class="font-bold">{{ player.displayName }} the {{ player.heroClass.name }}</div>
                 <div class="text-xs opacity-75">{{ player.gender }} / {{ player.appearance.face }} face / {{ player.appearance.hair }} hair</div>
               </div>
-              <img :src="assetPath(player.heroClass.sprite)" class="h-16 object-contain pixelated" alt="hero">
+              <img :src="assetPath(classIcon(player.classId, player.gender))" class="h-16 object-contain pixelated" alt="hero">
             </div>
           </div>
           <div class="glass-panel p-3">
@@ -168,6 +170,12 @@ import { gameEvents } from '~/game/systems/eventBus'
 import { usePlayerStore, type GenderId } from '~/stores/player'
 import { useSheetsSync } from '~/composables/useSheetsSync'
 
+// ชื่อเกมให้ตรงกันทั้ง EN/TH ทุกจุด (แก้ปัญหาชื่อไทย-อังกฤษไม่เหมือนกัน)
+const GAME_NAME_EN = "SPIRAL'S ECHO"
+const GAME_TITLE_EN = "SPIRAL'S ECHO: THE FLOATING REALMS"
+const GAME_TITLE_TH = 'สไปรัลส์ เอคโค: อาณาจักรลอยฟ้า'
+useHead({ title: `${GAME_TITLE_EN} · ${GAME_TITLE_TH}` })
+
 const itemShopOpen = ref(false)
 const equipShopOpen = ref(false)
 const skillsOpen = ref(false)
@@ -194,6 +202,8 @@ function assetPath(path: string) {
   const base = config.app.baseURL.endsWith('/') ? config.app.baseURL : `${config.app.baseURL}/`
   return `${base}${cleanPath}`
 }
+// Character icon ตัดจาก Occupation.png (เพศ+อาชีพ) — แหล่งเดียวกับ sprite ที่เดินในแมพ จึงหน้าตาตรงกัน
+function classIcon(id: HeroClassId, gender: GenderId) { return `character-icons/${id}_${gender}.png` }
 function active(value: boolean) { return value ? 'ring-2 ring-amber-300 brightness-110' : '' }
 function onImageError(event: Event) { (event.target as HTMLImageElement).style.display = 'none' }
 function submitLogin() { player.login(loginName.value) }
