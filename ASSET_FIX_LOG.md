@@ -56,6 +56,59 @@ all derived assets are generated into the project (`public/`, `assets/`) via rep
   tree (unused on the map) for a future craftpix modular-equipment layer; `classes.ts.sprite` (battle
   portraits) left untouched.
 
+## 2026-07-07 (รอบสอง — ตรวจทิศเดิน + World Boss MCA + ระบบความสนุก)
+
+### BUGFIX ทิศทางเดิน "ขวา" ผิดด้าน (ตรวจตามคำขอผู้ใช้)
+- พิสูจน์ด้วย `verify-dirs.cjs` + `check-mirror.cjs`: แถว "right" ใน Occupation.png จริงๆ วาดหันซ้าย
+  เหมือนแถว left → ตัวละครเดินขวาแต่หน้าหันซ้าย
+- แก้ใน `build-overworld.cjs`: สร้างแถวขวาจาก mirror (flop) ของแถวซ้าย → diff(left, mirrored-right)=0
+- ยืนยันในเกมจริง: down/left/right/up ครบ 4 ทิศถูกต้อง (screenshot line-up)
+- mage_male fw เปลี่ยน 80→79 → อัปเดต CLASS_SHEETS ใน textures.ts
+
+### BUGFIX dual-scene: TownScene+TowerScene ทำงานซ้อนกันตลอด
+- Phaser auto-start scene แรกใน config array — แก้ createGame ใช้ scene.add(autoStart=false)
+
+### BUGFIX Phaser 4: setTintFill ถูกลบ → hit-flash พัง
+- แก้เป็น setTint(0xffffff).setTintMode(Phaser.TintModes.FILL) ยืนยัน 0 error ตอนชนมอนสเตอร์
+
+### World Boss จาก MCA Boss folder (แทน craftpix — MCA ล้วนตามคำขอ)
+- ค้นพบ: `Character Asset\Boss` = ชีต 4x4 (idle/attack/hurt/death x4 เฟรม) 50 แบบ พื้นขาว 1254px
+- `build-mca-bosses.cjs`: ลบพื้นขาวด้วย edge flood-fill → strip idle 4 เฟรม 160px + portrait 128px
+- เลือก 10 ตัวแมตช์ธีมโลก (Myco Colossus, Dune Serpent, Frost Giant, Magma Golem, Amethyst Golem,
+  Grove Golem, Pharaoh Eternal, Frost Lich King, Winged Abyss Demon, The Kraken)
+- ลบ craftpix boss strips ที่ไม่ใช้แล้วออกจาก public/
+
+### BGM ประจำไบโอม (MCA Audio)
+- `copy-bgm.cjs`: 6 เพลง (forest/desert/snow/volcano/cave/town, ~278KB/เพลง) → `app/game/systems/bgm.ts`
+  เล่นวนต่อเนื่อง เปลี่ยนเฉพาะตอนเปลี่ยนไบโอม — ยืนยันเล่นจริง (bgm_forest playing, unlocked)
+
+### ระบบความสนุก
+- คอมโบ: ตอบถูกติดกัน +15%/สแตค (สูงสุด +60%) ตอบผิดรีเซ็ต + badge แสดงใน BattleModal
+- Hit feedback: มอนสเตอร์แฟลชขาว/สั่น + ฝั่งผู้เล่นสั่นตอนโดนตี (CSS keyframes)
+- มอนสเตอร์เดินสุ่มทิศ (wander 40%/1.4s, ชนกำแพง/กันเอง, depth ตาม y) — โลกมีชีวิต
+- Battle hero icon เปลี่ยนเป็น character-icons (ตรงกับ sprite ในแมพ)
+
+## 2026-07-07 (รอบสาม — ล้าง sprite นอก MCA + ประตูผู้เฝ้า Portal.png)
+
+### ลบ Character asset/sprite ที่มาจาก asset index (ไม่ใช่ MCA) ทั้งหมด
+- ลบไฟล์ public: `player-sprites/` (battle+overworld chibi ของ onet-game-2569), `character-layers/`,
+  และ `mob-sprites/*.png` ระดับ root (orc/skeleton/slime/demon/ghost/lizardman/medusa/wyvern/dragon เก่า)
+  → เหลือเฉพาะ `mob-sprites/mca/` + `mob-sprites/world-boss/` (MCA ล้วน)
+- ลบโค้ดตาย: `buildMonsterAnimations`, `MONSTER_KINDS`, `monsterAnimKey`, `buildDungeonGate`,
+  `buildCharacterLayerPlaceholders`, โหลด anim_goblin/skeleton/slime ใน textures.ts
+- ลบโมดูลระบบเลเยอร์ที่เลิกใช้: `characterLayeredSprite.ts`, `characterAppearance.ts`, `equipmentVisualMap.ts`
+- `classes.ts`: ลบฟิลด์ `sprite` (ชี้ player-sprites เดิม) — sprite/icon ทั้งหมดมาจาก MCA แล้ว
+- Character creation preview: เปลี่ยนจาก overlay base+occupation เป็น sprite อาชีพ+เพศจริง (MCA character-icons)
+
+### ประตูดันเจี้ยน = ผู้เฝ้าประตู จาก Portal.png (วิเคราะห์ภาพ+ตัวหนังสือในภาพ)
+- Portal.png = ผู้เฝ้าประตูมีคาถา + ซุ้มหิน + กุญแจล็อก + บทพูดไทยในภาพ mockup
+- `build-portal.cjs`: สกัดซุ้มประตู → `public/npc/portal_gate.png` + portrait → `public/npc/portal_guardian.png`
+- แทนประตู Graphics เดิมในเมืองด้วย portal_gate (ลอยเรืองแสง)
+- `PortalModal.vue` ใหม่: กล่องสนทนาผู้เฝ้าประตู ใช้บทพูดไทย **ตรงจากในภาพ** ("ข้ามิใช่ผู้ขวางเจ้า...")
+  + ตัวเลือก "1. เข้าดันเจี้ยน / 2. ถอยออกไป" — ยืนยันก่อนเข้าดันเจี้ยน
+- flow: เดินชนประตู → emit town:portal → เปิดกล่อง → กด "เข้าดันเจี้ยน" → emit town:enter-dungeon →
+  TownScene start TowerScene (ยืนยันในเกม: floor 2, 25 monsters, 0 error)
+
 ## Standardization decisions (applied going forward)
 - Derived sprites live under `public/` (runtime) or `assets/` (source crops); scripts under
   `scripts/sprite-crop/`. Naming: `boss_<creature>_<state>.png`, `<char>_<state>_<dir>_NN.png`.

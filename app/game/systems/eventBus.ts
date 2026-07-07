@@ -20,6 +20,7 @@ type Events = {
   'town:item-shop': void
   'town:equipment-shop': void
   'town:guild': void
+  'town:portal': { floor: number }
   'town:enter-dungeon': { floor: number }
   'notice': { text: string }
 }

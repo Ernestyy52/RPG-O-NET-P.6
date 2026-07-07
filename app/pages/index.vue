@@ -74,10 +74,8 @@
             <span class="text-xs">{{ draft.gender }}</span>
           </div>
           <div class="p-4">
-            <div class="preview-stage mx-auto">
-              <img :src="basePreview" class="preview-base" alt="character base" @error="onImageError">
-              <img :src="assetPath('character-assets/occupation.png')" class="preview-occupation" alt="occupation sheet" @error="onImageError">
-              <div class="face-mark" :class="[`face-${draft.face}`, `tone-${draft.color}`]" />
+            <div class="preview-stage mx-auto flex items-center justify-center">
+              <img :src="assetPath(classIcon(draft.classId, draft.gender))" class="max-h-full pixelated object-contain" alt="character preview" @error="onImageError">
             </div>
             <div class="mt-3 text-center">
               <div class="font-bold">{{ draft.name || 'Unnamed Hero' }}</div>
@@ -157,6 +155,7 @@
         <GameShopModal :open="equipShopOpen" kind-filter="equipment" @close="equipShopOpen = false" />
         <GameSkillTreeModal :open="skillsOpen" @close="skillsOpen = false" />
         <GameTownModal :open="townOpen" @close="townOpen = false" @shop="townOpen = false; itemShopOpen = true" @guild="townOpen = false; skillsOpen = true" />
+        <GamePortalModal :open="portalOpen" :floor="portalFloor" @close="portalOpen = false" />
       </section>
     </div>
   </div>
@@ -180,6 +179,8 @@ const itemShopOpen = ref(false)
 const equipShopOpen = ref(false)
 const skillsOpen = ref(false)
 const townOpen = ref(false)
+const portalOpen = ref(false)
+const portalFloor = ref(2)
 const notice = ref('')
 let noticeTimer: ReturnType<typeof setTimeout> | undefined
 const loginName = ref('')
@@ -194,7 +195,6 @@ const draft = reactive({ name: player.name || '', gender: player.gender as Gende
 const { savePlayer } = useSheetsSync()
 const titleImage = computed(() => assetPath('branding/spirals-echo-title.png'))
 const selectedClass = computed(() => classes.find((heroClass) => heroClass.id === draft.classId) ?? classes[0])
-const basePreview = computed(() => assetPath(draft.gender === 'female' ? 'character-assets/base_female.png' : 'character-assets/base_male.png'))
 const equippedText = computed(() => Object.values(player.equipment).map((id) => id ? getItemById(id)?.name : '').filter(Boolean).join(' / ') || 'starter gear')
 
 function assetPath(path: string) {
@@ -232,6 +232,7 @@ gameEvents.on('town:hospital', () => { player.hospital(); showNotice('Hospital: 
 gameEvents.on('town:item-shop', () => { itemShopOpen.value = true })
 gameEvents.on('town:equipment-shop', () => { equipShopOpen.value = true })
 gameEvents.on('town:guild', () => { skillsOpen.value = true })
+gameEvents.on('town:portal', (payload) => { portalFloor.value = payload.floor; portalOpen.value = true })
 gameEvents.on('notice', (payload) => showNotice(payload.text))
 
 function showNotice(text: string) {

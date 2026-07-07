@@ -1,7 +1,6 @@
 import Phaser from 'phaser'
 import type { Biome } from '../../data/biomes'
 import { themeForFloor } from '../../data/monsterThemes'
-import { preloadEquipmentVisualAssets } from './characterLayeredSprite'
 
 const TILE = 32
 const SRC = 16
@@ -17,7 +16,7 @@ const ART = {
 const CLASS_SHEETS: Record<string, { fw: number; fh: number }> = {
   warrior_male: { fw: 78, fh: 162 }, warrior_female: { fw: 71, fh: 160 },
   archer_male: { fw: 77, fh: 161 }, archer_female: { fw: 74, fh: 161 },
-  mage_male: { fw: 80, fh: 162 }, mage_female: { fw: 78, fh: 157 },
+  mage_male: { fw: 79, fh: 162 }, mage_female: { fw: 78, fh: 157 },
   guardian_male: { fw: 90, fh: 162 }, guardian_female: { fw: 84, fh: 162 },
 }
 // เธฅเธณเธ”เธฑเธ frame เนเธ sheet (2 col x 4 row, row-major): down[0,1] left[2,3] right[4,5] up[6,7] — col0=idle, col1=move
@@ -50,24 +49,37 @@ export function assetPath(path: string): string {
   return `${assetBase}${path}`.replace(/\/{2,}/g, '/')
 }
 
-// เธเธญเธชเนเธเธดเน€เธกเธ—: craftpix-561178 monster pack (frame-by-frame, composite เน€เธเนเธ strip เธ”เนเธงเธข scripts/sprite-crop/build-bosses.cjs)
-// เธซเธกเธธเธเน€เธงเธตเธขเธเธ•เธฒเธกเธเธฑเนเธเธเธญเธช (เธ—เธธเธเน† 10 เธเธฑเนเธ) เนเธซเนเธเธญเธชเนเธ•เนเธฅเธฐเธเธฑเนเธเนเธ•เธเธ•เนเธฒเธ‡เธเธฑเธ เนเธฅเธฐเธ”เธนเธเธนเธ‚เธถเนเธเน€เธฃเธทเนเธญเธขเน†
-export const BOSS_ROTATION = ['small_dragon', 'medusa', 'demon', 'dragon'] as const
-export type BossCreature = (typeof BOSS_ROTATION)[number]
-// frame = เธ‚เธเธฒเธ”เน€เธเธฃเธกเธ•เนเธเธเธเธฑเธเนเธ png, display = เธ‚เธเธฒเธ”เธ—เธตเนเธ•เนเธญเธเธเธฒเธฃเนเธซเนเนเธชเธ”เธเธเธฃเธดเธ‡เธเธเธเธญ (px) — คุมสเกลให้ silhouette ชัด
-const BOSS_DATA: Record<BossCreature, { frame: number; display: number; idleFrames: number }> = {
-  small_dragon: { frame: 128, display: 132, idleFrames: 3 },
-  medusa: { frame: 128, display: 136, idleFrames: 3 },
-  demon: { frame: 256, display: 208, idleFrames: 3 },
-  dragon: { frame: 256, display: 224, idleFrames: 3 },
+// World Boss จาก Main Character Asset\Character Asset\Boss (ชีต 4x4 -> idle strip 4 เฟรม x 160px
+// ด้วย scripts/sprite-crop/build-mca-bosses.cjs) — โลกละตัว (world = ceil(floor/10), 10 โลก)
+const WORLD_BOSS_FRAME = 160
+const WORLD_BOSS_DISPLAY = 200
+
+export function worldIdForFloor(floor: number): string {
+  const world = Math.min(10, Math.max(1, Math.ceil(floor / 10)))
+  return `world${String(world).padStart(2, '0')}`
 }
 
-export interface BossVisual { creature: BossCreature; textureKey: string; animKey: string; scale: number }
+export interface BossVisual { textureKey: string; animKey: string; scale: number; portrait: string }
 export function bossVisualForFloor(floor: number): BossVisual {
-  const idx = (Math.max(1, Math.floor(floor / 10)) - 1) % BOSS_ROTATION.length
-  const creature = BOSS_ROTATION[idx]
-  const data = BOSS_DATA[creature]
-  return { creature, textureKey: `boss_${creature}_idle`, animKey: `boss_${creature}_idle`, scale: data.display / data.frame }
+  const id = worldIdForFloor(floor)
+  return {
+    textureKey: `boss_${id}`,
+    animKey: `boss_${id}_idle`,
+    scale: WORLD_BOSS_DISPLAY / WORLD_BOSS_FRAME,
+    portrait: `mob-sprites/world-boss/${id}.png`,
+  }
+}
+
+/** สร้างอนิเมชัน idle ของ world boss (เรียกใน create หลัง texture โหลดแล้ว) */
+export function ensureWorldBossAnim(scene: Phaser.Scene, floor: number): void {
+  const { textureKey, animKey } = bossVisualForFloor(floor)
+  if (scene.anims.exists(animKey)) return
+  scene.anims.create({
+    key: animKey,
+    frames: scene.anims.generateFrameNumbers(textureKey, { start: 0, end: 3 }),
+    frameRate: 5,
+    repeat: -1,
+  })
 }
 
 export function preloadSharedAssets(scene: Phaser.Scene) {
@@ -79,15 +91,6 @@ export function preloadSharedAssets(scene: Phaser.Scene) {
   for (const [key, sheet] of Object.entries(CLASS_SHEETS)) {
     scene.load.spritesheet(`char_${key}`, assetPath(`character-sprites/${key}.png`), { frameWidth: sheet.fw, frameHeight: sheet.fh })
   }
-
-  scene.load.spritesheet('anim_goblin_idle', assetPath('mob-sprites/orc-idle.png'), { frameWidth: 32, frameHeight: 32 })
-  scene.load.spritesheet('anim_skeleton_idle', assetPath('mob-sprites/skeleton-idle.png'), { frameWidth: 32, frameHeight: 32 })
-  scene.load.spritesheet('anim_slime_idle', assetPath('mob-sprites/slime-idle.png'), { frameWidth: 64, frameHeight: 64 })
-  for (const creature of BOSS_ROTATION) {
-    const size = BOSS_DATA[creature].frame
-    scene.load.spritesheet(`boss_${creature}_idle`, assetPath(`mob-sprites/boss_${creature}_idle.png`), { frameWidth: size, frameHeight: size })
-  }
-  preloadEquipmentVisualAssets(scene, assetPath)
 }
 
 export function preloadTownAssets(scene: Phaser.Scene) {
@@ -97,6 +100,8 @@ export function preloadTownAssets(scene: Phaser.Scene) {
   scene.load.image('decor_torch', assetPath('quest-icons/torch.png'))
   scene.load.image('decor_gem_cyan', assetPath('quest-icons/gem-cyan.png'))
   scene.load.image('decor_gem_orange', assetPath('quest-icons/gem-orange.png'))
+  // ประตูดันเจี้ยน = ผู้เฝ้าประตู (Portal.png, Main Character Asset)
+  scene.load.image('portal_gate', assetPath('npc/portal_gate.png'))
 }
 
 function tileImg(scene: Phaser.Scene, frame: number) {
@@ -215,19 +220,6 @@ function buildEquipmentShop(scene: Phaser.Scene) {
   g.destroy()
 }
 
-function buildDungeonGate(scene: Phaser.Scene) {
-  if (scene.textures.exists('dungeon_gate')) return
-  const w = TILE * 2
-  const h = TILE * 3
-  const g = scene.add.graphics()
-  g.fillStyle(0x2a2440, 1).fillRoundedRect(0, 0, w, h, 10)
-  g.fillStyle(0x120f1e, 1).fillRoundedRect(8, 10, w - 16, h - 14, 8)
-  g.fillStyle(0x9b8cff, 0.6).fillEllipse(w / 2, h - 20, w * 0.3, 16)
-  g.lineStyle(2, ART.goldLight, 0.7).strokeRoundedRect(0, 0, w, h, 10)
-  g.generateTexture('dungeon_gate', w, h)
-  g.destroy()
-}
-
 function buildBossDoors(scene: Phaser.Scene) {
   if (scene.textures.exists('boss_door_locked')) return
   const w = TILE
@@ -271,81 +263,11 @@ function buildHeroAnimations(scene: Phaser.Scene) {
   }
 }
 
-function buildMonsterAnimations(scene: Phaser.Scene) {
-  if (scene.anims.exists('goblin_idle')) return
-  scene.anims.create({
-    key: 'goblin_idle',
-    frames: scene.anims.generateFrameNumbers('anim_goblin_idle', { start: 0, end: 3 }),
-    frameRate: 4,
-    repeat: -1,
-  })
-  scene.anims.create({
-    key: 'skeleton_idle',
-    frames: scene.anims.generateFrameNumbers('anim_skeleton_idle', { start: 0, end: 3 }),
-    frameRate: 4,
-    repeat: -1,
-  })
-  scene.anims.create({
-    key: 'slime_idle',
-    frames: scene.anims.generateFrameNumbers('anim_slime_idle', { start: 0, end: 5 }),
-    frameRate: 6,
-    repeat: -1,
-  })
-  for (const creature of BOSS_ROTATION) {
-    scene.anims.create({
-      key: `boss_${creature}_idle`,
-      frames: scene.anims.generateFrameNumbers(`boss_${creature}_idle`, { start: 0, end: BOSS_DATA[creature].idleFrames - 1 }),
-      frameRate: 4,
-      repeat: -1,
-    })
-  }
-}
-
 export function buildBiomeTextures(scene: Phaser.Scene, biome: Biome) {
   if (scene.textures.exists(`${biome.id}_grass`)) return
   buildGrass(scene, biome)
   buildTree(scene, biome)
   buildWall(scene, biome)
-}
-
-// เธชเธตเธเธฅเธฑเธเธ•เธฒเธก tier (1-5): เธ—เธญเธ‡เนเธเนเธเธ -> เน€เธซเธฅเนเธ -> เธ—เธญเธ‡เธชเธฑเธก -> เนเธเธง -> เธ—เธญเธ‡เธเธณ (เนเธ•เนเธฅเธฐ tier เธ•เนเธญเธ‡เธ”เธนเนเธ•เธเธ•เนเธฒเธ‡เธเธฑเธเธเธฑเธ”เน€เธเธ)
-const OUTFIT_TIER_PLATE = [0x8a94a0, 0x5f7a52, 0x4a6a9a, 0x8a4a9a, 0xd9b040]
-const OUTFIT_TIER_RIM = [0xb8c0c8, 0x9ad080, 0x7ab0e8, 0xd090e8, 0xffe08a]
-const TRINKET_TIER_GEM = [0x8ac0d0, 0x5fd08a, 0x6a9ad0, 0xd05fc0, 0xffd040]
-
-/** Placeholder เธชเธณเธซเธฃเธฑเธเน€เธฅเน€เธขเธญเธฃเนเธชเธไธฃเธดเธ•เธ—เธตเนเธขเธฑเธเนเธกเนเธกเธตเธเธฃเธดเธเธเธเธเธเนเธเนเธเน (outfit เนเธ•เนเธฅเธฐ tier, trinket เนเธ•เนเธฅเธฐ tier) — เนเธเนเธเธ silhouette เน€เธเธฃเธเธฐเธฃเธฒเธ/เธเธเธเธฃเธถเนเธเธซเธเนเธฒเธญเธเธ• (rim-light) เนเธ—เธเธเธฒเธฃเธเธฃเธฐเธเธ crash เน€เธกเธทเนเธญ asset เธเธฃเธดเธเธขเธฑเธเนเธกเนเธกเธต เนเธฅเธฐเนเธซเนเธเธฅเธเนเธซเนเธเนเธ•เนเธฅเธฐ tier เนเธ•เธเธ•เนเธฒเธ‡เธเธฑเธเธเธฑเธ”เน€เธเธ (เธ•เธฃเธ‡เธเธฑเธ tier text เนเธ equipment.ts) */
-function buildCharacterLayerPlaceholders(scene: Phaser.Scene) {
-  if (scene.textures.exists('layer_accessory_t5')) return
-  OUTFIT_TIER_PLATE.forEach((plate, index) => {
-    const tier = index + 1
-    const rim = OUTFIT_TIER_RIM[index]
-    const g = scene.add.graphics()
-    // เธ•เธฑเธงเน€เธชเธทเนเธญ chest-plate: เธ‡เนเธฒเธง+เธเธ•เธด, เธเธงเนเธฒเธ‡เธ‚เธถเนเธเธ•เธฒเธก tier
-    g.fillStyle(plate, 0.75).fillRoundedRect(7, 9, 18, 20, 5)
-    g.lineStyle(2, rim, 0.9).strokeRoundedRect(7, 9, 18, 20, 5)
-    // เธชเนเธงเธเธ„เธญ (collar) เนเธชเธ”เธ‡เธงเนเธฒเน€เธเนเธเน€เธชเธทเนเธญเนเธเน (เนเธกเนเนเธเนเนเธชเธ‡เธเธฅเธฒเธ)
-    g.fillStyle(0x2a1e1c, 0.5).fillRoundedRect(13, 9, 6, 4, 2)
-    // เธเธฃเธ°เธ”เธฑเธ tier: เนเธ–เธงเนเธเธ•เธเน€เธเธดเนเธกเธ•เธฒเธก tier (tier เธชเธนเธ‡ = เนเธเธงเธ”เนเธเธกเธฒเธเธเธงเนเธฒ)
-    for (let i = 0; i < tier; i++) {
-      g.fillStyle(rim, 0.85).fillCircle(11 + i * 3.5, 27, 1.2)
-    }
-    if (tier >= 4) {
-      // เนเธชเธ‡เน€เธฃเธทเธญเธ‡เธชเธณเธซเธฃเธฑเธ tier เธชเธนเธ‡ (armor เธ•เนเธฒเธ‡เนเธซเน 4-5 = "bright armor plates")
-      g.fillStyle(rim, 0.35).fillCircle(16, 16, 9)
-    }
-    g.generateTexture(`layer_outfit_t${tier}`, TILE, TILE)
-    g.destroy()
-  })
-  TRINKET_TIER_GEM.forEach((gem, index) => {
-    const tier = index + 1
-    const g = scene.add.graphics()
-    g.fillStyle(ART.outline, 0.5).fillCircle(16, 12, 3.5 + tier * 0.4)
-    g.fillStyle(gem, 0.95).fillCircle(16, 12, 2.6 + tier * 0.4)
-    g.lineStyle(1, ART.goldLight, 0.8).strokeCircle(16, 12, 2.6 + tier * 0.4)
-    if (tier >= 4) g.fillStyle(0xffffff, 0.6).fillCircle(15, 11, 1)
-    g.generateTexture(`layer_accessory_t${tier}`, TILE, TILE)
-    g.destroy()
-  })
 }
 
 export function buildSharedTextures(scene: Phaser.Scene) {
@@ -354,21 +276,11 @@ export function buildSharedTextures(scene: Phaser.Scene) {
   buildBuilding(scene)
   buildBossDoors(scene)
   buildHeroAnimations(scene)
-  buildMonsterAnimations(scene)
-  buildCharacterLayerPlaceholders(scene)
 }
 
 export function buildTownTextures(scene: Phaser.Scene) {
   buildHospital(scene)
   buildEquipmentShop(scene)
-  buildDungeonGate(scene)
-}
-
-export const MONSTER_KINDS = ['goblin', 'skeleton', 'slime'] as const
-export type MonsterKind = (typeof MONSTER_KINDS)[number]
-
-export function monsterAnimKey(kind: MonsterKind): string {
-  return `${kind}_idle`
 }
 
 // ---- Themed dungeon monsters (Main Character Asset, static sprites + idle bob) ----
@@ -376,7 +288,7 @@ export function monsterTextureKey(slug: string): string {
   return `mob_mca_${slug}`
 }
 
-/** โหลดสไปรต์มอนสเตอร์ + บอสประจำ theme ของชั้นนั้น (เรียกใน scene.preload) */
+/** โหลดสไปรต์มอนสเตอร์ + บอสประจำ theme + world boss ของชั้นนั้น (เรียกใน scene.preload) */
 export function preloadFloorMonsters(scene: Phaser.Scene, floor: number) {
   const theme = themeForFloor(floor)
   const slugs = new Set<string>([...theme.monsters, theme.boss])
@@ -384,5 +296,9 @@ export function preloadFloorMonsters(scene: Phaser.Scene, floor: number) {
     const key = monsterTextureKey(slug)
     if (scene.textures.exists(key)) continue
     scene.load.image(key, assetPath(`mob-sprites/mca/${slug}.png`))
+  }
+  const worldId = worldIdForFloor(floor)
+  if (!scene.textures.exists(`boss_${worldId}`)) {
+    scene.load.spritesheet(`boss_${worldId}`, assetPath(`mob-sprites/world-boss/${worldId}_idle.png`), { frameWidth: 160, frameHeight: 160 })
   }
 }

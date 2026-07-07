@@ -11,22 +11,23 @@
 
       <div class="grid gap-4 p-4 md:grid-cols-[220px_1fr]">
         <div class="glass-panel p-3">
-          <div class="mb-3 flex items-end justify-between">
-            <img :src="assetPath(player.heroClass.sprite)" class="h-24 object-contain pixelated" alt="hero">
+          <div class="mb-3 flex items-end justify-between" :class="{ 'battle-shake': playerHit }">
+            <img :src="assetPath(playerIcon)" class="h-24 object-contain pixelated" alt="hero">
             <div class="text-right text-xs">
               <div>{{ player.heroClass.name }}</div>
               <div>SPD {{ player.speed }} / KNO {{ player.knowledge }}</div>
             </div>
           </div>
-          <div class="h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-emerald-500" :style="{ width: `${playerHpPct}%` }" /></div>
-          <div class="mt-4 flex items-end justify-between">
+          <div class="h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-emerald-500 transition-all duration-300" :style="{ width: `${playerHpPct}%` }" /></div>
+          <div v-if="combo >= 2" class="combo-badge gold-text mt-2 text-center text-sm font-bold">COMBO x{{ combo }} (+{{ Math.round(comboBonus * 100) }}% DMG)</div>
+          <div class="mt-4 flex items-end justify-between" :class="{ 'battle-shake': monsterHit }">
             <div>
               <div class="font-bold">{{ monster.name }}</div>
               <div class="text-xs opacity-75">HP {{ monster.hp }}/{{ monster.maxHp }} / SPD {{ monster.speed }}</div>
             </div>
-            <img :src="monster.sprite" class="h-20 object-contain pixelated" alt="monster">
+            <img :src="monster.sprite" class="h-20 object-contain pixelated" :class="{ 'battle-flash': monsterHit }" alt="monster">
           </div>
-          <div class="mt-2 h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-red-500" :style="{ width: `${monsterHpPct}%` }" /></div>
+          <div class="mt-2 h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-red-500 transition-all duration-300" :style="{ width: `${monsterHpPct}%` }" /></div>
         </div>
 
         <div>
@@ -73,11 +74,23 @@ const question = reactive<Question>({ id: '', category: 'vocabulary', cefr: 'Pre
 const monster = reactive({ name: 'Slime', hp: 30, maxHp: 30, atk: 4, speed: 4, sprite: assetPath('mob-sprites/mca/slime.png') })
 const enc = reactive<{ isBoss: boolean; expReward: number; goldReward: number }>({ isBoss: false, expReward: 0, goldReward: 0 })
 const isBossFight = computed(() => enc.isBoss)
+// คอมโบ: ตอบถูกติดกันดาเมจแรงขึ้น +15%/สแตค (สูงสุด +60%) ตอบผิด = รีเซ็ต
+const combo = ref(0)
+const comboBonus = computed(() => Math.min(0.6, Math.max(0, combo.value - 1) * 0.15))
+const monsterHit = ref(false)
+const playerHit = ref(false)
+// Icon ฝั่งผู้เล่นใช้ตัวเดียวกับ sprite ในแมพ (Occupation.png)
+const playerIcon = computed(() => `character-icons/${player.classId}_${player.gender}.png`)
+function pulse(flag: typeof monsterHit) {
+  flag.value = false
+  requestAnimationFrame(() => { flag.value = true; setTimeout(() => { flag.value = false }, 450) })
+}
 const playerHpPct = computed(() => Math.max(0, Math.round((player.hp / player.maxHp) * 100)))
 const monsterHpPct = computed(() => Math.max(0, Math.round((monster.hp / monster.maxHp) * 100)))
 const hasPotion = computed(() => (player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0)
 
-function assetPath(path: string) {
+function assetPath(path?: string) {
+  if (!path) return ''
   const cleanPath = path.replace(/^\/+/, '')
   const base = runtimeConfig.app.baseURL.endsWith('/') ? runtimeConfig.app.baseURL : `${runtimeConfig.app.baseURL}/`
   return `${base}${cleanPath}`
@@ -106,6 +119,7 @@ gameEvents.on('battle:start', (payload) => {
   floor.value = payload.floor
   active.value = true
   locked.value = false
+  combo.value = 0
   setupMonster(payload)
   loadQuestion()
   log.value = turn.value === 'Hero' ? 'Your speed wins initiative. Answer correctly to attack.' : 'The monster is faster.'
@@ -125,12 +139,17 @@ function answer(index: number) {
   locked.value = true
   if (index === question.answerIndex) {
     player.recordCorrectAnswer()
-    const damage = heroDamage(1)
+    combo.value++
+    const damage = heroDamage(1 + comboBonus.value)
     monster.hp = Math.max(0, monster.hp - damage)
-    log.value = `Correct. You attack for ${damage} damage.`
+    pulse(monsterHit)
+    log.value = combo.value >= 2
+      ? `Correct! Combo x${combo.value} — you attack for ${damage} damage.`
+      : `Correct. You attack for ${damage} damage.`
     if (monster.hp <= 0) return winBattle()
   } else {
-    log.value = 'Wrong answer. The monster counters.'
+    combo.value = 0
+    log.value = 'Wrong answer. Combo lost — the monster counters.'
   }
   setTimeout(monsterAttack, 800)
 }
@@ -168,11 +187,12 @@ function escape() {
 function monsterAttack(multiplier = 1) {
   const damage = Math.round(monster.atk * multiplier)
   player.takeDamage(damage)
+  pulse(playerHit)
   if (player.hp <= 0) return finish(false)
   turn.value = 'Hero'
   locked.value = false
   loadQuestion()
-  log.value = `Monster hits. Choose the next answer.`
+  log.value = `Monster hits for ${damage}. Choose the next answer.`
 }
 
 function winBattle() {
@@ -184,6 +204,29 @@ function winBattle() {
   setTimeout(() => finish(true), 1100)
 }
 </script>
+
+<style scoped>
+@keyframes battle-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+.battle-shake { animation: battle-shake 0.4s ease-in-out; }
+@keyframes battle-flash {
+  0%, 100% { filter: none; }
+  30% { filter: brightness(2.4) saturate(0.4); }
+}
+.battle-flash { animation: battle-flash 0.45s ease-out; }
+@keyframes combo-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.combo-badge { animation: combo-pop 0.3s ease-out; }
+.pixelated { image-rendering: pixelated; }
+</style>
 
 
 

@@ -4,6 +4,8 @@ import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { gameEvents } from '../systems/eventBus'
 import { applyAtmosphere, addTorchFlicker } from '../systems/atmosphere'
+import { preloadBgm, playBgm } from '../systems/bgm'
+import { assetPath } from '../systems/textures'
 import {
   preloadSharedAssets,
   preloadTownAssets,
@@ -51,6 +53,7 @@ export class TownScene extends Phaser.Scene {
   preload() {
     preloadSharedAssets(this)
     preloadTownAssets(this)
+    preloadBgm(this, 'town', assetPath)
   }
 
   create() {
@@ -129,9 +132,17 @@ export class TownScene extends Phaser.Scene {
       zone.setData('event', b.event)
     }
 
-    // ประตูดันเจี้ยนกลางเมือง
-    const gate = this.physics.add.staticSprite(MAP_W / 2 * TILE, (MAP_H - 5) * TILE, 'dungeon_gate')
-    gate.setOrigin(0.5, 0.8).setDepth(gate.y)
+    // ประตูดันเจี้ยน = ผู้เฝ้าประตู (Portal.png) — ลอยเรืองแสงกลางเมือง
+    const gateX = MAP_W / 2 * TILE
+    const gateY = (MAP_H - 5) * TILE
+    const gate = this.physics.add.staticSprite(gateX, gateY, 'portal_gate')
+    gate.setOrigin(0.5, 0.86).setScale(0.62).setDepth(gateY)
+    gate.body.setSize(gate.width * 0.5, gate.height * 0.3).setOffset(gate.width * 0.25, gate.height * 0.5)
+    gate.refreshBody()
+    this.tweens.add({ targets: gate, alpha: { from: 0.9, to: 1 }, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+    this.add.text(gateX, gateY + 8, 'Dungeon Portal', {
+      fontSize: '11px', fontFamily: 'monospace', color: '#bcd2ff', backgroundColor: '#100c1acc', padding: { x: 4, y: 2 },
+    }).setOrigin(0.5, 0).setDepth(gateY + 1)
 
     this.gender = usePlayerStore().gender
     const size = heroSheetSize(this.classId, this.gender)
@@ -152,7 +163,12 @@ export class TownScene extends Phaser.Scene {
       const event = (z as Phaser.Physics.Arcade.Sprite).getData('event')
       this.tryInteract(event)
     })
-    this.physics.add.overlap(this.player, gate, () => this.tryInteract('enter-dungeon'))
+    this.physics.add.overlap(this.player, gate, () => this.tryInteract('portal'))
+
+    // ผู้เฝ้าประตูอนุญาต -> เข้าดันเจี้ยนจริง (สั่งจากกล่องสนทนาฝั่ง UI)
+    const enterDungeon = () => this.scene.start('TowerScene', { floor: this.floor + 1, classId: this.classId })
+    gameEvents.on('town:enter-dungeon', enterDungeon)
+    this.events.once('shutdown', () => gameEvents.off('town:enter-dungeon', enterDungeon))
 
     this.cursors = this.input.keyboard!.createCursorKeys()
 
@@ -164,7 +180,7 @@ export class TownScene extends Phaser.Scene {
       padding: { x: 6, y: 4 },
     }).setScrollFactor(0).setDepth(100)
 
-    this.add.text(8, 30, 'Walk into a building to use it. Walk into the purple gate to enter the dungeon.', {
+    this.add.text(8, 30, 'Walk into a building to use it. Approach the glowing Portal to enter the dungeon.', {
       fontSize: '11px',
       fontFamily: 'monospace',
       color: '#f7e7c5',
@@ -173,6 +189,7 @@ export class TownScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(100)
 
     applyAtmosphere(this, biome, getWorldState())
+    playBgm(this, 'town')
   }
 
   update() {
@@ -190,11 +207,11 @@ export class TownScene extends Phaser.Scene {
 
   private tryInteract(event: string) {
     const now = this.time.now
-    if (now - this.lastInteract < 800) return
+    if (now - this.lastInteract < 1200) return
     this.lastInteract = now
-    if (event === 'enter-dungeon') {
-      gameEvents.emit('town:enter-dungeon', { floor: this.floor + 1 })
-      this.scene.start('TowerScene', { floor: this.floor + 1, classId: this.classId })
+    if (event === 'portal') {
+      // เปิดกล่องสนทนาผู้เฝ้าประตู (ฝั่ง Vue) — ยังไม่เข้าดันเจี้ยนจนกว่าจะยืนยัน
+      gameEvents.emit('town:portal', { floor: this.floor + 1 })
       return
     }
     gameEvents.emit(event as 'town:hospital' | 'town:item-shop' | 'town:equipment-shop' | 'town:guild')

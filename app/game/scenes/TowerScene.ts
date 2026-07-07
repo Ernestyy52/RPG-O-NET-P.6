@@ -14,11 +14,14 @@ import {
   buildSharedTextures,
   monsterTextureKey,
   bossVisualForFloor,
+  ensureWorldBossAnim,
   heroKey,
   heroAnim,
   heroSheetSize,
 } from '../systems/textures'
 import { applyAtmosphere } from '../systems/atmosphere'
+import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
+import { assetPath } from '../systems/textures'
 
 const TILE = 32
 const MAP_W = 24
@@ -59,6 +62,7 @@ export class TowerScene extends Phaser.Scene {
   preload() {
     preloadSharedAssets(this)
     preloadFloorMonsters(this, this.floor)
+    preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
   }
 
   create() {
@@ -125,7 +129,7 @@ export class TowerScene extends Phaser.Scene {
       fontSize: '10px', fontFamily: 'monospace', color: '#f7e7c5', backgroundColor: '#1b1411cc', padding: { x: 3, y: 1 },
     }).setOrigin(0.5, 0).setDepth(doorY + 1)
 
-    // ---- 25+ themed monsters ----
+    // ---- 25+ themed monsters (เดินสุ่มทิศให้โลกมีชีวิต) ----
     this.monsters = this.physics.add.group()
     const rng = Phaser.Math.RND
     for (let i = 0; i < config.monsterCount; i++) {
@@ -137,10 +141,33 @@ export class TowerScene extends Phaser.Scene {
       const mScale = 46 / m.height
       m.setScale(mScale).setDepth(my)
       m.body.setSize(m.width * 0.42, m.height * 0.4).setOffset(m.width * 0.29, m.height * 0.4)
+      m.setCollideWorldBounds(true)
       m.setAlpha(0)
       this.tweens.add({ targets: m, alpha: 1, duration: 250, delay: i * 12 })
-      this.tweens.add({ targets: m, y: my - 3, duration: 850 + Math.random() * 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      // หายใจ (scale pulse) แทน y-tween เพื่อไม่ตีกับ physics ตอนเดิน
+      this.tweens.add({ targets: m, scaleY: mScale * 1.05, duration: 850 + Math.random() * 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
     }
+    this.physics.add.collider(this.monsters, walls)
+    this.physics.add.collider(this.monsters, this.monsters)
+
+    // สุ่มเปลี่ยนทิศเดินทุก ~1.4 วิ: 40% เดินช้าๆ / 60% หยุด (บอสไม่เดิน — คุมเวที)
+    this.time.addEvent({
+      delay: 1400, loop: true, callback: () => {
+        if (this.inBattle) return
+        for (const child of this.monsters.getChildren()) {
+          const m = child as Phaser.Physics.Arcade.Sprite
+          if (!m.active || m.getData('isBoss')) continue
+          if (Math.random() < 0.4) {
+            const angle = Math.random() * Math.PI * 2
+            const spd = 22 + Math.random() * 18
+            m.setVelocity(Math.cos(angle) * spd, Math.sin(angle) * spd)
+            m.setFlipX(Math.cos(angle) < -0.2)
+          } else {
+            m.setVelocity(0, 0)
+          }
+        }
+      },
+    })
 
     this.physics.add.overlap(this.player, this.monsters, (_p, m) => this.onEncounterMonster(m as Phaser.Physics.Arcade.Sprite))
 
@@ -158,8 +185,9 @@ export class TowerScene extends Phaser.Scene {
       fontSize: '11px', fontFamily: 'monospace', color: '#f7e7c5', backgroundColor: '#1b1411aa', padding: { x: 6, y: 3 },
     }).setScrollFactor(0).setDepth(100).setName('hint')
 
-    // ---- atmosphere (weather / vignette / lightning) ----
+    // ---- atmosphere (weather / vignette / lightning) + BGM ----
     applyAtmosphere(this, biome, getWorldState())
+    playBgm(this, bgmKeyForBiome(biome.id))
 
     gameEvents.on('battle:end', this.handleBattleEnd, this)
     this.events.once('shutdown', () => {
@@ -178,8 +206,9 @@ export class TowerScene extends Phaser.Scene {
     const by = TILE * 3.4
     let boss: Phaser.Physics.Arcade.Sprite
     if (config.isMilestone) {
-      // world boss = craftpix animated
+      // World Boss = MCA Boss sheet (idle 4 เฟรม)
       const v = bossVisualForFloor(this.floor)
+      ensureWorldBossAnim(this, this.floor)
       boss = this.monsters.create(bx, by, v.textureKey) as Phaser.Physics.Arcade.Sprite
       boss.setScale(v.scale).play(v.animKey)
     } else {
@@ -210,6 +239,11 @@ export class TowerScene extends Phaser.Scene {
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
+    // มอนสเตอร์เดินได้ -> อัปเดต depth ตาม y ให้ซ้อนกันถูก
+    for (const child of this.monsters.getChildren()) {
+      const m = child as Phaser.Physics.Arcade.Sprite
+      if (m.active && !m.getData('isBoss')) m.setDepth(m.y)
+    }
   }
 
   private onEncounterMonster(monster: Phaser.Physics.Arcade.Sprite) {
@@ -223,16 +257,26 @@ export class TowerScene extends Phaser.Scene {
     const config = getFloorConfig(this.floor)
     const slug = (monster.getData('slug') as string) ?? this.theme.boss
 
-    // hit-flash feedback
-    monster.setTintFill(0xffffff)
-    this.tweens.add({ targets: monster, scaleX: monster.scaleX * 1.15, scaleY: monster.scaleY * 1.15, duration: 120, yoyo: true, onComplete: () => monster.clearTint() })
+    // hit-flash feedback (Phaser 4: setTintFill ถูกลบ ใช้ setTint + TintModes.FILL แทน)
+    monster.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL)
+    this.tweens.add({
+      targets: monster, scaleX: monster.scaleX * 1.15, scaleY: monster.scaleY * 1.15, duration: 120, yoyo: true,
+      onComplete: () => { monster.clearTint(); monster.setTintMode(Phaser.TintModes.NORMAL) },
+    })
+
+    // หยุดมอนสเตอร์ทุกตัวตอนเข้าสู้ (ตัวที่เดินอยู่จะได้ไม่ไหลต่อ)
+    for (const child of this.monsters.getChildren()) {
+      (child as Phaser.Physics.Arcade.Sprite).setVelocity(0, 0)
+    }
 
     if (isBoss) {
       const stats = getBossStats(this.floor)
-      const portrait = `mob-sprites/mca/${this.theme.boss}.png`
+      const portrait = config.isMilestone
+        ? bossVisualForFloor(this.floor).portrait
+        : `mob-sprites/mca/${this.theme.boss}.png`
       gameEvents.emit('battle:start', {
         floor: this.floor, isBoss: true,
-        name: config.isMilestone ? `${this.theme.name} World Boss` : `${titleCase(this.theme.boss)} (Boss)`,
+        name: config.isMilestone ? this.theme.worldBossName : `${titleCase(this.theme.boss)} (Boss)`,
         sprite: portrait, hp: stats.hp, atk: stats.atk, speed: config.monsterLevel + 4,
         expReward: stats.expReward, goldReward: stats.goldReward,
       })

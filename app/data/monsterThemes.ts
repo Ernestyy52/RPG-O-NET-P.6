@@ -15,20 +15,21 @@ export interface MonsterTheme {
   monsters: string[]    // mca slugs used as regular fodder for this world
   boss: string          // mca slug used as the per-floor mini-boss (non-milestone floors)
   bossScale: number     // display height target (px) for the mini-boss
+  worldBossName: string // ชื่อ World Boss (ชั้น milestone) — sprite มาจาก world-boss/world<NN>
 }
 
 // 10 worlds → floors 1-100
 export const WORLD_THEMES: MonsterTheme[] = [
-  { id: 'verdant', name: 'Verdant Slimes', nameTh: 'อาณาจักรสไลม์', monsters: ['slime', 'big_slime', 'nature_slime', 'mushroom_monster', 'frog_monster'], boss: 'big_slime', bossScale: 150 },
-  { id: 'dunes', name: 'Scorching Dunes', nameTh: 'ทะเลทรายนักล่า', monsters: ['scorpion', 'snake', 'cactus_monster', 'sand_worm', 'cockatrice'], boss: 'sand_worm', bossScale: 150 },
-  { id: 'frostwastes', name: 'Frozen Wastes', nameTh: 'ทุ่งน้ำแข็งเยือกเย็น', monsters: ['frost_sprite', 'snow_worm', 'fluffy_bear', 'ice_robot', 'cumulus'], boss: 'ice_robot', bossScale: 150 },
-  { id: 'molten', name: 'Molten Fiends', nameTh: 'เหล่าปีศาจลาวา', monsters: ['fire_slime', 'fire_wisp', 'salamander', 'red_imp', 'thunder_slime'], boss: 'salamander', bossScale: 150 },
-  { id: 'crystaldepths', name: 'Crystal Depths', nameTh: 'ห้วงคริสตัลลึกลับ', monsters: ['bat', 'black_imp', 'spider', 'clay_golem', 'shadow'], boss: 'cyclops', bossScale: 160 },
-  { id: 'ancientgrove', name: 'Ancient Grove', nameTh: 'พงไพรดึกดำบรรพ์', monsters: ['treant', 'plant_behemoth', 'plant_sprite', 'dryad', 'mushroom_monster'], boss: 'plant_behemoth', bossScale: 170 },
-  { id: 'cursedsands', name: 'Cursed Sands', nameTh: 'ผืนทรายต้องสาป', monsters: ['basilisk', 'viper', 'mummy', 'gorgon', 'minos'], boss: 'minotaur', bossScale: 165 },
-  { id: 'frostpeak', name: 'Frostpeak Fortress', nameTh: 'ป้อมยอดเขาน้ำแข็ง', monsters: ['frost_sprite', 'tengu', 'harpy', 'snow_worm', 'golem'], boss: 'golem', bossScale: 165 },
-  { id: 'infernal', name: 'Infernal Depths', nameTh: 'ห้วงนรกเพลิง', monsters: ['salamander', 'red_imp', 'gargoyle', 'fire_robot', 'reaper'], boss: 'reaper', bossScale: 165 },
-  { id: 'abyss', name: 'The Sunken Abyss', nameTh: 'เหวลึกอสูร', monsters: ['wraith', 'banshee', 'shadow', 'spider', 'troll'], boss: 'kraken', bossScale: 175 },
+  { id: 'verdant', name: 'Verdant Slimes', nameTh: 'อาณาจักรสไลม์', monsters: ['slime', 'big_slime', 'nature_slime', 'mushroom_monster', 'frog_monster'], boss: 'big_slime', bossScale: 150, worldBossName: 'Myco Colossus' },
+  { id: 'dunes', name: 'Scorching Dunes', nameTh: 'ทะเลทรายนักล่า', monsters: ['scorpion', 'snake', 'cactus_monster', 'sand_worm', 'cockatrice'], boss: 'sand_worm', bossScale: 150, worldBossName: 'Dune Serpent' },
+  { id: 'frostwastes', name: 'Frozen Wastes', nameTh: 'ทุ่งน้ำแข็งเยือกเย็น', monsters: ['frost_sprite', 'snow_worm', 'fluffy_bear', 'ice_robot', 'cumulus'], boss: 'ice_robot', bossScale: 150, worldBossName: 'Frost Giant' },
+  { id: 'molten', name: 'Molten Fiends', nameTh: 'เหล่าปีศาจลาวา', monsters: ['fire_slime', 'fire_wisp', 'salamander', 'red_imp', 'thunder_slime'], boss: 'salamander', bossScale: 150, worldBossName: 'Magma Golem' },
+  { id: 'crystaldepths', name: 'Crystal Depths', nameTh: 'ห้วงคริสตัลลึกลับ', monsters: ['bat', 'black_imp', 'spider', 'clay_golem', 'shadow'], boss: 'cyclops', bossScale: 160, worldBossName: 'Amethyst Golem' },
+  { id: 'ancientgrove', name: 'Ancient Grove', nameTh: 'พงไพรดึกดำบรรพ์', monsters: ['treant', 'plant_behemoth', 'plant_sprite', 'dryad', 'mushroom_monster'], boss: 'plant_behemoth', bossScale: 170, worldBossName: 'Grove Golem' },
+  { id: 'cursedsands', name: 'Cursed Sands', nameTh: 'ผืนทรายต้องสาป', monsters: ['basilisk', 'viper', 'mummy', 'gorgon', 'minos'], boss: 'minotaur', bossScale: 165, worldBossName: 'Pharaoh Eternal' },
+  { id: 'frostpeak', name: 'Frostpeak Fortress', nameTh: 'ป้อมยอดเขาน้ำแข็ง', monsters: ['frost_sprite', 'tengu', 'harpy', 'snow_worm', 'golem'], boss: 'golem', bossScale: 165, worldBossName: 'Frost Lich King' },
+  { id: 'infernal', name: 'Infernal Depths', nameTh: 'ห้วงนรกเพลิง', monsters: ['salamander', 'red_imp', 'gargoyle', 'fire_robot', 'reaper'], boss: 'reaper', bossScale: 165, worldBossName: 'Winged Abyss Demon' },
+  { id: 'abyss', name: 'The Sunken Abyss', nameTh: 'เหวลึกอสูร', monsters: ['wraith', 'banshee', 'shadow', 'spider', 'troll'], boss: 'kraken', bossScale: 175, worldBossName: 'The Kraken' },
 ]
 
 export function worldIndexForFloor(floor: number): number {

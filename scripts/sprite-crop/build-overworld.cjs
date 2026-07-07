@@ -66,6 +66,15 @@ async function main() {
       const move = await cropCell(OCC_FILE, rawCtx, OCC_ROW_COLS[dir][moveCol][0], OCC_ROW_COLS[dir][moveCol][1], y0, y1);
       grid.push([idle, move || idle]); // ถ้า movement ว่าง ใช้ idle ซ้ำ (ไม่มั่ว)
     }
+    // BUGFIX ทิศขวา: แถว "right" ในชีตต้นฉบับหันซ้ายเหมือนแถว left (ตรวจด้วย check-mirror.cjs)
+    // จึงสร้างแถวขวาจากการ mirror แถวซ้ายแทน — การันตีหันขวาถูกต้องและ sync เฟรมกับซ้ายเป๊ะ
+    const leftRow = grid[DIRS.indexOf('left')];
+    const rightFrames = [];
+    for (const frame of leftRow) {
+      if (!frame) { rightFrames.push(frame); continue; }
+      rightFrames.push({ buf: await sharp(frame.buf).flop().toBuffer(), w: frame.w, h: frame.h });
+    }
+    grid[DIRS.indexOf('right')] = rightFrames;
     const all = grid.flat().filter(Boolean);
     const cellW = Math.max(...all.map((c) => c.w)) + PAD * 2;
     const cellH = Math.max(...all.map((c) => c.h)) + FOOT + PAD;
