@@ -19,7 +19,7 @@ import {
   heroAnim,
   heroSheetSize,
 } from '../systems/textures'
-import { applyAtmosphere } from '../systems/atmosphere'
+import { applyAtmosphere, createIdleBreath, addPlaque } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
 import { assetPath } from '../systems/textures'
 
@@ -46,6 +46,8 @@ export class TowerScene extends Phaser.Scene {
   private bossUnlocked = false
   private bossSpawned = false
   private lastNotice = 0
+  private idleBreath!: ReturnType<typeof createIdleBreath>
+  private hintPlaque?: ReturnType<typeof addPlaque>
 
   constructor() {
     super('TowerScene')
@@ -115,6 +117,7 @@ export class TowerScene extends Phaser.Scene {
     this.player.play(heroAnim(this.classId, this.gender, 'idle', 'down'))
     this.player.body.setSize(size.fw * 0.5, size.fh * 0.22).setOffset(size.fw * 0.25, size.fh * 0.72)
     this.physics.add.collider(this.player, walls)
+    this.idleBreath = createIdleBreath(this, this.player, pScale)
 
     this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
     this.cameras.main.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
@@ -125,9 +128,7 @@ export class TowerScene extends Phaser.Scene {
     const doorY = TILE * 1.6
     this.bossDoor = this.physics.add.staticSprite(doorX, doorY, 'boss_door_locked')
     this.bossDoor.setOrigin(0.5, 0.7).setDepth(doorY)
-    this.add.text(doorX, doorY + 12, 'Boss Room', {
-      fontSize: '10px', fontFamily: 'monospace', color: '#f7e7c5', backgroundColor: '#1b1411cc', padding: { x: 3, y: 1 },
-    }).setOrigin(0.5, 0).setDepth(doorY + 1)
+    addPlaque(this, doorX, doorY + 12, 'Boss Room', { fontSize: '10px', depth: doorY + 1 })
 
     // ---- 25+ themed monsters (เดินสุ่มทิศให้โลกมีชีวิต) ----
     this.monsters = this.physics.add.group()
@@ -178,12 +179,12 @@ export class TowerScene extends Phaser.Scene {
 
     this.cursors = this.input.keyboard!.createCursorKeys()
 
-    this.add.text(8, 8, `${this.theme.nameTh}  ·  Floor ${this.floor}${config.isMilestone ? '  · WORLD BOSS' : ''}`, {
-      fontSize: '13px', fontFamily: 'monospace', color: '#f7e7c5', backgroundColor: '#1b1411cc', padding: { x: 6, y: 4 },
-    }).setScrollFactor(0).setDepth(100)
-    this.add.text(8, 30, this.bossUnlocked ? 'Boss room is OPEN. Enter the door at the top.' : 'Defeat monsters to meet the boss requirement.', {
-      fontSize: '11px', fontFamily: 'monospace', color: '#f7e7c5', backgroundColor: '#1b1411aa', padding: { x: 6, y: 3 },
-    }).setScrollFactor(0).setDepth(100).setName('hint')
+    addPlaque(this, 8, 8, `${this.theme.nameTh}  ·  Floor ${this.floor}${config.isMilestone ? '  · WORLD BOSS' : ''}`, {
+      fontSize: '13px', depth: 100, fixed: true, origin: [0, 0],
+    })
+    this.hintPlaque = addPlaque(this, 8, 36, this.bossUnlocked ? 'Boss room is OPEN. Enter the door at the top.' : 'Defeat monsters to meet the boss requirement.', {
+      fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#cdb27a',
+    })
 
     // ---- atmosphere (weather / vignette / lightning) + BGM ----
     applyAtmosphere(this, biome, getWorldState())
@@ -223,8 +224,14 @@ export class TowerScene extends Phaser.Scene {
     this.tweens.add({ targets: boss, y: by - 8, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
     this.boss = boss
 
-    const hint = this.children.getByName('hint') as Phaser.GameObjects.Text | null
-    hint?.setText('Boss room is OPEN. Enter the door at the top.')
+    // ป้าย hint เป็น plaque (text+bg) — วาดใหม่ทั้งป้ายให้กรอบพอดีข้อความใหม่
+    if (this.hintPlaque) {
+      this.hintPlaque.label.destroy()
+      this.hintPlaque.bg.destroy()
+      this.hintPlaque = addPlaque(this, 8, 36, 'Boss room is OPEN. Enter the door at the top.', {
+        fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#cdb27a',
+      })
+    }
   }
 
   update() {
@@ -239,6 +246,7 @@ export class TowerScene extends Phaser.Scene {
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
+    this.idleBreath.setMoving(moving)
     // มอนสเตอร์เดินได้ -> อัปเดต depth ตาม y ให้ซ้อนกันถูก
     for (const child of this.monsters.getChildren()) {
       const m = child as Phaser.Physics.Arcade.Sprite

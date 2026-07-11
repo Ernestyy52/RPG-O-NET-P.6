@@ -3,9 +3,9 @@
     <div class="pixel-window w-full max-w-2xl">
       <div class="pixel-titlebar">
         <h2 class="gold-text text-lg font-bold">{{ title }} - Tier {{ tier }}</h2>
-        <button class="text-[#eadfc8] hover:text-white" @click="$emit('close')">x</button>
+        <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
       </div>
-      <div class="grid gap-3 p-4 sm:grid-cols-2">
+      <div class="pixel-window-body grid gap-3 p-4 sm:grid-cols-2">
         <div class="sm:col-span-2 text-sm">Gold: {{ player.gold }} / Equipment scales with floor.</div>
         <div v-for="item in items" :key="item.id" class="glass-panel p-3">
           <div class="flex items-start justify-between gap-3">

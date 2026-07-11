@@ -16,13 +16,16 @@ interface PlayerState {
   level: number
   exp: number
   gold: number
+  gems: number
   currentFloor: number
   hp: number
+  mp: number
   skillPoints: number
   learnedSkills: string[]
   inventory: Record<string, number>
   equipment: Partial<Record<EquipmentSlot, string>>
   correctAnswers: number
+  adventureLog: string[]
 }
 
 function expToNextLevel(level: number): number {
@@ -46,13 +49,16 @@ export const usePlayerStore = defineStore('player', {
     level: 1,
     exp: 0,
     gold: 90,
+    gems: 0,
     currentFloor: 1,
     hp: 72,
+    mp: 30,
     skillPoints: 0,
     learnedSkills: [],
     inventory: { potion_s: 2 },
     equipment: {},
     correctAnswers: 0,
+    adventureLog: [],
   }),
   getters: {
     heroClass: (state) => getHeroClass(state.classId),
@@ -81,6 +87,8 @@ export const usePlayerStore = defineStore('player', {
       }
     },
     maxHp(): number { return this.stats.maxHp },
+    // MP = พลังสมาธิ ใช้กับสกิลในสนามรบ (Support/Counter) — โตตามเลเวลและค่า MAG
+    maxMp(): number { return 20 + this.level * 4 + this.stats.mag * 3 },
     atk(): number { return this.stats.atk },
     def(): number { return this.stats.def },
     speed(): number { return this.stats.speed },
@@ -103,14 +111,17 @@ export const usePlayerStore = defineStore('player', {
       this.level = 1
       this.exp = 0
       this.gold = 90
+      this.gems = 0
       this.currentFloor = 1
       this.skillPoints = 0
       this.learnedSkills = []
       this.inventory = { potion_s: 2 }
       this.equipment = {}
       this.correctAnswers = 0
+      this.adventureLog = []
       this.characterCreated = true
       this.hp = this.maxHp
+      this.mp = this.maxMp
     },
     resetCharacter() {
       this.characterCreated = false
@@ -125,15 +136,32 @@ export const usePlayerStore = defineStore('player', {
     setAppearance(key: 'face' | 'hair' | 'color', value: string) {
       this.appearance[key] = value
     },
-    gainRewards(exp: number, gold: number) {
+    gainRewards(exp: number, gold: number, gems = 0) {
       this.exp += exp
       this.gold += gold
+      this.gems += gems
       while (this.exp >= expToNextLevel(this.level)) {
         this.exp -= expToNextLevel(this.level)
         this.level += 1
         this.skillPoints += 1
         this.hp = this.maxHp
+        this.mp = this.maxMp
+        this.addLog(`Level up! You reached Lv.${this.level}.`)
       }
+    },
+    // ใช้ MP กับสกิลต่อสู้ — คืน false ถ้าไม่พอ (ปุ่มฝั่ง UI ควร disable ไว้ก่อนแล้ว)
+    spendMp(amount: number) {
+      if (this.mp < amount) return false
+      this.mp -= amount
+      return true
+    },
+    restoreMp(amount?: number) {
+      this.mp = Math.min(this.maxMp, this.mp + (amount ?? this.maxMp))
+    },
+    // บันทึกเหตุการณ์ลง Adventure Log (เก็บล่าสุด 60 รายการ)
+    addLog(text: string) {
+      this.adventureLog.push(text)
+      if (this.adventureLog.length > 60) this.adventureLog.splice(0, this.adventureLog.length - 60)
     },
     takeDamage(amount: number) {
       this.hp = Math.max(0, this.hp - Math.max(1, Math.round(amount - this.def * 0.55)))
@@ -145,6 +173,7 @@ export const usePlayerStore = defineStore('player', {
       const cost = Math.min(this.gold, Math.max(10, this.currentFloor * 3))
       this.gold -= cost
       this.heal()
+      this.restoreMp()
     },
     advanceFloor() {
       this.currentFloor += 1
@@ -158,6 +187,8 @@ export const usePlayerStore = defineStore('player', {
     },
     recordCorrectAnswer() {
       this.correctAnswers += 1
+      // ตอบถูก = สมาธิกลับคืน เติม MP เล็กน้อย (ผูกความรู้เข้ากับทรัพยากรต่อสู้)
+      this.mp = Math.min(this.maxMp, this.mp + 2)
     },
     buyItem(itemId: string) {
       const item = findShopItem(this.currentFloor, itemId)
@@ -190,5 +221,11 @@ export const usePlayerStore = defineStore('player', {
       return true
     },
   },
-  persist: true,
+  persist: {
+    // เซฟเก่าอาจมี mp เกิน maxMp ของคลาส (เช่น ค่า default 30 แต่ maxMp จริง 27) — clamp ตอนโหลด
+    afterHydrate: ({ store }) => {
+      store.mp = Math.min(store.mp, store.maxMp)
+      store.hp = Math.min(store.hp, store.maxHp)
+    },
+  },
 })

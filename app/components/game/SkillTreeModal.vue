@@ -3,9 +3,9 @@
     <div class="pixel-window w-full max-w-3xl">
       <div class="pixel-titlebar">
         <h2 class="gold-text text-lg font-bold">Guild Skill Tree</h2>
-        <button class="text-[#eadfc8] hover:text-white" @click="$emit('close')">x</button>
+        <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
       </div>
-      <div class="grid gap-3 p-4 md:grid-cols-3">
+      <div class="pixel-window-body grid gap-3 p-4 md:grid-cols-3">
         <div v-for="branch in branches" :key="branch" class="space-y-2">
           <h3 class="font-bold capitalize">{{ branch }}</h3>
           <div v-for="skill in skillsFor(branch)" :key="skill.id" class="glass-panel p-3">

@@ -30,7 +30,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .game-canvas {
   width: 100%;
-  max-width: 640px;
+  max-width: 800px;
   aspect-ratio: 4 / 3;
   image-rendering: pixelated;
 }

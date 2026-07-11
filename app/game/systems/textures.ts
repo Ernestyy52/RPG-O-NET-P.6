@@ -36,7 +36,16 @@ export function heroAnim(classId: string, gender: string, state: 'idle' | 'walk'
 
 // เน€เธเธฃเธกเนเธเธชเนเธเธฃเธ—เนเธเธตเธ• tiny-town (12 เธเธญเธฅเธฑเธกเธเน x 11 เนเธ–เธง, 16px เธ•เนเธญเน€เธเธฃเธก)
 const GRASS_FRAME = 0
+const GRASS_VARIANT_FRAMES = [0, 1, 2]
 const TREE_FRAME = 28
+const PATH_VARIANT_FRAMES = [40, 41, 42] // เนเธ”เธดเธเธ—เธฒเธ‡เนเธ”เธดเธ (เธ›เธฅเธฒเธข/เธเธฃเธฐเธเธเธซเธเนเธฒ 3 เนเธเธเธ•เนเธฒเธ‡เธเธฑเธ)
+const PLAZA_FRAME = 43 // เธซเธดเธเธ›เธนเธเธฅเธฒเธ”เธฅเธฒเธเธ•เธฃเธ‡เธเธฅเธฒเธ‡เน€เธกเธทเธญเธ‡
+const MUSHROOM_FRAME = 29
+const FENCE_LEFT_FRAME = 80 // เธฃเธฑเธเธชเน„เธกเนเน€เธเนเธฒเธเธซเธเนเธฒเธ‹เนเธฒเธข (เนเธชเธฒ+เน€เธชเธฒ)
+const FENCE_MID_FRAME = 81 // เธฃเธฑเธเธชเน„เธกเนเธ•เธญเธเธเธฅเธฒเธ‡ (เนเธ‚เธ”เธ•เนเธญเธเนเธ”เน)
+const FENCE_RIGHT_FRAME = 82 // เธฃเธฑเธเธชเน„เธกเนเน€เธเนเธฒเธเธซเธเนเธฒเธ‚เธงเธฒ
+const FENCE_POST_FRAME = 71 // เน€เธชเธฒเน„เธกเนเน€เธ”เธตเนเธขเธง เธชเธณเธซเธฃเธฑเธเธกเธธเธก/เธ›เธฅเธฒเธขเธ—เธฒเธ‡
+const SIGN_FRAME = 83 // เธ›เนเธฒเธขเน„เธกเนเธ•เธดเธ”เธ›เนเธฒเธข
 
 // เน€เธงเนเธเธญเธฒเธ deploy เธญเธขเธนเนเนเธ•เน subpath (เน€เธเนเธ GitHub Pages /RPG-O-NET-P.6/) เธเธถเธเธ•เนเธญเธเน€เธ•เธดเธก base URL
 // เนเธซเน path เธเธญเธเนเธเธฅเน asset เนเธ—เธเธเธฒเธฃเนเธเน path เนเธเธ absolute เธ•เธฃเธเน ('/...') เธเธถเนเธเธเธฐเธเธตเนเนเธเธ—เธตเน root เนเธ”เน€เธกเธเน€เธชเธกเธญ
@@ -131,10 +140,82 @@ function bakeFrame(scene: Phaser.Scene, key: string, frame: number, wash: { colo
 
 function buildGrass(scene: Phaser.Scene, biome: Biome) {
   bakeFrame(scene, `${biome.id}_grass`, GRASS_FRAME, { color: biome.grass.base, alpha: 0.35 })
+  GRASS_VARIANT_FRAMES.forEach((frame, i) => {
+    bakeFrame(scene, `${biome.id}_grass${i}`, frame, { color: biome.grass.base, alpha: 0.3 })
+  })
 }
 
 function buildTree(scene: Phaser.Scene, biome: Biome) {
   bakeFrame(scene, `${biome.id}_tree`, TREE_FRAME, { color: biome.tree.leaf, alpha: 0.3 })
+}
+
+function buildGroundExtras(scene: Phaser.Scene, biome: Biome) {
+  if (scene.textures.exists(`${biome.id}_path0`)) return
+  PATH_VARIANT_FRAMES.forEach((frame, i) => {
+    bakeFrame(scene, `${biome.id}_path${i}`, frame, { color: biome.wallBase, alpha: 0.3 })
+  })
+  bakeFrame(scene, `${biome.id}_plaza`, PLAZA_FRAME, { color: biome.wallBase, alpha: 0.25 })
+}
+
+/** วางเฟรมดิบจาก tiny_town spritesheet ตรงๆ (ไม่ผสมสีไบโอม) — ใช้กับ prop ที่อยากให้คงโทนไม้/หินธรรมชาติ */
+export function tinyTownFrame(scene: Phaser.Scene, x: number, y: number, frame: number): Phaser.GameObjects.Image {
+  return scene.add.image(x, y, 'tiny_town', frame).setOrigin(0.5, 0.5).setScale(KSCALE)
+}
+
+export { PLAZA_FRAME, MUSHROOM_FRAME, FENCE_LEFT_FRAME, FENCE_MID_FRAME, FENCE_RIGHT_FRAME, FENCE_POST_FRAME, SIGN_FRAME }
+
+function buildPuddle(scene: Phaser.Scene) {
+  if (scene.textures.exists('puddle')) return
+  const w = 30
+  const h = 14
+  const tex = scene.textures.createCanvas('puddle', w, h)
+  const ctx = tex!.getContext()
+  const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2)
+  grad.addColorStop(0, 'rgba(120,170,220,0.55)')
+  grad.addColorStop(0.7, 'rgba(80,130,190,0.35)')
+  grad.addColorStop(1, 'rgba(60,100,160,0)')
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = 'rgba(230,245,255,0.5)'
+  ctx.beginPath()
+  ctx.ellipse(w * 0.38, h * 0.4, w * 0.12, h * 0.16, 0, 0, Math.PI * 2)
+  ctx.fill()
+  tex!.refresh()
+}
+
+function buildShadowXL(scene: Phaser.Scene) {
+  if (scene.textures.exists('shadow_blob_lg')) return
+  const w = 64
+  const h = 22
+  const tex = scene.textures.createCanvas('shadow_blob_lg', w, h)
+  const ctx = tex!.getContext()
+  const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2)
+  grad.addColorStop(0, 'rgba(0,0,0,0.42)')
+  grad.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  tex!.refresh()
+}
+
+function buildInteractGlow(scene: Phaser.Scene) {
+  if (scene.textures.exists('interact_glow')) return
+  const w = 56
+  const h = 26
+  const tex = scene.textures.createCanvas('interact_glow', w, h)
+  const ctx = tex!.getContext()
+  const grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2)
+  grad.addColorStop(0, 'rgba(255,224,138,0.55)')
+  grad.addColorStop(0.6, 'rgba(255,200,90,0.22)')
+  grad.addColorStop(1, 'rgba(255,200,90,0)')
+  ctx.fillStyle = grad
+  ctx.beginPath()
+  ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  tex!.refresh()
 }
 
 function buildWall(scene: Phaser.Scene, biome: Biome) {
@@ -268,11 +349,15 @@ export function buildBiomeTextures(scene: Phaser.Scene, biome: Biome) {
   buildGrass(scene, biome)
   buildTree(scene, biome)
   buildWall(scene, biome)
+  buildGroundExtras(scene, biome)
 }
 
 export function buildSharedTextures(scene: Phaser.Scene) {
   buildStairs(scene)
   buildShadow(scene)
+  buildShadowXL(scene)
+  buildPuddle(scene)
+  buildInteractGlow(scene)
   buildBuilding(scene)
   buildBossDoors(scene)
   buildHeroAnimations(scene)

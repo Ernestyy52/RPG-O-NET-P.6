@@ -16,7 +16,7 @@
           <p class="mt-1 text-base font-bold text-[#f5c66b]">{{ GAME_TITLE_TH }}</p>
           <p class="mt-1 text-sm text-[#f7e7c5]/80">O-NET English RPG Adventure</p>
         </div>
-        <form class="space-y-3 p-4 pt-2" @submit.prevent="submitLogin">
+        <form class="pixel-window-body space-y-3 p-4 pt-2" @submit.prevent="submitLogin">
           <input v-model="loginName" class="field" type="text" autocomplete="username" placeholder="Username">
           <input v-model="loginPassword" class="field" type="password" autocomplete="current-password" placeholder="Password">
           <button class="btn-primary w-full" type="submit">Login</button>
@@ -60,11 +60,11 @@
       </div>
     </section>
 
-    <div v-else class="mx-auto max-w-5xl p-4">
-      <header class="mb-4 text-center">
-        <p class="text-xs uppercase tracking-[0.32em] text-cyan-100/70">O-NET English RPG Adventure</p>
-        <h1 class="gold-text text-2xl font-bold sm:text-3xl">{{ GAME_TITLE_EN }}</h1>
-        <p class="text-sm font-bold text-[#f5c66b]">{{ GAME_TITLE_TH }}</p>
+    <div v-else class="mx-auto max-w-4xl p-4">
+      <header v-if="!player.characterCreated" class="mb-3 text-center">
+        <p class="ornate-kicker text-[10px]">{{ GAME_TAGLINE }}</p>
+        <h1 class="ornate-title text-xl font-bold leading-snug sm:text-2xl">{{ GAME_TITLE_EN }}</h1>
+        <p class="text-sm text-[#ecca74]">❖ {{ GAME_TITLE_TH }} ❖</p>
       </header>
 
       <section v-if="!player.characterCreated" class="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -73,7 +73,7 @@
             <h2 class="gold-text text-lg font-bold">Character Preview</h2>
             <span class="text-xs">{{ draft.gender }}</span>
           </div>
-          <div class="p-4">
+          <div class="pixel-window-body p-4">
             <div class="preview-stage mx-auto flex items-center justify-center">
               <img :src="assetPath(classIcon(draft.classId, draft.gender))" class="max-h-full pixelated object-contain" alt="character preview" @error="onImageError">
             </div>
@@ -89,7 +89,7 @@
             <h2 class="gold-text text-lg font-bold">Create Character</h2>
             <button class="btn-secondary px-3 py-1 text-xs" type="button" @click="player.logout()">Logout</button>
           </div>
-          <div class="space-y-4 p-4">
+          <div class="pixel-window-body space-y-4 p-4">
             <input v-model="draft.name" class="field" type="text" maxlength="18" placeholder="Character name">
             <div>
               <div class="mb-2 text-sm font-bold">Gender</div>
@@ -127,30 +127,60 @@
       </section>
 
       <section v-else>
-        <div class="mb-3 grid gap-3 lg:grid-cols-[1.2fr_1fr]">
-          <div class="glass-panel p-3">
-            <div class="mb-2 flex items-center justify-between gap-3">
-              <div>
-                <div class="text-sm opacity-75">Character</div>
-                <div class="font-bold">{{ player.displayName }} the {{ player.heroClass.name }}</div>
-                <div class="text-xs opacity-75">{{ player.gender }} / {{ player.appearance.face }} face / {{ player.appearance.hair }} hair</div>
-              </div>
-              <img :src="assetPath(classIcon(player.classId, player.gender))" class="h-16 object-contain pixelated" alt="hero">
+        <GameHud
+          :avatar="assetPath(classIcon(player.classId, player.gender))"
+          @recreate="player.resetCharacter()"
+          @reset-save="resetGameData"
+          @open-system="openSystem"
+        />
+        <div class="pixel-window overflow-hidden"><ClientOnly><GameCanvas /></ClientOnly></div>
+        <p v-if="notice" class="glass-panel gold-text mt-2 p-2 text-center text-xs">{{ notice }}</p>
+
+        <!-- แถบเมนูล่าง (Status/Inventory/Quests/Skills/Map/Log + Town) + แผง Gold/Gems/Floor ตามภาพ mockup -->
+        <div class="mt-3 flex flex-wrap items-stretch gap-2">
+          <button class="nav-btn" @click="statusOpen = true"><span class="nav-ico">👤</span>Status</button>
+          <button class="nav-btn" @click="statusOpen = true"><span class="nav-ico">🎒</span>Inventory</button>
+          <button class="nav-btn" @click="questsOpen = true">
+            <span class="nav-ico">📜</span>Quests
+            <span v-if="questReady" class="nav-btn-badge">!</span>
+          </button>
+          <button class="nav-btn" @click="skillsOpen = true">
+            <span class="nav-ico">✨</span>Skills
+            <span v-if="player.skillPoints" class="nav-btn-badge">{{ player.skillPoints }}</span>
+          </button>
+          <button class="nav-btn" @click="mapOpen = true"><span class="nav-ico">🗺</span>Map</button>
+          <button class="nav-btn" @click="logOpen = true"><span class="nav-ico">📖</span>Log</button>
+          <button class="nav-btn" @click="townOpen = true"><span class="nav-ico">🏰</span>Town</button>
+          <div class="flex-1" />
+          <div class="currency-panel">
+            <span class="currency-ico">🪙</span>
+            <div class="text-left leading-tight">
+              <div class="currency-label">Gold</div>
+              <div class="currency-value">{{ player.gold }}</div>
             </div>
           </div>
-          <div class="glass-panel p-3">
-            <div class="mb-2 text-sm opacity-75">Character Asset Progression</div>
-            <p class="text-xs opacity-75">Base: {{ player.gender }} / Outfit: {{ player.heroClass.name }} / Equipped: {{ equippedText }}</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <button class="btn-secondary text-xs" @click="player.resetCharacter()">Recreate Character</button>
-              <button class="btn-secondary text-xs" @click="resetGameData">Reset Save</button>
+          <div class="currency-panel">
+            <span class="currency-ico">💎</span>
+            <div class="text-left leading-tight">
+              <div class="currency-label">Gems</div>
+              <div class="currency-value">{{ player.gems }}</div>
+            </div>
+          </div>
+          <div class="currency-panel">
+            <span class="currency-ico">🪜</span>
+            <div class="text-left leading-tight">
+              <div class="currency-label">Floor</div>
+              <div class="currency-value">{{ player.currentFloor }}F</div>
             </div>
           </div>
         </div>
-        <GameHud @open-shop="itemShopOpen = true" @open-skills="skillsOpen = true" @open-town="townOpen = true" />
-        <div class="pixel-window overflow-hidden"><ClientOnly><GameCanvas /></ClientOnly></div>
-        <p v-if="notice" class="glass-panel gold-text mt-2 p-2 text-center text-xs">{{ notice }}</p>
+
         <GameBattleModal />
+        <GameStatusModal :open="statusOpen" :avatar="assetPath(classIcon(player.classId, player.gender))" @close="statusOpen = false" />
+        <GameQuestModal :open="questsOpen" @close="questsOpen = false" />
+        <GameMapModal :open="mapOpen" @close="mapOpen = false" />
+        <GameLogModal :open="logOpen" @close="logOpen = false" />
+        <GameSystemModal :open="systemOpen" :initial-tab="systemTab" @close="systemOpen = false" />
         <GameShopModal :open="itemShopOpen" kind-filter="consumable" @close="itemShopOpen = false" />
         <GameShopModal :open="equipShopOpen" kind-filter="equipment" @close="equipShopOpen = false" />
         <GameSkillTreeModal :open="skillsOpen" @close="skillsOpen = false" />
@@ -163,18 +193,22 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { GAME_NAME_EN, GAME_TAGLINE, GAME_TITLE_EN, GAME_TITLE_TH } from '~/data/branding'
 import { HERO_CLASSES, type HeroClassId } from '~/data/classes'
-import { getItemById } from '~/data/equipment'
 import { gameEvents } from '~/game/systems/eventBus'
 import { usePlayerStore, type GenderId } from '~/stores/player'
+import { useSettingsStore } from '~/stores/settings'
+import { getBossRequirement, describeMissingRequirements } from '~/data/bossRequirements'
 import { useSheetsSync } from '~/composables/useSheetsSync'
 
-// ชื่อเกมให้ตรงกันทั้ง EN/TH ทุกจุด (แก้ปัญหาชื่อไทย-อังกฤษไม่เหมือนกัน)
-const GAME_NAME_EN = "SPIRAL'S ECHO"
-const GAME_TITLE_EN = "SPIRAL'S ECHO: THE FLOATING REALMS"
-const GAME_TITLE_TH = 'สไปรัลส์ เอคโค: อาณาจักรลอยฟ้า'
 useHead({ title: `${GAME_TITLE_EN} · ${GAME_TITLE_TH}` })
 
+const statusOpen = ref(false)
+const questsOpen = ref(false)
+const mapOpen = ref(false)
+const logOpen = ref(false)
+const systemOpen = ref(false)
+const systemTab = ref<'settings' | 'leaderboard' | 'guide' | 'news'>('settings')
 const itemShopOpen = ref(false)
 const equipShopOpen = ref(false)
 const skillsOpen = ref(false)
@@ -186,7 +220,7 @@ let noticeTimer: ReturnType<typeof setTimeout> | undefined
 const loginName = ref('')
 const loginPassword = ref('')
 const activeTitlePanel = ref<'how' | 'settings' | 'news' | 'credits' | ''>('')
-const settings = reactive({ sound: true, reducedMotion: false, language: 'en' })
+const settings = useSettingsStore()
 const player = usePlayerStore()
 const config = useRuntimeConfig()
 const classes = HERO_CLASSES
@@ -195,7 +229,14 @@ const draft = reactive({ name: player.name || '', gender: player.gender as Gende
 const { savePlayer } = useSheetsSync()
 const titleImage = computed(() => assetPath('branding/spirals-echo-title.png'))
 const selectedClass = computed(() => classes.find((heroClass) => heroClass.id === draft.classId) ?? classes[0])
-const equippedText = computed(() => Object.values(player.equipment).map((id) => id ? getItemById(id)?.name : '').filter(Boolean).join(' / ') || 'starter gear')
+// เควสปลดล็อกบอสชั้นปัจจุบันครบเงื่อนไขแล้ว → โชว์ badge "!" บนปุ่ม Quests
+const questReady = computed(() =>
+  describeMissingRequirements(getBossRequirement(player.currentFloor), player).length === 0)
+
+function openSystem(tab: 'settings' | 'leaderboard' | 'guide' | 'news') {
+  systemTab.value = tab
+  systemOpen.value = true
+}
 
 function assetPath(path: string) {
   const cleanPath = path.replace(/^\/+/, '')
@@ -227,7 +268,11 @@ function resetGameData() {
 }
 function finishCharacter() { player.createCharacter({ ...draft }); savePlayer({ ...player.$state }) }
 
-gameEvents.on('floor:advance', () => { player.advanceFloor(); savePlayer({ ...player.$state }) })
+gameEvents.on('floor:advance', () => {
+  player.advanceFloor()
+  player.addLog(`Advanced to Floor ${player.currentFloor}.`)
+  savePlayer({ ...player.$state })
+})
 gameEvents.on('town:hospital', () => { player.hospital(); showNotice('Hospital: HP fully restored.') })
 gameEvents.on('town:item-shop', () => { itemShopOpen.value = true })
 gameEvents.on('town:equipment-shop', () => { equipShopOpen.value = true })

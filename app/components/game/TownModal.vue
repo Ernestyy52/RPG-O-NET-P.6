@@ -3,9 +3,9 @@
     <div class="pixel-window w-full max-w-lg">
       <div class="pixel-titlebar">
         <h2 class="gold-text text-lg font-bold">Town Services</h2>
-        <button class="text-[#eadfc8] hover:text-white" @click="$emit('close')">x</button>
+        <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
       </div>
-      <div class="grid gap-3 p-4 sm:grid-cols-3">
+      <div class="pixel-window-body grid gap-3 p-4 sm:grid-cols-3">
         <button class="btn-primary" @click="player.hospital()">Hospital</button>
         <button class="btn-primary" @click="$emit('shop')">Shop</button>
         <button class="btn-primary" @click="$emit('guild')">Guild</button>

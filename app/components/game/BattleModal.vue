@@ -1,15 +1,15 @@
 ﻿<template>
   <div v-if="active" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3">
-    <div class="pixel-window w-full max-w-3xl overflow-hidden">
+    <div class="pixel-window w-full max-w-3xl">
       <div class="pixel-titlebar gap-3">
         <div>
           <h2 class="gold-text text-lg font-bold">Floor {{ floor }} {{ isBossFight ? 'Boss' : 'Battle' }}</h2>
           <p class="text-xs opacity-75">{{ cefr }} / {{ world.description }} / Turn: {{ turn }}</p>
         </div>
-        <span class="text-sm">HP {{ player.hp }}/{{ player.maxHp }}</span>
+        <span class="text-sm">HP {{ player.hp }}/{{ player.maxHp }} <span class="mx-1 opacity-40">|</span> <span class="text-[#9db8ff]">MP {{ player.mp }}/{{ player.maxMp }}</span></span>
       </div>
 
-      <div class="grid gap-4 p-4 md:grid-cols-[220px_1fr]">
+      <div class="pixel-window-body grid gap-4 p-4 md:grid-cols-[220px_1fr]">
         <div class="glass-panel p-3">
           <div class="mb-3 flex items-end justify-between" :class="{ 'battle-shake': playerHit }">
             <img :src="assetPath(playerIcon)" class="h-24 object-contain pixelated" alt="hero">
@@ -39,9 +39,9 @@
             </button>
           </div>
           <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero'" @click="support">Support</button>
+            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < SUPPORT_MP" @click="support">Support <span class="opacity-70">{{ SUPPORT_MP }}MP</span></button>
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || !hasPotion" @click="usePotion">Item</button>
-            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero'" @click="counter">Counter</button>
+            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < COUNTER_MP" @click="counter">Counter <span class="opacity-70">{{ COUNTER_MP }}MP</span></button>
             <button class="btn-secondary text-xs" :disabled="locked || isBossFight" @click="escape">Escape</button>
           </div>
         </div>
@@ -154,11 +154,16 @@ function answer(index: number) {
   setTimeout(monsterAttack, 800)
 }
 
+// ค่าร่าย MP ของสกิลต่อสู้ — ตอบคำถามถูกจะฟื้น MP กลับ (+2/ข้อ ผ่าน recordCorrectAnswer)
+const SUPPORT_MP = 8
+const COUNTER_MP = 6
+
 function support() {
+  if (!player.spendMp(SUPPORT_MP)) return
   locked.value = true
   const heal = Math.round(14 + player.knowledge * 2)
   player.heal(heal)
-  log.value = `Support skill restores ${heal} HP and steadies your next answer.`
+  log.value = `Support skill restores ${heal} HP and steadies your next answer. (-${SUPPORT_MP} MP)`
   setTimeout(monsterAttack, 700)
 }
 
@@ -171,10 +176,11 @@ function usePotion() {
 }
 
 function counter() {
+  if (!player.spendMp(COUNTER_MP)) return
   locked.value = true
   const damage = heroDamage(0.65)
   monster.hp = Math.max(0, monster.hp - damage)
-  log.value = `Counter stance deals ${damage} damage and reduces the next hit.`
+  log.value = `Counter stance deals ${damage} damage and reduces the next hit. (-${COUNTER_MP} MP)`
   if (monster.hp <= 0) return winBattle()
   setTimeout(() => monsterAttack(0.45), 700)
 }
@@ -188,7 +194,10 @@ function monsterAttack(multiplier = 1) {
   const damage = Math.round(monster.atk * multiplier)
   player.takeDamage(damage)
   pulse(playerHit)
-  if (player.hp <= 0) return finish(false)
+  if (player.hp <= 0) {
+    player.addLog(`Knocked out by ${monster.name} on Floor ${floor.value}.`)
+    return finish(false)
+  }
   turn.value = 'Hero'
   locked.value = false
   loadQuestion()
@@ -196,11 +205,15 @@ function monsterAttack(multiplier = 1) {
 }
 
 function winBattle() {
-  player.gainRewards(enc.expReward, enc.goldReward)
+  // บอสดรอปเพชร: บอสธรรมดา 1 เม็ด / world boss (ทุก 10 ชั้น) 3 เม็ด
+  const gems = enc.isBoss ? (config.value.isMilestone ? 3 : 1) : 0
+  player.gainRewards(enc.expReward, enc.goldReward, gems)
   const drops = rollLoot(floor.value, enc.isBoss)
   for (const drop of drops) player.addItem(drop.itemId, drop.qty)
   const dropText = drops.length ? ` Dropped: ${drops.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
-  log.value = `Victory. +${enc.expReward} EXP, +${enc.goldReward} gold.${dropText}`
+  const gemText = gems ? ` +${gems} Gems.` : ''
+  log.value = `Victory. +${enc.expReward} EXP, +${enc.goldReward} gold.${gemText}${dropText}`
+  player.addLog(`Defeated ${monster.name} on Floor ${floor.value} (+${enc.expReward} EXP, +${enc.goldReward}g${gems ? `, +${gems} Gems` : ''})`)
   setTimeout(() => finish(true), 1100)
 }
 </script>

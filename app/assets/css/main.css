@@ -2,63 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ฟอนต์หัวเรื่องหรูแบบภาพ mockup — Cinzel (variable font, OFL license) ฝังในโปรเจกต์
+   ใช้ path แบบ relative ให้ Vite จัดการ URL ตอน build (รองรับ GitHub Pages subpath) */
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-var.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer components {
+  /* ================================================================
+     Ornate dark-fantasy frame: กรอบทองซ้อนหลายชั้นบนพื้นดำอุ่น
+     (สไตล์อ้างอิงภาพ mockup "Spiral's Echo" — แผงมืด/ขอบทอง/แสงเทียน)
+     ================================================================ */
   .pixel-window {
-    @apply border-2 bg-[#1b1411] text-[#f7e7c5];
-    border-radius: 4px;
-    border-color: #a8783f #2d1b10 #160d08 #d9a65b;
+    @apply flex flex-col overflow-hidden text-[#f0e2bd];
+    max-height: 90vh;
+    border-radius: 8px;
+    border: 1px solid #c19a4a;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255, 196, 92, 0.07), transparent 55%),
+      linear-gradient(180deg, rgba(27, 20, 13, 0.97) 0%, rgba(12, 9, 6, 0.985) 100%);
     box-shadow:
-      0 6px 0 #070503,
-      0 16px 36px rgba(0, 0, 0, 0.45),
-      inset 0 0 0 2px #2b1b11,
-      inset 0 0 0 3px rgba(255, 226, 145, 0.12);
+      0 0 0 2px #060403,
+      0 0 0 3px #6e5124,
+      0 0 0 4px #060403,
+      0 14px 34px rgba(0, 0, 0, 0.72),
+      inset 0 0 0 1px rgba(255, 216, 132, 0.22),
+      inset 0 0 28px rgba(0, 0, 0, 0.55);
+  }
+
+  /* เนื้อหาโมดัลที่อาจยาวเกินจอ (ร้านค้า/สกิลทรี/ต่อสู้) — เลื่อนได้เองแทนที่จะล้นจอ */
+  .pixel-window-body {
+    @apply min-h-0 flex-1 overflow-y-auto;
   }
 
   .pixel-titlebar {
     @apply flex shrink-0 items-center justify-between border-b px-4 py-3;
-    border-color: #6a4728;
-    background: linear-gradient(180deg, #3d2a1c 0%, #24170f 100%);
+    border-color: #6e5124;
+    background: linear-gradient(180deg, #2c2113 0%, #161007 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 216, 132, 0.14);
   }
 
   .glass-panel {
-    @apply border-2 bg-[#1b1411];
-    border-radius: 4px;
-    border-color: #7b5732 #3a2415 #24140c #a87a3e;
+    @apply text-[#f0e2bd];
+    border-radius: 6px;
+    border: 1px solid #8a6a2f;
+    background: linear-gradient(180deg, rgba(33, 25, 15, 0.92) 0%, rgba(15, 11, 7, 0.95) 100%);
     box-shadow:
-      0 4px 0 #0a0705,
-      inset 0 0 0 2px #2b1d13,
-      inset 0 0 0 3px rgba(255, 217, 139, 0.16);
+      0 0 0 1px #050302,
+      0 4px 12px rgba(0, 0, 0, 0.5),
+      inset 0 0 0 1px rgba(255, 216, 132, 0.13),
+      inset 0 0 14px rgba(0, 0, 0, 0.45);
   }
 
   .btn-primary {
-    @apply border-2 px-4 py-2 font-bold transition-all duration-100;
-    border-radius: 4px;
-    border-color: #ffe09a #9a6328 #6f3f16 #fff0b8;
+    @apply border px-4 py-2 font-bold transition-all duration-100;
+    border-radius: 6px;
+    border-color: #ffe09a;
     background: linear-gradient(180deg, #ffd977 0%, #d99236 50%, #9d5e22 100%);
     color: #2a1a08;
-    box-shadow: 0 3px 0 #4b260d, inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    box-shadow: 0 0 0 1px #050302, 0 3px 0 #3c2208, inset 0 1px 0 rgba(255, 255, 255, 0.45);
   }
-  .btn-primary:hover { filter: brightness(1.08); }
-  .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 #7a4e1c; }
+  .btn-primary:not(:disabled):hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 0 1px #050302, 0 4px 0 #3c2208, 0 0 14px rgba(255, 190, 80, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45); }
+  .btn-primary:not(:disabled):active { transform: translateY(2px); box-shadow: 0 0 0 1px #050302, 0 1px 0 #3c2208; filter: brightness(0.98); }
   .btn-primary:disabled { filter: grayscale(0.6) brightness(0.7); cursor: not-allowed; }
 
   .btn-secondary {
-    @apply border-2 px-4 py-2 font-bold transition-all duration-100;
-    border-radius: 4px;
-    border-color: #8b6a42 #2f2015 #1a100a #b68a54;
-    background: linear-gradient(180deg, #493323 0%, #2a1c13 100%);
-    color: #eadfc8;
-    box-shadow: 0 3px 0 #1a120b;
+    @apply border px-4 py-2 font-bold transition-all duration-100;
+    border-radius: 6px;
+    border-color: #8a6a2f;
+    background: linear-gradient(180deg, #251b10 0%, #120d08 100%);
+    color: #e8d9a8;
+    box-shadow: 0 0 0 1px #050302, 0 3px 0 #050302, inset 0 1px 0 rgba(255, 216, 132, 0.14);
   }
-  .btn-secondary:hover { filter: brightness(1.15); }
-  .btn-secondary:active { transform: translateY(2px); box-shadow: 0 1px 0 #1a120b; }
+  .btn-secondary:not(:disabled):hover { filter: brightness(1.18); transform: translateY(-1px); }
+  .btn-secondary:not(:disabled):active { transform: translateY(2px); box-shadow: 0 1px 0 #1a120b; filter: brightness(1); }
+  .btn-secondary:disabled { filter: grayscale(0.5) brightness(0.7); cursor: not-allowed; }
+
+  .btn-primary:focus-visible,
+  .btn-secondary:focus-visible,
+  .icon-btn:focus-visible,
+  .icon-btn-close:focus-visible {
+    outline: 2px solid #ffd977;
+    outline-offset: 2px;
+  }
+
+  /* ปุ่มเล็กสำหรับ HUD/แถบสถานะ — padding แน่นกว่า btn-primary/secondary ปกติ */
+  .btn-sm {
+    @apply px-2.5 py-1 text-xs;
+  }
+
+  /* ปุ่มไอคอนสี่เหลี่ยม (แก้ไข/รีเซ็ตตัวละคร ฯลฯ) */
+  .icon-btn {
+    @apply grid place-items-center border font-bold transition-all duration-100;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border-color: #8a6a2f;
+    background: linear-gradient(180deg, #251b10 0%, #120d08 100%);
+    color: #e8d9a8;
+    box-shadow: 0 0 0 1px #050302, 0 2px 0 #050302, inset 0 1px 0 rgba(255, 216, 132, 0.14);
+    font-size: 13px;
+    line-height: 1;
+  }
+  .icon-btn:hover { filter: brightness(1.22); transform: translateY(-1px); }
+  .icon-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #1a120b; }
+
+  /* ปุ่มปิด modal แบบมาตรฐาน ใช้แทน "x" เปล่าๆ ทุกที่ */
+  .icon-btn-close {
+    @apply grid place-items-center font-bold transition-all duration-100;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    border: 1px solid rgba(234, 223, 200, 0.25);
+    background: rgba(0, 0, 0, 0.25);
+    color: #eadfc8;
+    font-size: 13px;
+    line-height: 1;
+  }
+  .icon-btn-close:hover { background: rgba(255, 90, 70, 0.28); border-color: rgba(255, 130, 110, 0.55); color: #fff; transform: translateY(-1px); }
+  .icon-btn-close:active { transform: translateY(1px); }
 
   .hud-bar {
-    @apply flex items-center justify-between border-2 px-4 py-2 text-sm;
-    border-radius: 4px;
-    border-color: #7b5732 #3a2415 #24140c #a87a3e;
-    background: linear-gradient(180deg, #2a1d14 0%, #1b1411 100%);
-    color: #f7e7c5;
+    @apply flex items-center justify-between border px-4 py-2 text-sm;
+    border-radius: 6px;
+    border-color: #8a6a2f;
+    background: linear-gradient(180deg, rgba(33, 25, 15, 0.94) 0%, rgba(15, 11, 7, 0.96) 100%);
+    box-shadow: 0 0 0 1px #050302, inset 0 0 0 1px rgba(255, 216, 132, 0.12);
+    color: #f0e2bd;
   }
 
   .pixel-slot {
@@ -71,19 +145,166 @@
     box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
   }
 
+  /* พื้นหลังค่ำคืนพายุฝน: ดำอมน้ำเงิน + แสง portal ฟ้ากลางจอ + แสงโคมส้มมุมล่าง */
   .dnd-bg {
-    background-color: #15100c;
+    background-color: #07060b;
     background-image:
-      radial-gradient(circle at 50% -5%, rgba(255, 168, 76, 0.18), transparent 55%),
-      radial-gradient(circle at 12% 88%, rgba(255, 140, 50, 0.12), transparent 45%),
-      radial-gradient(circle at 88% 85%, rgba(120, 90, 200, 0.12), transparent 45%),
-      linear-gradient(180deg, #1c140d 0%, #120c08 100%);
-    color: #f3e6cf;
+      radial-gradient(circle at 50% 32%, rgba(74, 118, 255, 0.10), transparent 50%),
+      radial-gradient(circle at 12% 88%, rgba(255, 150, 60, 0.08), transparent 45%),
+      radial-gradient(circle at 88% 85%, rgba(255, 150, 60, 0.07), transparent 45%),
+      linear-gradient(180deg, #0c0a13 0%, #050408 100%);
+    color: #f0e2bd;
   }
 
   .gold-text {
-    color: #f5c66b;
-    text-shadow: 0 2px 0 #7a4e1c, 0 0 16px rgba(255, 180, 80, 0.5);
+    color: #f2c14e;
+    text-shadow: 0 1px 0 #5c3a10, 0 0 14px rgba(255, 185, 70, 0.45);
+  }
+
+  /* ================================================================
+     Ornate HUD kit — แผงตัวละคร/แถบชื่อเกม/เมนูล่าง ตามภาพ mockup
+     ================================================================ */
+  .font-display {
+    font-family: 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+  }
+
+  /* ชื่อเกมตัวทองไล่เฉด แบบหัวเรื่องกลางจอใน mockup */
+  .ornate-title {
+    font-family: 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
+    letter-spacing: 0.06em;
+    background: linear-gradient(180deg, #fdeeb7 0%, #f2c14e 42%, #b0781f 78%, #ecca74 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1px 0 rgba(58, 34, 4, 0.9)) drop-shadow(0 0 12px rgba(255, 190, 80, 0.3));
+  }
+
+  .ornate-kicker {
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: #cdb27a;
+  }
+
+  /* เส้นคั่นประดับ — ทองจางออกสองข้าง มีเพชรตรงกลางผ่าน ::before ของ element ที่ครอบ */
+  .ornate-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(242, 193, 78, 0.75) 22%, rgba(242, 193, 78, 0.75) 78%, transparent);
+  }
+
+  /* ปุ่มเมนูแถบล่าง: ไอคอนบน + ป้ายชื่อล่าง บนแผ่นมืดขอบทอง */
+  .nav-btn {
+    @apply relative flex flex-col items-center justify-center gap-1 border font-bold transition-all duration-100;
+    min-width: 62px;
+    padding: 7px 9px 5px;
+    border-radius: 6px;
+    border-color: #8a6a2f;
+    background: linear-gradient(180deg, #221910 0%, #100c07 100%);
+    color: #e8d9a8;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 0 0 1px #050302, 0 3px 0 #050302, inset 0 1px 0 rgba(255, 216, 132, 0.16);
+  }
+  .nav-btn:hover { filter: brightness(1.25); transform: translateY(-1px); box-shadow: 0 0 0 1px #050302, 0 4px 0 #050302, 0 0 16px rgba(255, 190, 80, 0.25), inset 0 1px 0 rgba(255, 216, 132, 0.16); }
+  .nav-btn:active { transform: translateY(1px); box-shadow: 0 0 0 1px #050302, 0 1px 0 #050302; }
+  .nav-btn:focus-visible { outline: 2px solid #f2c14e; outline-offset: 2px; }
+  .nav-ico {
+    font-size: 19px;
+    line-height: 1;
+    filter: sepia(1) saturate(2.4) hue-rotate(-12deg) brightness(1.12) drop-shadow(0 0 6px rgba(255, 190, 80, 0.4));
+  }
+  .nav-btn-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    display: grid;
+    place-items: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #e14b3a;
+    border: 1px solid #ffb08e;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    box-shadow: 0 0 8px rgba(255, 80, 50, 0.7);
+  }
+
+  /* แผงตัวเลข Gold / Floor มุมขวาล่างของ mockup */
+  .currency-panel {
+    @apply flex items-center gap-2 border px-4 py-2;
+    border-radius: 6px;
+    border-color: #8a6a2f;
+    background: linear-gradient(180deg, rgba(33, 25, 15, 0.94) 0%, rgba(13, 10, 6, 0.96) 100%);
+    box-shadow: 0 0 0 1px #050302, 0 3px 0 #050302, inset 0 0 0 1px rgba(255, 216, 132, 0.14);
+    color: #f0e2bd;
+  }
+  .currency-ico {
+    font-size: 18px;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px rgba(255, 190, 80, 0.45));
+  }
+  .currency-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #cdb27a;
+  }
+  .currency-value {
+    font-size: 15px;
+    font-weight: 800;
+    color: #f2c14e;
+    text-shadow: 0 1px 0 #5c3a10;
+  }
+}
+
+@layer components {
+  /* แถบ HP/EXP แบบ RPG: กรอบพิกเซล + ไล่สี + ตัวเลขซ้อนกลางแบบมีเงาให้อ่านง่ายบนพื้นสีใดก็ได้ */
+  .stat-bar-track {
+    position: relative;
+    height: 14px;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #000;
+    background: linear-gradient(180deg, #1a1210 0%, #0d0906 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 2px 4px rgba(0, 0, 0, 0.65);
+  }
+  .stat-bar-fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    transition: width 320ms ease-out;
+  }
+  .stat-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent);
+  }
+  .stat-bar-hp .stat-bar-fill { background: linear-gradient(180deg, #ff9a6c 0%, #e0503a 55%, #9c2418 100%); }
+  .stat-bar-mp .stat-bar-fill { background: linear-gradient(180deg, #9db8ff 0%, #3e62e0 55%, #1c2f9c 100%); }
+  .stat-bar-exp .stat-bar-fill { background: linear-gradient(180deg, #8fe0ff 0%, #3e93e0 55%, #1c4f9c 100%); }
+  .stat-bar-fill.stat-bar-low {
+    background: linear-gradient(180deg, #ffce7a 0%, #d94e2e 55%, #7a1c12 100%);
+    animation: statBarPulse 1.1s ease-in-out infinite;
+  }
+  .stat-bar-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff9ec;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.75);
+    letter-spacing: 0.01em;
+  }
+  @keyframes statBarPulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.35); }
   }
 }
 
@@ -113,43 +334,6 @@
       linear-gradient(0deg, rgba(255,255,255,0.04) 1px, transparent 1px);
     background-size: 16px 16px;
   }
-  .preview-base {
-    position: absolute;
-    width: 58%;
-    max-height: 86%;
-    object-fit: contain;
-    image-rendering: pixelated;
-    filter: drop-shadow(0 12px 0 rgba(0, 0, 0, 0.28));
-  }
-  .preview-occupation {
-    position: absolute;
-    right: 8px;
-    bottom: 8px;
-    width: 74px;
-    height: 74px;
-    object-fit: cover;
-    object-position: left top;
-    image-rendering: pixelated;
-    opacity: 0.9;
-    border: 2px solid #7b5732;
-    background: #1b1411;
-  }
-  .face-mark {
-    position: absolute;
-    top: 35%;
-    left: 50%;
-    width: 28px;
-    height: 12px;
-    transform: translateX(-50%);
-    border-top: 3px solid #2a1a12;
-    border-bottom: 2px solid rgba(42, 26, 18, 0.65);
-  }
-  .face-calm { border-radius: 999px; }
-  .face-brave { transform: translateX(-50%) rotate(-5deg); }
-  .face-sharp { transform: translateX(-50%) skewX(-14deg); }
-  .tone-amber { box-shadow: 0 0 16px rgba(245, 198, 107, 0.45); }
-  .tone-teal { box-shadow: 0 0 16px rgba(45, 212, 191, 0.45); }
-  .tone-crimson { box-shadow: 0 0 16px rgba(248, 113, 113, 0.45); }
 }
 
 @layer components {
