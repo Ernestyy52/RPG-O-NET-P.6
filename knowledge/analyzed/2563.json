@@ -1,0 +1,82 @@
+{
+  "year_be": 2563,
+  "year_ce": 2020,
+  "total_items": 40,
+  "skills": [
+    "rule/condition matching (sign states a rule; only one named person satisfies it, others have irrelevant attributes)",
+    "picture true-statement selection (COVID-era hygiene: handwashing)",
+    "seasonal/hemisphere inference from an activity clue (beach volleyball in England -> season)",
+    "functional exclamation in an emergency context (drowning, distinguishing similar-sounding phrases)",
+    "holiday-card interpretation (generic vs specific holiday wording)",
+    "object-clue inference (cutlery implies a specific food ordered)",
+    "universal-quantifier table matching (\"All students...\" requires every row/column checked)",
+    "superlative bar-chart/graph reading (highest/lowest across named categories)",
+    "chart construction from an arithmetic statement (\"two more than last year\")",
+    "multi-turn map direction reading (turn + distance + relative position)",
+    "reading comprehension - diary/personal recount passage (family size counting, date arithmetic, main idea, specific detail, inference)",
+    "picture-category identification (winter sport popular in western countries)",
+    "tense/time-adverb agreement sentence correctness",
+    "intonation odd-one-out",
+    "punctuation correctness (selecting the correct one this time, not the incorrect one)",
+    "dialogue completion across many everyday settings (20 items, items 21-40)"
+  ],
+  "grammar": ["tense/time-adverb agreement (took/next month mismatch)", "adverb-of-frequency word order", "present perfect (have taken)", "past simple vs future mismatch detection", "question-tag/intonation patterns", "modal verbs and conditionals (if you like it, I can lend it to you)"],
+  "vocabulary_topics": ["public health/hygiene (COVID-19 era)", "environment/air quality (PM2.5)", "seasons and weather", "sports (winter sports, jogging/biking/surfing)", "distance-learning/school-from-home", "signs and notices", "shopping and prices", "camping/outdoor activities", "museum/art opinions", "public transport/directions"],
+  "question_types": [
+    "sign + named-person condition-matching multiple choice",
+    "picture true-statement selection",
+    "inference-from-context multiple choice (season, food order)",
+    "emergency-exclamation selection",
+    "holiday-card interpretation",
+    "universal-quantifier table selection",
+    "superlative data chart/graph reading",
+    "chart selection from an arithmetic statement",
+    "multi-turn map/direction reading",
+    "diary reading comprehension with 5 linked questions",
+    "picture-category classification",
+    "sentence-correctness with tense/time-marker consistency",
+    "intonation odd-one-out",
+    "punctuation correctness (select the correct sentence)",
+    "short 2-line dialogue completion across many settings (20 items)"
+  ],
+  "reading_patterns": [
+    "first-person pandemic-era diary (distance learning from home): family members, subjects learned, chores, pet -> questions requiring precise counting of named people (excluding pets), date arithmetic from a stated interval (\"in two days\"), main idea, specific detail, and favourite-activity identification"
+  ],
+  "dialogue_patterns": [
+    "reason-giving exchange matched to a why-question",
+    "telling time / numeric-format matching",
+    "opinion-with-elaboration exchange (yes/no + reason)",
+    "food/activity preference exchange",
+    "ongoing-activity exchange (present continuous matching)",
+    "general-knowledge trivia embedded in dialogue (days in a week)",
+    "suggestion accept/reject exchange",
+    "deadline/when-question exchange",
+    "volunteering-to-answer exchange",
+    "conditional offer exchange (if you like it, I can lend it to you)",
+    "location-question exchange",
+    "unit-appropriate answer matching (speed in km/h, not kg or baht)",
+    "sequential/ordered-instruction exchange (press then turn)",
+    "farewell / self-introduction exchange",
+    "food-request politeness exchange",
+    "opinion-about-object exchange (painting/artwork)",
+    "polite-attention-getting phrase for asking a stranger (excuse me) vs wrong-register alternatives",
+    "offering-to-help exchange from a picture context"
+  ],
+  "distractor_patterns": [
+    "condition-matching distractor: named person has an irrelevant attribute not related to the stated rule",
+    "comparison-direction / quantity swap in charts (2019 vs 2020 bars swapped)",
+    "tense/time-adverb mismatch distractor (wrong tense for the stated time marker)",
+    "wrong unit of measurement for the question asked (kg instead of km/h)",
+    "socially/emotionally mismatched reply register",
+    "sequence-order violation distractor (steps given in wrong order)",
+    "literal homophone-like confusion for young learners (Help me! vs Help you!)"
+  ],
+  "difficulty_distribution": { "1_easy": 0.18, "2": 0.27, "3_medium": 0.33, "4": 0.15, "5_hard": 0.07 },
+  "answer_logic": [
+    "condition-matching items require checking a stated rule against multiple candidates, where distractors have plausible but irrelevant attributes",
+    "chart/graph items require reading two or more data points and applying the correct comparative/superlative direction",
+    "diary items require arithmetic on a stated date interval and precise counting of named entities, excluding non-human referents (pets)",
+    "tense items require matching the verb tense to an explicit time adverb in the same sentence"
+  ],
+  "notes": "Exam sat 13 March 2564 (BE+1 sitting-date convention). 40 items; items 1-20 standalone/reading, items 21-40 dialogue completion. First strongly pandemic-themed year (distance learning, hygiene) and first appearance of PM2.5/environmental topic and unit-of-measurement distractors."
+}

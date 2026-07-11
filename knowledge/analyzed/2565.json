@@ -1,0 +1,81 @@
+{
+  "year_be": 2565,
+  "year_ce": 2022,
+  "total_items": 32,
+  "skills": [
+    "ambiguous-image holiday interpretation (generic \"Happy Holidays\" is sometimes the correct answer when the image doesn't specify one holiday)",
+    "dialogue paraphrase-matching (casual chat -> formal restatement of transport mode/duration)",
+    "culture-specific picture classification (identify \"American sport\" among sumo/volleyball/boxing/American football)",
+    "fact-restatement with negation logic (platypus has no stomach -> correct negated paraphrase, distractor over-generalises to \"every animal\")",
+    "family/entity counting logic from named references (avoid double-counting, avoid wrong groupings)",
+    "notice title-selection (best name/heading for a short rules list)",
+    "sign meaning (CCTV surveillance)",
+    "sign-to-scenario matching (choosing which of several similar prohibition icons matches a stated scenario)",
+    "menu-based arithmetic (drink price table + order -> total cost)",
+    "complex multi-series bar-chart selection matching a comparative statement across multiple categories and two years",
+    "multi-turn map/direction reading with named roads",
+    "word-order sentence correctness (compound subject + adverbial phrase placement)",
+    "intonation odd-one-out",
+    "advanced punctuation correctness (comma/semicolon/colon nuance, not just question marks)",
+    "guess-and-correct dialogue (wrong guess about an event/holiday is corrected by the picture)",
+    "dialogue completion across many everyday settings (18 items, items 15-32)"
+  ],
+  "grammar": ["word order with compound subjects and adverbials (My friends and I go to the museum once a week)", "comparative/superlative constructions", "modal verbs and requests (Could you help me)", "punctuation: comma before question tags, colon/semicolon misuse"],
+  "vocabulary_topics": ["holidays (generic vs specific)", "travel (Phuket, transport modes)", "American vs other cultures' sports", "animal facts (platypus)", "family relationships", "library/museum/notices", "public signs (CCTV, no food/drink)", "drinks/menu prices", "festivals (Loy Krathong, fireworks)", "illness (headache, COVID-19)", "hobbies/crafts (knitting, stamp collecting)"],
+  "question_types": [
+    "ambiguous holiday-image interpretation",
+    "dialogue-paraphrase matching",
+    "culture-specific picture classification",
+    "fact-passage negation-logic restatement",
+    "family-counting logic from a short passage",
+    "notice title-selection",
+    "sign-meaning multiple choice",
+    "sign-to-scenario matching among similar icons",
+    "menu-price arithmetic",
+    "multi-series bar-chart selection",
+    "multi-turn map/direction reading",
+    "sentence-correctness (word order)",
+    "intonation odd-one-out",
+    "advanced punctuation correctness",
+    "picture-based guess-and-correct dialogue",
+    "short 2-line dialogue completion across many settings (18 items)"
+  ],
+  "reading_patterns": [
+    "short descriptive passages that must be restated correctly with attention to negation and quantity words (no stomach vs one stomach; three siblings named vs a wrong total)"
+  ],
+  "dialogue_patterns": [
+    "casual-chat paraphrase exchange (trip details restated in a different sentence structure)",
+    "opinion/agreement-disagreement exchange (colour choice for a project)",
+    "sympathy/illness exchange (including explicit COVID-19 reference)",
+    "correction-of-mistaken-identity exchange (\"That's not Mike\")",
+    "farewell/parting exchange",
+    "self-introduction/greeting response",
+    "sharing/offering exchange (textbook sharing)",
+    "conditional-offer-to-lend exchange",
+    "permission-request-during-exam exchange",
+    "future-plan exchange matched topically to a stated hobby",
+    "advice-with-reason exchange (headache -> rest)",
+    "duration-of-experience exchange (\"how long\" vs frequency)",
+    "tech-help-offer/gratitude exchange",
+    "rule-permission exchange (bringing a pet somewhere)",
+    "recap-of-past-event exchange (movie last night)",
+    "storm/weather-reaction exchange",
+    "bedtime-routine paired-instruction exchange"
+  ],
+  "distractor_patterns": [
+    "over-generalised negation distractor (every animal does not have a stomach)",
+    "wrong-total or wrong-grouping distractor in family/entity counting",
+    "near-identical prohibition icon distractor (no food vs no drink)",
+    "subtle numeric variation between otherwise-identical bar charts",
+    "wrong punctuation mark for the sentence type (semicolon/exclamation where a comma or period is needed)",
+    "mismatched register or topic in dialogue replies"
+  ],
+  "difficulty_distribution": { "1_easy": 0.15, "2": 0.25, "3_medium": 0.35, "4": 0.17, "5_hard": 0.08 },
+  "answer_logic": [
+    "when an image is genuinely ambiguous about which specific holiday it depicts, the generic option is the intended correct answer",
+    "fact/negation passages require precise negation-matching, not just topical relevance",
+    "family/entity-counting items require tallying only the specific named individuals, not implied or default groupings",
+    "multi-series chart items require checking every category across both years/comparisons, not just the most visually obvious bar"
+  ],
+  "notes": "Exam sat 11 Feb 2566 (BE+1 sitting-date convention). 32 items; items 1-14 standalone/reading, items 15-32 dialogue completion. Punctuation and word-order items grow more sophisticated than earlier years (colon/semicolon nuance, compound-subject word order)."
+}

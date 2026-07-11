@@ -21,7 +21,10 @@ Nuxt 4 ใช้ `app/` เป็น srcDir หลัก (ไม่ใช่ roo
   เพราะ GitHub Pages serve อยู่ใต้ subpath `/RPG-O-NET-P.6/`)
 - `app/data/biomes.ts` — ไบโอม 5 แบบ วนทุก 10 ชั้น
 - `app/data/floors.ts` — สูตร scaling ความยาก/EXP/Gold ตามชั้น (รองรับ 100+ ชั้น)
-- `app/data/questions.ts` — คลังคำถาม O-NET ป.6 (vocabulary/grammar/reading/conversation)
+- `app/data/questions.ts` — โหลดคำถามจาก `data/questions.json` (root) + shuffle-bag กันคำถามซ้ำ
+  ต่อระดับ CEFR ห้ามแก้คำถามในไฟล์นี้ตรงๆ ให้แก้ที่ `data/questions.json` แทน
+- `knowledge/` — คลัง pattern ข้อสอบ O-NET ป.6 ที่สกัดจากข้อสอบจริง (ไม่เก็บข้อสอบจริง) ใช้ generate
+  คำถามใหม่เข้า `data/questions.json` เท่านั้น กติกาเต็มอยู่ที่ `knowledge/README.md`
 - `app/stores/player.ts` — Pinia store ผู้เล่น (level/exp/gold/hp/atk/inventory), persist ผ่าน localStorage
 - `app/composables/useSheetsSync.ts` — เรียก Apps Script backend (`NUXT_PUBLIC_SHEETS_API_URL`)
 - `app/assets/css/main.css` + `tailwind.config.ts` — ธีม pixel/glassmorphism (`pixel-window`, `glass-panel`,

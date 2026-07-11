@@ -1,0 +1,77 @@
+{
+  "year_be": 2566,
+  "year_ce": 2023,
+  "total_items": 32,
+  "skills": [
+    "culture-specific phrase selection (Halloween \"Trick or Treat\")",
+    "paraphrase-matching of a personal-interest passage (precise wording matters, not just topical overlap)",
+    "cultural food-picture classification (identify \"American food\" among several cuisines)",
+    "price-list arithmetic (dozen + per-item pricing combined)",
+    "environmental sign meaning (Think Green / Do Not Litter)",
+    "notice title-selection (library rules)",
+    "fun-fact paraphrase with numeric-entity confusion distractor (five hearts vs five earthworms)",
+    "precise traffic/road-sign discrimination (left turn / right turn / no-left / no-right)",
+    "multi-turn map/direction reading with named streets",
+    "superlative pie-chart selection (largest population)",
+    "dialogue pragmatic-inference (deriving an implied fact not directly stated, e.g. \"will have to wait until 3pm\")",
+    "tense/time-consistency sentence correctness",
+    "intonation odd-one-out",
+    "advanced punctuation correctness (question mark vs semicolon vs exclamation nuance)",
+    "dialogue completion across many everyday settings (18 items, items 15-32)"
+  ],
+  "grammar": ["present continuous vs simple present for facts", "tense/time-marker consistency", "polite request forms (Could you please help me)", "comparatives and superlatives", "punctuation: question marks vs semicolons vs exclamation marks"],
+  "vocabulary_topics": ["Halloween/holidays", "hobbies (reading, watching TV)", "world cuisines/American food", "money/prices", "environment (littering, PM2.5-adjacent themes)", "library rules", "animal facts (earthworms)", "traffic signs and directions", "world population/geography", "banking/travel services", "co-learning spaces (modern educational vocabulary)"],
+  "question_types": [
+    "culture-specific phrase selection",
+    "personal-interest passage paraphrase-matching",
+    "cultural food-picture classification",
+    "price-list arithmetic",
+    "environmental sign-meaning multiple choice",
+    "notice title-selection",
+    "fun-fact paraphrase multiple choice",
+    "traffic-sign discrimination multiple choice",
+    "multi-turn map/direction reading",
+    "superlative pie-chart selection",
+    "dialogue pragmatic-inference multiple choice",
+    "sentence-correctness (tense/time consistency)",
+    "intonation odd-one-out",
+    "advanced punctuation correctness",
+    "short 2-line dialogue completion across many settings (18 items)"
+  ],
+  "reading_patterns": [
+    "short personal-interest statement (\"My hobbies are...\") that must be restated with exact topical fidelity - a partially-overlapping distractor (mentions only one of two stated hobbies) is wrong"
+  ],
+  "dialogue_patterns": [
+    "polite-request-for-help exchange requiring correct modal register",
+    "opinion-about-a-person exchange (personality trait, not physical description)",
+    "sympathy-with-reason exchange (illness -> rest advice)",
+    "compliment/opinion-on-clothing exchange",
+    "privacy-refusal exchange (won't give phone number to a stranger)",
+    "banking/service-counter opening exchange",
+    "distance/location-answer-format matching (kilometres, not metres)",
+    "emotional-valence-congruence exchange (looks sad -> reveals a negative reason)",
+    "opinion-about-hometown exchange",
+    "caution/warning-response exchange (heavy object -> logical safety action)",
+    "interrupted-task exchange (mother calling -> resuming an order request)",
+    "invitation-acceptance-then-clarify-time exchange",
+    "recommendation/assurance exchange (you'll like the film)",
+    "surprise-and-correction exchange (mistaken assumption about a person corrected)",
+    "occasion-guessing exchange from a family-photo picture with an extra distinguishing clue"
+  ],
+  "distractor_patterns": [
+    "partially-overlapping paraphrase (restates only one of two stated facts)",
+    "numeric-entity confusion (confusing the count of hearts with the count of animals)",
+    "near-identical traffic-sign distractor (mirrored/negated arrow direction)",
+    "tense used inconsistent with the stated time reference",
+    "wrong punctuation mark for the sentence's grammatical type",
+    "topically related but logically unsupported inference"
+  ],
+  "difficulty_distribution": { "1_easy": 0.15, "2": 0.23, "3_medium": 0.35, "4": 0.18, "5_hard": 0.09 },
+  "answer_logic": [
+    "paraphrase-matching items require exact fidelity to all stated facts, not just partial topical overlap",
+    "pragmatic-inference dialogue items require deriving an implied consequence from stated facts (e.g. box office hours) rather than a directly stated answer",
+    "sign-discrimination items test precise visual/semantic discrimination between near-identical icons",
+    "occasion-guessing items require using an explicitly stated distinguishing clue to override an initial plausible guess"
+  ],
+  "notes": "Exam sat 10 Feb 2567 (BE+1 sitting-date convention). 32 items; items 1-14 standalone/reading, items 15-32 dialogue. Punctuation and pragmatic-inference items continue to increase in sophistication relative to 2562-2563."
+}

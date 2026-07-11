@@ -1,0 +1,48 @@
+{
+  "year_be": 2560,
+  "year_ce": 2017,
+  "total_items": 40,
+  "skills": [
+    "phonics - vowel sound / intonation discrimination",
+    "punctuation recognition",
+    "functional language - apology, sympathy, requests",
+    "sign/instruction comprehension",
+    "festival/culture knowledge",
+    "reading comprehension - multi-paragraph narrative (school trip/exhibition)",
+    "dialogue completion",
+    "picture-based context items"
+  ],
+  "grammar": ["question word order (What is the weather like?)", "modal verbs (should, could)", "past simple narrative tense", "question tag / intonation patterns", "comparative structures"],
+  "vocabulary_topics": ["school situations", "sports/games", "traffic and safety", "months/calendar", "breakfast/food culture (American breakfast)", "science exhibition", "clothing/accessories", "restaurant/dining", "canteen/seating"],
+  "question_types": [
+    "phonics/intonation odd-one-out",
+    "punctuation-mark correctness check",
+    "functional-language response selection (apology, sympathy)",
+    "picture-based situational response",
+    "narrative passage (~120-150 words) with 4-6 linked comprehension questions (who/where/why/how-felt)",
+    "dialogue fill-in-the-blank across varied settings (reception desk, dinner table, canteen)",
+    "cloze passage with numbered blanks (clothing/vocabulary theme)"
+  ],
+  "reading_patterns": [
+    "narrative recount of a school outing or exhibition visit, told in past tense, followed by questions on character relationships, location, motivation, and emotional reaction",
+    "short factual/procedural text (e.g. traffic light rule) tested via single inference question"
+  ],
+  "dialogue_patterns": [
+    "problem-sharing exchange (failed test, awkward mistake) -> sympathetic/advice reply",
+    "service-context exchange (reception, restaurant) -> polite request/response",
+    "family exchange (child asking parent) -> reply completes a request or permission pattern"
+  ],
+  "distractor_patterns": [
+    "grammatically similar but word-order-incorrect question form (e.g. 'What is like the weather?')",
+    "emotionally mismatched reply (positive reply to a negative situation or vice versa)",
+    "correct vocabulary but wrong register (too formal/informal for context)",
+    "detail from a different part of the narrative attributed to the wrong character"
+  ],
+  "difficulty_distribution": { "1_easy": 0.2, "2": 0.25, "3_medium": 0.35, "4": 0.15, "5_hard": 0.05 },
+  "answer_logic": [
+    "narrative comprehension requires linking a character's stated action to their later stated feeling",
+    "functional-language items require matching emotional tone (sympathy vs. celebration) to the described situation",
+    "word-order/question-form items test recognition of the single grammatically correct variant among near-miss distractors"
+  ],
+  "notes": "Extracted from native embedded PDF text via pdftotext. Longer/denser narrative passage than 2558-2559; adds punctuation and intonation-pattern item types."
+}

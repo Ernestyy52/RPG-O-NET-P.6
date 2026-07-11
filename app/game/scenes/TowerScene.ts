@@ -192,15 +192,40 @@ export class TowerScene extends Phaser.Scene {
     })
   }
 
-  /** สุ่มมอนสเตอร์แบบ local (โหมดออฟไลน์ หรือใช้เป็น seed ให้ server ตอนเป็นคนแรกที่เข้าห้อง) */
+  /**
+   * สุ่มมอนสเตอร์แบบ local (โหมดออฟไลน์ หรือใช้เป็น seed ให้ server ตอนเป็นคนแรกที่เข้าห้อง)
+   * แบ่งพื้นที่เดินเป็นตาราง cell ~เท่าจำนวนมอนสเตอร์ แล้วสุ่มตำแหน่ง (มี jitter) ใน cell ของตัวเอง
+   * แทนการสุ่มอิสระทั้งพื้นที่ ซึ่งมักจับกลุ่มกันโดยบังเอิญ — ช่วงพิกัด min/max เท่าเดิมทุกประการ
+   * (ไม่กระทบ bounds clamp ฝั่ง server/index.js)
+   */
   private rollMonsterSpawns(count: number) {
     const rng = Phaser.Math.RND
-    return Array.from({ length: count }, (_, i) => ({
-      id: `m${i}`,
-      slug: this.theme.monsters[rng.between(0, this.theme.monsters.length - 1)],
-      x: Phaser.Math.Between(3, MAP_W - 3) * TILE,
-      y: Phaser.Math.Between(5, MAP_H - 3) * TILE,
-    }))
+    const minX = 3, maxX = MAP_W - 3
+    const minY = 5, maxY = MAP_H - 3
+    const areaW = maxX - minX
+    const areaH = maxY - minY
+
+    const cols = Math.max(1, Math.round(Math.sqrt((count * areaW) / areaH)))
+    const rows = Math.max(1, Math.ceil(count / cols))
+    const cellW = areaW / cols
+    const cellH = areaH / rows
+
+    const cells = Array.from({ length: cols * rows }, (_, i) => i)
+    Phaser.Utils.Array.Shuffle(cells)
+
+    return Array.from({ length: count }, (_, i) => {
+      const cell = cells[i % cells.length]
+      const cx = cell % cols
+      const cy = Math.floor(cell / cols)
+      const tileX = minX + cx * cellW + cellW * 0.15 + rng.frac() * cellW * 0.7
+      const tileY = minY + cy * cellH + cellH * 0.15 + rng.frac() * cellH * 0.7
+      return {
+        id: `m${i}`,
+        slug: this.theme.monsters[rng.between(0, this.theme.monsters.length - 1)],
+        x: Math.round(tileX * TILE),
+        y: Math.round(tileY * TILE),
+      }
+    })
   }
 
   private spawnMonsterSprite(slug: string, x: number, y: number, index: number) {

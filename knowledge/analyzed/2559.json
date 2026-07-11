@@ -1,0 +1,49 @@
+{
+  "year_be": 2559,
+  "year_ce": 2016,
+  "total_items": 40,
+  "skills": [
+    "phonics - beginning/vowel sound discrimination",
+    "sign/instruction comprehension",
+    "festival/culture vocabulary",
+    "price/quantity word problems (shopping math in English)",
+    "picture-based true/false sentence matching",
+    "map/direction reading",
+    "letter/informal correspondence comprehension",
+    "dialogue completion",
+    "cloze reading - short passage, environmental theme"
+  ],
+  "grammar": ["question words", "modal verbs (should, will, would)", "comparatives/superlatives", "present simple and past simple", "conditionals (if we do not... we will get...)"],
+  "vocabulary_topics": ["classroom instructions", "shopping/money", "languages/nationalities", "weather", "friendship/characters", "camp/outdoor activity", "environment/pollution", "seasons/colors"],
+  "question_types": [
+    "sign-meaning multiple choice",
+    "instruction-set passage with 2 linked comprehension questions",
+    "shopping word-problem (calculate total/change) with picture price tags",
+    "picture-matching true sentence selection",
+    "map-based direction question",
+    "informal letter passage with 4-5 linked questions (who/when/how long/sequence)",
+    "dialogue fill-in-the-blank",
+    "cloze passage with 4 numbered blanks, thematic vocabulary"
+  ],
+  "reading_patterns": [
+    "classroom/notice instructions (numbered list) followed by 2 questions about purpose and consequence",
+    "informal personal letter (~100 words) followed by questions on sender identity, timing, duration, sequence of events"
+  ],
+  "dialogue_patterns": [
+    "peer exchange expressing a problem (failed test, thirsty, etc.) -> choose sympathetic/appropriate response",
+    "classroom teacher-student short exchange"
+  ],
+  "distractor_patterns": [
+    "wrong arithmetic result from correct-looking price combination",
+    "sentence describing a similar but incorrect picture detail",
+    "consequence/purpose confusion in instruction-comprehension items",
+    "reply that answers a different question type than what was asked"
+  ],
+  "difficulty_distribution": { "1_easy": 0.2, "2": 0.3, "3_medium": 0.35, "4": 0.1, "5_hard": 0.05 },
+  "answer_logic": [
+    "shopping items require summing 2+ priced items and matching to an exact total",
+    "letter comprehension requires tracking a timeline of past events narrated out of chronological order",
+    "instruction items require distinguishing the stated rule from its stated consequence"
+  ],
+  "notes": "Extracted from native embedded PDF text via pdftotext. Same overall structure as 2558: standalone/linked items 1-25ish, dialogues + cloze 26-40."
+}

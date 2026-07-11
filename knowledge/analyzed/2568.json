@@ -1,0 +1,70 @@
+{
+  "year_be": 2568,
+  "year_ce": 2025,
+  "total_items": 32,
+  "skills": [
+    "reverse dialogue completion (supply the missing question) - now the dominant dialogue format (majority of Part 1 items)",
+    "proposal-plus-justification dialogue logic (agreement leads to a stated benefit/reason)",
+    "deferred-question/scheduling exchange (uncertain time, will confirm later)",
+    "phonics odd-one-out (vowel sound discrimination)",
+    "WRONG-punctuation identification (reverse framing of the usual correct-punctuation task)",
+    "multi-constraint budget/menu word problem (allowance + required-purchase rules + day-of-week restriction combined)",
+    "sign meaning (Bike Lane)",
+    "recycling-sign-to-dialogue matching",
+    "notice/poster title-selection (classroom rules pictograms)",
+    "weather-forecast practical-implication reasoning (what item is needed on a given day)",
+    "chart-literacy meta-question (what information CAN be read from a bar chart)",
+    "science-diagram vocabulary (water cycle: evaporation, condensation, precipitation)",
+    "shopping/service dialogue correctness-check",
+    "environmental science passage (PM2.5) with a CORRECT-statement question",
+    "narrative/aspiration passage with a reason-inference \"why\" question",
+    "cross-cultural comparison reading passage (Black Friday US vs UK) with TRUE and NOT-mentioned/false question variants",
+    "NOT-mentioned exclusion logic in a short cultural passage"
+  ],
+  "grammar": ["reverse question-formation across wh-/yes-no types", "punctuation: exclamation marks, colon before a list, comma placement", "present simple for facts/cycles (water cycle)", "modal/conditional requests (Would you mind turning on the lights)"],
+  "vocabulary_topics": ["family and daily life", "library/classroom rules", "weather and clothing needs", "recycling/environment", "shopping (clothes, menu/budget)", "science (water cycle)", "air quality (PM2.5)", "history/aspirations (wanting to be a historian)", "cross-cultural comparison (Black Friday, Thanksgiving-adjacent)", "sports events/schedules"],
+  "question_types": [
+    "reverse dialogue completion (fill in the question) - majority format in Part 1",
+    "standard dialogue completion (fill in the reply)",
+    "phonics odd-one-out",
+    "WRONG-punctuation identification",
+    "multi-constraint budget/menu word problem",
+    "sign-meaning multiple choice",
+    "sign-to-dialogue matching",
+    "notice/poster title-selection",
+    "weather-forecast practical-implication reasoning",
+    "chart-literacy meta-question (what can be read from this chart)",
+    "science-diagram vocabulary question",
+    "shopping/service dialogue correctness-check",
+    "environmental science passage with a CORRECT-statement question",
+    "narrative passage with reason-inference \"why\" question",
+    "cross-cultural comparison passage with TRUE and NOT-mentioned questions"
+  ],
+  "reading_patterns": [
+    "cross-cultural comparison passage (~90-110 words, 2 short paragraphs) contrasting the same named event/custom between two countries, followed by both a direct-detail question and a TRUE/NOT-true synthesis question",
+    "short aspirational narrative (~60-80 words) about a child's daily routine and future goal, followed by a reason-inference \"why\" question with passage-adjacent-but-unsupported distractors",
+    "environmental/science short passage (~40-60 words) followed by a CORRECT-statement selection question"
+  ],
+  "dialogue_patterns": [
+    "reverse-completion pattern dominant: worried/troubled statement -> student supplies the clarifying question",
+    "proposal-plus-justification: an agreement phrase (\"That's true\") precedes the speaker elaborating their own suggestion's benefit",
+    "deferred-answer/scheduling exchange (uncertain about exact time, promises to confirm)",
+    "constraint-satisfaction word-problem embedded in a menu+budget scenario requiring combining an allowance limit, a required-purchase rule, and a day-of-week restriction"
+  ],
+  "distractor_patterns": [
+    "wrong reverse-question that would elicit a plausible but different reply",
+    "vowel-sound distractor sharing spelling pattern but not phoneme (e.g. gives vs drive)",
+    "punctuation distractor that looks superficially fine but violates a specific rule (list requires a colon, not a comma)",
+    "budget-constraint distractor violating one hidden rule (e.g. choosing dessert on a non-Friday, or choosing soda)",
+    "NOT-mentioned distractor that is topically plausible but never stated in the passage",
+    "fixed universal claim distractor in TRUE/FALSE cultural-comparison items (\"Black Friday means the same thing in both countries\")"
+  ],
+  "difficulty_distribution": { "1_easy": 0.1, "2": 0.18, "3_medium": 0.32, "4": 0.24, "5_hard": 0.16 },
+  "answer_logic": [
+    "reverse-completion items require inferring the exact question type (wh- word and topic) that is uniquely consistent with the given answer",
+    "multi-constraint word problems require satisfying every stated rule simultaneously (budget ceiling, required categories, day-restricted categories), not just the arithmetic total",
+    "cross-cultural TRUE/NOT-true items require checking a claim against both halves of a 2-paragraph comparison, since a statement can be true for one country and false for the other",
+    "reason-inference \"why\" items require identifying the specific stated cause in the passage rather than any passage-adjacent detail"
+  ],
+  "notes": "Exam sat 31 Jan 2569 (BE+1 sitting-date convention). Explicit 'Part 1: Language Use (Items 1-17)' / 'Part 2: Reading (Items 18-32)' structure, continuing from 2567. Reverse dialogue-completion is now the majority pattern in Part 1 (a clear escalation from 2567). Most recent and most structurally/cognitively demanding year analyzed; represents the current-state target difficulty and format for new question generation."
+}

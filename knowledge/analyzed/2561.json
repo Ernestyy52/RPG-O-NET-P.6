@@ -1,0 +1,57 @@
+{
+  "year_be": 2561,
+  "year_ce": 2018,
+  "total_items": 40,
+  "skills": [
+    "functional language - sympathy, well-wishing, requests",
+    "phonics - vowel sound discrimination",
+    "punctuation and intonation recognition",
+    "culture/holiday knowledge (Valentine's, Easter, Thanksgiving)",
+    "food-culture comparison (Thai vs western)",
+    "data table interpretation (comparative speed/size table)",
+    "arithmetic word problems in English (fractions of a group, totals)",
+    "map/direction reading",
+    "reading comprehension - diary/personal recount passage",
+    "vocabulary in context (guessing word meaning from context, e.g. 'breeze')",
+    "dialogue completion across varied settings"
+  ],
+  "grammar": ["past perfect ('had just left when...')", "comparatives/superlatives (slowest, faster than)", "modal verbs (should)", "question tag/intonation patterns", "punctuation rules", "fractions/quantifiers (half of them)"],
+  "vocabulary_topics": ["health/sympathy expressions", "zoo/animals", "greeting cards", "holidays (Valentine's, Easter, Thanksgiving, Christmas)", "food culture", "school schedule (Prathom levels)", "post office/directions", "diary/travel", "weather vocabulary (breeze)"],
+  "question_types": [
+    "situational response selection (what to say given a scenario)",
+    "holiday/culture knowledge multiple choice",
+    "phonics odd-one-out",
+    "intonation-pattern odd-one-out",
+    "punctuation correctness check",
+    "single sentence with tense/grammar correction (had just left when...)",
+    "data table with 3-4 linked questions comparing quantities",
+    "arithmetic word-problem with fraction/half calculation",
+    "map-based direction question",
+    "diary/personal recount passage with 4-5 linked questions (topic, time, location/origin, vocabulary-in-context)",
+    "dialogue fill-in-the-blank across multiple settings (school, phone, travel)"
+  ],
+  "reading_patterns": [
+    "first-person diary/travel recount (~100-130 words) followed by questions on topic summary, inferred timing, inferred origin/hometown, and in-context vocabulary meaning",
+    "comparative data table (animal speeds, etc.) followed by 3-4 questions requiring ranking/comparison across multiple rows"
+  ],
+  "dialogue_patterns": [
+    "sympathy/well-wishing short exchange ('Get well soon' type)",
+    "travel/experience recount exchange (how did you get there / what did you do)",
+    "classroom teacher-student and phone-call exchanges"
+  ],
+  "distractor_patterns": [
+    "correct holiday but wrong associated phrase (mismatched greeting for the occasion)",
+    "table-reading distractor: comparison direction reversed (faster/slower swapped)",
+    "arithmetic distractor: forgetting to take the fraction of the total (whole number instead of half)",
+    "vocabulary-in-context distractor: a literal/unrelated dictionary meaning instead of the passage-supported meaning",
+    "near-miss grammatical tense distractor for past perfect items"
+  ],
+  "difficulty_distribution": { "1_easy": 0.15, "2": 0.25, "3_medium": 0.35, "4": 0.15, "5_hard": 0.1 },
+  "answer_logic": [
+    "data table items require reading across 2+ rows/columns and applying a comparative adjective correctly",
+    "diary/recount items require inferring unstated facts (hometown, start time) from contextual clues (time zone, description of scenery, etc.)",
+    "vocabulary-in-context items are answered by nearby sentence support, not by general vocabulary knowledge alone",
+    "arithmetic items require correct operation order (find half of total before comparing to another given number)"
+  ],
+  "notes": "Extracted from native embedded PDF text via pdftotext. Slightly higher difficulty than 2558-2560: introduces past perfect, table+arithmetic combined items, and in-context vocabulary inference."
+}

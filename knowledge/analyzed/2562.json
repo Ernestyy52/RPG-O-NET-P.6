@@ -1,0 +1,82 @@
+{
+  "year_be": 2562,
+  "year_ce": 2019,
+  "total_items": 40,
+  "skills": [
+    "sign/notice comprehension (directional arrow, exhibition hall signage)",
+    "recipe/label quantity comprehension",
+    "picture-based true-statement selection",
+    "written-directions map reading",
+    "pie-chart interpretation from a descriptive passage (comparative quantifiers: most/more than/few)",
+    "comparative data-table selection matching a comparative sentence (taller than X, shorter than Y)",
+    "picture-to-definition matching (identify a sport/object from a spoken description)",
+    "culture/holiday-appropriate image selection (Halloween card)",
+    "adjective-order / word-order grammar correctness",
+    "ditransitive verb word-order correctness (gave X to Y)",
+    "intonation odd-one-out (wh- vs yes/no questions)",
+    "punctuation correctness check",
+    "culture knowledge (Thai Wai Khru / Teacher's Day ceremony)",
+    "postcard reading comprehension (main idea, time detail, day detail, character identification, location inference)",
+    "dialogue completion across many everyday settings (22 items, items 19-40)"
+  ],
+  "grammar": ["ditransitive verb order (gave the flowers to the teacher)", "adjective order in noun phrases", "question-tag/intonation patterns", "punctuation rules (question marks)", "modal verbs (should, could, would, may, can)", "present simple for facts/routines"],
+  "vocabulary_topics": ["zoo animals", "cooking/recipes", "sports (tennis, soccer, baseball, basketball)", "Halloween/holidays", "school subjects", "travel/postcards", "Southeast Asia geography", "classroom situations", "library", "restaurant/food preference", "telephone etiquette", "weather"],
+  "question_types": [
+    "sign-meaning multiple choice",
+    "recipe/label comprehension",
+    "picture-based true-statement selection",
+    "map/direction reading from written instructions",
+    "pie-chart selection from a descriptive passage",
+    "comparative data-table selection",
+    "picture-definition matching",
+    "holiday-image selection",
+    "sentence-correctness (word order / adjective order)",
+    "intonation odd-one-out",
+    "punctuation odd-one-out",
+    "culture-knowledge multiple choice",
+    "postcard reading with 5 linked comprehension questions",
+    "short 2-line dialogue completion across school/phone/shop/restaurant/family settings (22 items)"
+  ],
+  "reading_patterns": [
+    "first-person postcard to a parent (~90-110 words) -> questions on main idea, specific time detail, specific day detail, identifying a named character's relationship (inferred from affectionate closing line), and inferring the country/location from cultural/food/language clues (not stated directly)"
+  ],
+  "dialogue_patterns": [
+    "apology / excuse exchange (forgot book, lateness)",
+    "gratitude / you're-welcome exchange",
+    "sympathy for minor ailment (headache) leading to an offer of help",
+    "wh-question matched to an ordinal/numeric answer format (time, price, quantity, floor)",
+    "imperative/request exchange resolved by a logical action (turn on the light)",
+    "weekend-plan / future-plan exchange",
+    "describing a lost object's appearance",
+    "asking to repeat unheard speech",
+    "classroom excuse exchanges (sick, missed class)",
+    "library/service request exchange",
+    "contradiction-logic exchange (rejecting a suggestion reveals the implied question)",
+    "opinion agreement/disagreement exchange (classroom decision-making)",
+    "sequential-instruction exchange (step order matters)",
+    "telephone etiquette exchange",
+    "opinion-elicitation exchange (street food) vs fact-elicitation exchange, distinguished by required answer type",
+    "weather-conditional exchange (bring umbrella because it will rain)",
+    "compliment-response exchange",
+    "restaurant preference exchange resolved by an exclusion clue (\"they only serve Thai food\" -> want the non-Thai option)",
+    "sympathy for physical exhaustion -> suggestion to rest",
+    "offering help to a stranger/foreigner looking for someone"
+  ],
+  "distractor_patterns": [
+    "wrong adjective/word order among otherwise-plausible sentences",
+    "swapped ditransitive argument order (gave the students the teacher / gave the teacher to the flowers)",
+    "mismatched holiday symbol for the correct greeting phrase",
+    "comparative-direction reversed in table items (taller/shorter swapped)",
+    "wrong-register reply lifted from a different topic (e.g. crediting a compliment about a shirt when a dress was asked about)",
+    "exclusion-logic trap: distractor belongs to the excluded category stated in the prompt (Thai/Asian food only -> Thai-sounding distractor is wrong)",
+    "restates the question instead of answering it"
+  ],
+  "difficulty_distribution": { "1_easy": 0.2, "2": 0.28, "3_medium": 0.32, "4": 0.13, "5_hard": 0.07 },
+  "answer_logic": [
+    "postcard/diary items require inferring unstated facts (country, relationship) from indirect cultural/linguistic/food clues rather than an explicit statement",
+    "exclusion-based dialogue items require identifying the one option that does NOT belong to a category explicitly ruled out in the prompt",
+    "picture-definition items require matching a spoken description's defining features (equipment, actions) to the correct picture, not surface keywords",
+    "comparative table/data items require correct directionality across at least two named entities"
+  ],
+  "notes": "Extracted via direct visual reading of the scanned exam (pdftotext/tesseract unavailable in this environment; PyMuPDF page renders were read directly, no OCR binary used). Cover page printed exam date is 1 Feb 2563 (BE+1 sitting-date convention, consistent across all scanned years) but the file/manifest year label 2562 (academic year) is retained per NIETS convention. 40 items total, items 1-18 standalone/reading, items 19-40 dialogue completion (22 items) — a notably larger dialogue-completion share than 2558-2561."
+}

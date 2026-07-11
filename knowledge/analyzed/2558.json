@@ -1,0 +1,51 @@
+{
+  "year_be": 2558,
+  "year_ce": 2015,
+  "total_items": 40,
+  "skills": [
+    "phonics - vowel/consonant sound discrimination",
+    "picture interpretation - describing a scene",
+    "functional language - appropriate response to a situation",
+    "sign/notice comprehension",
+    "vocabulary - food/nutrition category matching",
+    "data interpretation - bar chart / pictograph reading",
+    "map reading - directions and spatial prepositions",
+    "reading comprehension - short poster/announcement",
+    "dialogue completion - short exchanges",
+    "cloze reading - short narrative passage with 5 blanks"
+  ],
+  "grammar": ["question words (which, what, who, where, how)", "modal verbs (should, would, could, can, may)", "present simple", "comparatives (more/less/least)", "imperative/prohibition (should not / do not)"],
+  "vocabulary_topics": ["places in town", "food and nutrition", "festivals/holidays", "health (dentist)", "traffic signs", "gardening/agriculture", "environment/recycling", "school routine"],
+  "question_types": [
+    "single-sentence stem + 4-choice picture or text options",
+    "picture-based 'what is true / what do you say' items",
+    "sign-meaning multiple choice",
+    "data set (bar chart / map) with 2-5 linked questions",
+    "short poster/passage with 5 linked comprehension questions",
+    "dialogue fill-in-the-blank (choose the correct line)",
+    "cloze passage with 5 numbered blanks, 4-choice vocabulary each"
+  ],
+  "reading_patterns": [
+    "short informational poster (event: date, time, activity, prize) followed by 5 questions (date format, location, categorization, duration, who-qualifies)",
+    "short narrative/procedural passage (~80-100 words) with 5 cloze blanks testing verb/noun vocabulary in sequence"
+  ],
+  "dialogue_patterns": [
+    "two-line exchange: greeting/situation cue -> choose appropriate reply",
+    "situational prompt (no dialogue) -> choose the most appropriate thing to say"
+  ],
+  "distractor_patterns": [
+    "same-polarity but wrong social register (e.g. overly formal/informal reply)",
+    "answer restates the question instead of responding to it",
+    "plausible action but wrong location/context inferred from picture",
+    "numeric distractors: off-by-one category swap in chart-reading questions",
+    "date/number distractors testing correct English date-format ordering vs. correct content"
+  ],
+  "difficulty_distribution": { "1_easy": 0.25, "2": 0.3, "3_medium": 0.3, "4": 0.1, "5_hard": 0.05 },
+  "answer_logic": [
+    "sign/notice items: answer must restate the prohibition/instruction in different words, not the literal sign text",
+    "chart/map items: answer requires cross-referencing 2+ data points (e.g. 'more than X but less than Y')",
+    "dialogue items: correct reply must match both the grammatical question type (yes/no vs wh-) and topical continuity of the following line",
+    "cloze passage: each blank is resolved by nearby collocation/context, not distant passage themes"
+  ],
+  "notes": "Extracted from native embedded PDF text via pdftotext. Structure: items 1-25 standalone/linked-set (phonics, pictures, signs, charts, map, poster), items 26-40 dialogues + cloze passage."
+}

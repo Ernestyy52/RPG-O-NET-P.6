@@ -1,0 +1,73 @@
+{
+  "year_be": 2567,
+  "year_ce": 2024,
+  "total_items": 32,
+  "skills": [
+    "reverse dialogue completion (supply the missing QUESTION given the answer, not the reply)",
+    "riddle-solving (wordplay clue -> vocabulary answer, e.g. \"hands and a face but can't hold or smile\" -> a clock)",
+    "polite-refusal-with-alternative exchange",
+    "gratitude-with-humility idiom (\"It's my duty\")",
+    "pragmatic/implied-meaning inference from a short dialogue (what does X mean / what does X decide / X is mainly about)",
+    "spatial-preposition reasoning with abstract shapes (next to, under)",
+    "transitive comparative-chain reasoning (A<B<C<D from 3 linked comparative sentences) built into a ranked bar graph",
+    "multi-turn map/direction reading with ordinal turn-counting (\"turn right at the second corner\") and a \"You Are Here\" marker",
+    "multi-day weather-forecast table reading (temperature + condition + \"feels like\" distinction)",
+    "phonics odd-one-out (vowel sound discrimination)",
+    "intonation odd-one-out",
+    "advanced punctuation correctness (colon/semicolon/list-comma nuance)",
+    "sign-to-location inference (where would you see this sign)",
+    "picture-to-location inference (where can you buy these items)",
+    "cross-cultural comparison reading passage (food-sharing customs, Asia vs West) with a NOT-correct question",
+    "holiday fact passage with a variable-date distractor (\"the fourth Thursday\" vs a fixed calendar date)",
+    "purpose-inference from a picture (why are they at the beach)",
+    "coupon/notice comprehension (conditional discount rule)"
+  ],
+  "grammar": ["question formation across all common wh-/yes-no patterns (tested in reverse, i.e. producing the question)", "comparative chains (don't live as long as / live longer than / the longest)", "prepositions of place (next to, under)", "punctuation: colon before a list, semicolon misuse, comma before a question tag"],
+  "vocabulary_topics": ["school life (exams, homework, deadlines)", "food and drinks (hot chocolate, soda, Pad Thai)", "animals (bears, lions, horses, elephants)", "directions and wayfinding", "weather forecasts", "signs (Do Not Disturb, pedestrian crossing)", "medicine/drugstore items", "Easter/religion", "environment (beach cleanup)", "cross-cultural comparison (food sharing, Thanksgiving)"],
+  "question_types": [
+    "reverse dialogue completion (fill in the question)",
+    "riddle-solving multiple choice",
+    "standard dialogue completion (fill in the reply)",
+    "pragmatic implied-meaning inference from dialogue",
+    "spatial-preposition shape-matching",
+    "transitive-comparative-chain bar-graph selection",
+    "multi-turn map/direction reading with ordinal counting",
+    "weather-forecast table reading",
+    "phonics odd-one-out",
+    "intonation odd-one-out",
+    "advanced punctuation correctness",
+    "sign-to-location inference",
+    "picture-to-location inference",
+    "cross-cultural comparison passage with a NOT-correct question",
+    "holiday-fact passage with a variable-date distractor",
+    "purpose-inference from a picture",
+    "coupon/discount-rule comprehension"
+  ],
+  "reading_patterns": [
+    "cross-cultural comparison passage (~70-90 words) contrasting a custom between two cultures/countries, followed by a NOT-correct or according-to-the-passage question",
+    "single-fact holiday/culture passage (~50-70 words) with a question testing whether the exact stated frequency/date is understood correctly (avoiding a plausible but wrong fixed-date distractor)"
+  ],
+  "dialogue_patterns": [
+    "reverse-completion pattern: the reply is given and students must recognise which question elicited it",
+    "polite refusal that offers an alternative (Sorry, I'm in a hurry, can you see me at 11?)",
+    "humility/gratitude idiom exchange (It's my duty / You're welcome)",
+    "process-of-elimination deduction exchange (no sodas available -> deduces the substituted drink)",
+    "consent/permission-clarification exchange (Of course not, please do -> she doesn't mind)",
+    "correctness-check paraphrase of a short narrated scenario"
+  ],
+  "distractor_patterns": [
+    "wrong question that would elicit a different (though related) answer, for reverse-completion items",
+    "literal/unrelated riddle-answer distractor that shares a surface feature but not the defining one",
+    "fixed-date distractor for an event whose date is actually variable (the fourth Thursday, not a fixed day-of-month)",
+    "spatial-preposition distractor with shapes in a plausible but incorrect relative arrangement",
+    "one-link-broken distractor in a transitive comparative chain (correct on 2 of 3 relations, wrong on the third)"
+  ],
+  "difficulty_distribution": { "1_easy": 0.12, "2": 0.2, "3_medium": 0.33, "4": 0.22, "5_hard": 0.13 },
+  "answer_logic": [
+    "reverse-completion items require working backward from a given answer to identify the uniquely-consistent question form (matching both topic and grammatical question type)",
+    "transitive-comparative items require chaining 2-3 stated relations into a single total ranking before matching a graph",
+    "pragmatic-inference items require deriving what a speaker means or decides, not just what was literally said",
+    "variable-date distractors require recognising when a description (\"the fourth Thursday\") does not correspond to one fixed calendar date"
+  ],
+  "notes": "Exam sat 3 Feb 2568 (BE+1 sitting-date convention), the first year explicitly labelled 'PART 1: Language Use (Items 1-21)' and 'PART 2: Reading (Items 22-32)' in the paper itself. Marks a clear difficulty/sophistication jump: reverse-question dialogue completion and pragmatic-inference items become common (previously rare/absent), plus new item types (riddles, spatial prepositions, transitive comparative chains, cross-cultural comparison passages). 32 items total, ends with 'End of the test' after item 32."
+}

@@ -1,0 +1,78 @@
+{
+  "year_be": 2564,
+  "year_ce": 2021,
+  "total_items": 32,
+  "skills": [
+    "current-events vocabulary (COVID-19 vaccine names, antigen test)",
+    "sign meaning (parking sign)",
+    "recipe/label comprehension with fraction vocabulary in words (a quarter, a half)",
+    "picture true-statement selection (community service / road cleaning)",
+    "exclamation reaction to an accidental event",
+    "holiday identification from a descriptive clue without naming it (decorated eggs -> Easter)",
+    "seasonal inference from an activity clue (sunbathing at the beach)",
+    "exclusion-logic distractor (restaurant serves only Thai/Asian food -> want the one non-Asian option)",
+    "superlative pie-chart selection matching a stated superlative fact",
+    "map reading with inline picture icons embedded in the text (post office/shopping-cart icons)",
+    "diary reading comprehension (pandemic-era gardening) - main idea, precise multi-item detail matching, reason inference",
+    "punctuation correctness (NOT-correct framing)",
+    "word-order correctness (adverb of frequency placement)",
+    "intonation odd-one-out",
+    "dialogue completion across many everyday settings (16 items, items 17-32)",
+    "sequential/procedural picture-based instruction (mask disposal steps)"
+  ],
+  "grammar": ["fraction/quantifier vocabulary (a quarter of, half a cup)", "adverb-of-frequency word order", "question-tag/intonation patterns", "punctuation rules", "modal verbs (should, could, would)"],
+  "vocabulary_topics": ["COVID-19/public health", "gardening/organic vegetables", "Easter/holidays", "seasons and weather", "restaurant/food preference", "rainfall/pie-chart data", "camping and outdoor activities", "classroom situations", "phone calls", "hygiene procedures (mask disposal)"],
+  "question_types": [
+    "current-events vocabulary multiple choice (example item)",
+    "sign-meaning multiple choice",
+    "recipe/label comprehension with fraction wording",
+    "picture true-statement selection",
+    "exclamation-reaction selection",
+    "holiday-identification from descriptive clue",
+    "seasonal-inference multiple choice",
+    "exclusion-logic multiple choice",
+    "superlative pie-chart selection",
+    "map reading with inline pictorial icons",
+    "diary reading comprehension with 4 linked questions",
+    "punctuation NOT-correct selection",
+    "word-order sentence correctness",
+    "intonation odd-one-out",
+    "short 2-line dialogue completion across many settings (16 items)",
+    "procedural/sequential picture instruction matching"
+  ],
+  "reading_patterns": [
+    "first-person pandemic-era diary (home gardening with father): main idea, precise identification of which items were planted (distinguishing materials used from crops grown), reason-inference for a stated emotion (pride)"
+  ],
+  "dialogue_patterns": [
+    "gratitude exchange (cake given to mother)",
+    "excuse-for-lateness exchange",
+    "phone-call unavailability exchange (may I speak to X -> she's not in)",
+    "sympathy-for-failure exchange (crying because failed a test)",
+    "future-time-reference matching (when are we meeting -> future answer only)",
+    "advice-with-reason exchange (needs suntan lotion because it's sunny)",
+    "yes/no-polarity-consistency exchange (did you have a good time -> yes+positive elaboration)",
+    "favourite-thing exchange matching the correct answer category (a sport name, not equipment)",
+    "confident-agreement exchange (of course / not really)",
+    "suggestion-accept/reject exchange",
+    "location/near-far description exchange",
+    "sympathy-for-injury-with-offer-of-help exchange",
+    "compliment-response exchange",
+    "polite-request-to-lower-volume exchange",
+    "offering-help-from-a-picture-context exchange"
+  ],
+  "distractor_patterns": [
+    "exclusion-logic trap (the only non-Asian dish is the answer when \"only Thai/Asian food\" is served)",
+    "wrong-emotion-valence reply (mismatched register to a sad/emergency cue)",
+    "material-vs-product confusion in reading comprehension (bamboo used AS MATERIAL vs the crops actually grown)",
+    "sequence-order violation in procedural/pictorial items",
+    "swapped superlative direction in pie-chart labels"
+  ],
+  "difficulty_distribution": { "1_easy": 0.2, "2": 0.3, "3_medium": 0.3, "4": 0.13, "5_hard": 0.07 },
+  "answer_logic": [
+    "current-events items require up-to-date general knowledge vocabulary rather than pure grammar (reflecting the COVID-19 pandemic period)",
+    "reading comprehension items require distinguishing between a material/tool mentioned and the actual subject/product being described",
+    "procedural/sequential items require matching a multi-step real-world process (e.g. mask disposal) to text/pictures in the correct order",
+    "exclusion-based dialogue items require identifying the one option that falls outside a category explicitly ruled out in the prompt"
+  ],
+  "notes": "Exam sat 12 Feb 2565 (BE+1 sitting-date convention); file name lacks the dot in 'ป6' unlike other years but refers to academic year 2564. Only 32 items total (items 1-16 standalone/reading, items 17-32 dialogue) — first year with a reduced 32-item format instead of 40; this shorter format persists through 2568. Strongly pandemic-themed (vaccines, home gardening, mask hygiene)."
+}
