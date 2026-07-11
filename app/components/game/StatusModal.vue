@@ -42,9 +42,10 @@
             <div v-for="entry in bagItems" :key="entry.id" class="flex items-center justify-between gap-2 py-1 text-xs">
               <div class="flex items-center gap-2">
                 <img :src="assetPath(itemIconPath(entry.id))" class="h-8 w-8 object-contain pixelated" :alt="entry.name" @error="onImageError">
-                <span>{{ entry.name }} <span class="opacity-60">x{{ entry.qty }}</span></span>
+                <span :style="{ color: entry.color }">{{ entry.name }} <span class="opacity-60">x{{ entry.qty }}</span></span>
               </div>
               <button v-if="entry.usable" class="btn-secondary px-2 py-1 text-xs" @click="player.useConsumable(entry.id)">Use</button>
+              <button v-else-if="entry.equip" class="btn-secondary px-2 py-1 text-xs" @click="player.equipItem(entry.equip)">Equip</button>
             </div>
           </div>
         </div>
@@ -55,7 +56,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getItemById, itemIconPath } from '~/data/equipment'
+import { getItemById, getMaterial, itemIconPath, rarityColor, rarityOf } from '~/data/equipment'
 import { usePlayerStore } from '~/stores/player'
 
 defineProps<{ open: boolean; avatar: string }>()
@@ -90,7 +91,15 @@ const bagItems = computed(() =>
     .filter(([, qty]) => qty > 0)
     .map(([id, qty]) => {
       const item = getItemById(id)
-      return { id, qty, name: item?.name ?? id, usable: item?.kind === 'consumable' }
+      const mat = getMaterial(id)
+      const isEquip = item?.kind === 'equipment'
+      return {
+        id, qty,
+        name: item?.name ?? mat?.name ?? id,
+        usable: item?.kind === 'consumable',
+        equip: isEquip && player.equipment[item.slot] !== id ? id : '',
+        color: rarityColor(rarityOf(id)),
+      }
     }),
 )
 </script>

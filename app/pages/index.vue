@@ -148,6 +148,11 @@
             <span class="nav-ico">✨</span>Skills
             <span v-if="player.skillPoints" class="nav-btn-badge">{{ player.skillPoints }}</span>
           </button>
+          <button class="nav-btn" @click="guildOpen = true">
+            <span class="nav-ico">📚</span>Guild
+            <span v-if="questClaimable" class="nav-btn-badge">!</span>
+          </button>
+          <button class="nav-btn" @click="craftOpen = true"><span class="nav-ico">⚒</span>Craft</button>
           <button class="nav-btn" @click="mapOpen = true"><span class="nav-ico">🗺</span>Map</button>
           <button class="nav-btn" @click="logOpen = true"><span class="nav-ico">📖</span>Log</button>
           <button class="nav-btn" @click="townOpen = true"><span class="nav-ico">🏰</span>Town</button>
@@ -184,7 +189,9 @@
         <GameShopModal :open="itemShopOpen" kind-filter="consumable" @close="itemShopOpen = false" />
         <GameShopModal :open="equipShopOpen" kind-filter="equipment" @close="equipShopOpen = false" />
         <GameSkillTreeModal :open="skillsOpen" @close="skillsOpen = false" />
-        <GameTownModal :open="townOpen" @close="townOpen = false" @shop="townOpen = false; itemShopOpen = true" @guild="townOpen = false; skillsOpen = true" />
+        <GameGuildModal :open="guildOpen" @close="guildOpen = false" />
+        <GameCraftModal :open="craftOpen" @close="craftOpen = false" />
+        <GameTownModal :open="townOpen" @close="townOpen = false" @shop="townOpen = false; itemShopOpen = true" @guild="townOpen = false; guildOpen = true" />
         <GamePortalModal :open="portalOpen" :floor="portalFloor" @close="portalOpen = false" />
       </section>
     </div>
@@ -212,6 +219,8 @@ const systemTab = ref<'settings' | 'leaderboard' | 'guide' | 'news'>('settings')
 const itemShopOpen = ref(false)
 const equipShopOpen = ref(false)
 const skillsOpen = ref(false)
+const guildOpen = ref(false)
+const craftOpen = ref(false)
 const townOpen = ref(false)
 const portalOpen = ref(false)
 const portalFloor = ref(2)
@@ -232,6 +241,9 @@ const selectedClass = computed(() => classes.find((heroClass) => heroClass.id ==
 // เควสปลดล็อกบอสชั้นปัจจุบันครบเงื่อนไขแล้ว → โชว์ badge "!" บนปุ่ม Quests
 const questReady = computed(() =>
   describeMissingRequirements(getBossRequirement(player.currentFloor), player).length === 0)
+// มีเควสรายวันที่พร้อมกดรับ → badge "!" บนปุ่ม Guild
+const questClaimable = computed(() =>
+  player.dailyQuests.some((q) => !q.claimed && q.progress >= q.target))
 
 function openSystem(tab: 'settings' | 'leaderboard' | 'guide' | 'news') {
   systemTab.value = tab
@@ -276,7 +288,7 @@ gameEvents.on('floor:advance', () => {
 gameEvents.on('town:hospital', () => { player.hospital(); showNotice('Hospital: HP fully restored.') })
 gameEvents.on('town:item-shop', () => { itemShopOpen.value = true })
 gameEvents.on('town:equipment-shop', () => { equipShopOpen.value = true })
-gameEvents.on('town:guild', () => { skillsOpen.value = true })
+gameEvents.on('town:guild', () => { guildOpen.value = true })
 gameEvents.on('town:portal', (payload) => { portalFloor.value = payload.floor; portalOpen.value = true })
 gameEvents.on('notice', (payload) => showNotice(payload.text))
 

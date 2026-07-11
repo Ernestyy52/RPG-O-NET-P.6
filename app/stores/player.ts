@@ -1,9 +1,14 @@
 import { defineStore } from 'pinia'
 import { getHeroClass, type HeroClassId } from '~/data/classes'
-import { findShopItem, getItemById, type EquipmentSlot } from '~/data/equipment'
+import { findShopItem, getItemById, getEquipmentById, getRecipeByOutput, type EquipmentSlot } from '~/data/equipment'
+import { rollDailyQuests, type DailyQuest, type QuestKind } from '~/data/quests'
 import { SKILL_TREE } from '~/data/skills'
 
 export type GenderId = 'male' | 'female'
+
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10)
+}
 
 interface PlayerState {
   isAuthenticated: boolean
@@ -26,6 +31,8 @@ interface PlayerState {
   equipment: Partial<Record<EquipmentSlot, string>>
   correctAnswers: number
   adventureLog: string[]
+  dailyDate: string
+  dailyQuests: DailyQuest[]
 }
 
 function expToNextLevel(level: number): number {
@@ -59,6 +66,8 @@ export const usePlayerStore = defineStore('player', {
     equipment: {},
     correctAnswers: 0,
     adventureLog: [],
+    dailyDate: '',
+    dailyQuests: [],
   }),
   getters: {
     heroClass: (state) => getHeroClass(state.classId),
@@ -119,6 +128,8 @@ export const usePlayerStore = defineStore('player', {
       this.equipment = {}
       this.correctAnswers = 0
       this.adventureLog = []
+      this.dailyDate = ''
+      this.dailyQuests = []
       this.characterCreated = true
       this.hp = this.maxHp
       this.mp = this.maxMp
@@ -178,6 +189,7 @@ export const usePlayerStore = defineStore('player', {
     advanceFloor() {
       this.currentFloor += 1
       if (this.hp > this.maxHp) this.hp = this.maxHp
+      this.progressQuest('climb', 1)
     },
     addItem(itemId: string, qty = 1) {
       this.inventory[itemId] = (this.inventory[itemId] ?? 0) + qty
@@ -189,6 +201,11 @@ export const usePlayerStore = defineStore('player', {
       this.correctAnswers += 1
       // ตอบถูก = สมาธิกลับคืน เติม MP เล็กน้อย (ผูกความรู้เข้ากับทรัพยากรต่อสู้)
       this.mp = Math.min(this.maxMp, this.mp + 2)
+      this.progressQuest('answer', 1)
+    },
+    // เรียกตอนล้มมอนสเตอร์ (จาก BattleModal) — นับความคืบหน้าเควส "defeat"
+    recordDefeat() {
+      this.progressQuest('defeat', 1)
     },
     buyItem(itemId: string) {
       const item = findShopItem(this.currentFloor, itemId)
@@ -204,10 +221,54 @@ export const usePlayerStore = defineStore('player', {
       return true
     },
     useConsumable(itemId: string) {
-      const item = findShopItem(this.currentFloor, itemId)
+      // ใช้ getItemById (ไม่ใช่ findShopItem) เพราะไอเทมในกระเป๋าอาจไม่อยู่ในร้านของชั้นนี้
+      const item = getItemById(itemId)
       if (!item || item.kind !== 'consumable' || !this.inventory[itemId]) return false
       this.inventory[itemId] -= 1
       if (item.effect.heal) this.heal(item.effect.heal)
+      if (item.effect.mp) this.restoreMp(item.effect.mp)
+      return true
+    },
+    // สวมใส่ equipment ที่มีในกระเป๋า (ใช้กับของที่คราฟหรือดรอปได้)
+    equipItem(itemId: string) {
+      const item = getEquipmentById(itemId)
+      if (!item || !this.inventory[itemId]) return false
+      this.equipment[item.slot] = item.id
+      if (this.hp > this.maxHp) this.hp = this.maxHp
+      return true
+    },
+    // คราฟไอเทมจากสูตร: หักวัสดุ+เงิน แล้วได้ของ (สวมให้อัตโนมัติ)
+    craftItem(outputId: string) {
+      const recipe = getRecipeByOutput(outputId)
+      const output = getEquipmentById(outputId)
+      if (!recipe || !output) return false
+      if (this.gold < recipe.gold) return false
+      for (const m of recipe.materials) if ((this.inventory[m.id] ?? 0) < m.qty) return false
+      for (const m of recipe.materials) this.inventory[m.id] -= m.qty
+      this.gold -= recipe.gold
+      this.addItem(output.id, 1)
+      this.equipment[output.slot] = output.id
+      this.addLog(`Crafted ${output.name}.`)
+      return true
+    },
+    // ---- daily quests ----
+    ensureDailyQuests() {
+      const today = todayKey()
+      if (this.dailyDate === today && this.dailyQuests.length) return
+      this.dailyDate = today
+      this.dailyQuests = rollDailyQuests(today, this.currentFloor)
+    },
+    progressQuest(kind: QuestKind, amount: number) {
+      for (const q of this.dailyQuests) {
+        if (q.kind === kind && !q.claimed) q.progress = Math.min(q.target, q.progress + amount)
+      }
+    },
+    claimQuest(id: string) {
+      const q = this.dailyQuests.find((quest) => quest.id === id)
+      if (!q || q.claimed || q.progress < q.target) return false
+      q.claimed = true
+      this.gainRewards(q.reward.exp, q.reward.gold, q.reward.gems)
+      this.addLog(`Quest complete: ${q.label} (+${q.reward.gold}g${q.reward.gems ? `, +${q.reward.gems} gems` : ''})`)
       return true
     },
     learnSkill(skillId: string) {

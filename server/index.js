@@ -115,6 +115,8 @@ class DungeonRoom extends Room {
     this.setPatchRate(50)
     this.seeded = false
     this.velocities = new Map() // ความเร็วมอนสเตอร์ (ไม่ต้อง sync — sync เฉพาะตำแหน่ง)
+    this.deadAt = new Map()     // id -> เวลาที่ตาย (ไว้ respawn หลัง 10 วิ)
+    this.respawnSeq = 0
 
     // client คนแรก seed รายการมอนสเตอร์ (slug/ตำแหน่ง จาก theme ของชั้น — server ไม่มีไฟล์ data ฝั่งเกม)
     this.onMessage('seed', (client, list) => {
@@ -167,7 +169,10 @@ class DungeonRoom extends Room {
       const mon = this.state.monsters.get(id)
       if (!mon || mon.lockedBy !== client.sessionId) return
       mon.lockedBy = ''
-      if (data?.won) mon.alive = false // ตายทั้งห้อง — ทุกคนเห็นหายพร้อมกัน
+      if (data?.won) {
+        mon.alive = false // ตายทั้งห้อง — ทุกคนเห็นหายพร้อมกัน
+        this.deadAt.set(id, Date.now()) // ตั้งเวลา respawn (10 วิ)
+      }
     })
 
     // มอนสเตอร์เดินสุ่มฝั่ง server — ทุก client เห็นตำแหน่งเดียวกันเป๊ะ
@@ -177,6 +182,25 @@ class DungeonRoom extends Room {
       this.wanderTick += dt
       const reroll = this.wanderTick >= 1400
       if (reroll) this.wanderTick = 0
+
+      // respawn: มอนสเตอร์ที่ตายครบ 10 วิ → ลบตัวเก่า + เกิดตัวใหม่ (slug เดิม ตำแหน่งสุ่ม)
+      const now = Date.now()
+      for (const [deadId, ts] of this.deadAt) {
+        if (now - ts < 10000) continue
+        const old = this.state.monsters.get(deadId)
+        this.deadAt.delete(deadId)
+        if (old) {
+          const fresh = new MonsterState()
+          fresh.slug = old.slug
+          fresh.x = 64 + Math.random() * (DUNGEON_W - 128)
+          fresh.y = 128 + Math.random() * (DUNGEON_H - 192)
+          fresh.alive = true
+          fresh.lockedBy = ''
+          this.state.monsters.delete(deadId)
+          this.state.monsters.set(`r${this.respawnSeq++}`, fresh)
+        }
+      }
+
       this.state.monsters.forEach((mon, id) => {
         if (!mon.alive || mon.lockedBy !== '') { this.velocities.delete(id); return }
         if (reroll) {

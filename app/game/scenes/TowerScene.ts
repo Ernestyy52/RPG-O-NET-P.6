@@ -56,6 +56,7 @@ export class TowerScene extends Phaser.Scene {
   private netPlayers = new RemotePlayers(this)
   private online = false
   private pendingBattle = false
+  private targetMonsters = 25
 
   constructor() {
     super('TowerScene')
@@ -141,9 +142,27 @@ export class TowerScene extends Phaser.Scene {
     // ---- 25+ themed monsters ----
     // ออนไลน์: มอนสเตอร์มาจาก server (ทุกคนในชั้นเห็นตำแหน่งเดียวกัน) / ออฟไลน์: สุ่ม local
     this.monsters = this.physics.add.group()
+    this.targetMonsters = config.monsterCount
     this.physics.add.collider(this.monsters, walls)
     this.physics.add.collider(this.monsters, this.monsters)
     this.setupMultiplayer(config)
+
+    // มอนสเตอร์เกิดใหม่ทุก 10 วิ (offline เท่านั้น — online ให้ server คุมจำนวน)
+    // เติมกลับจนเท่าจำนวนตั้งต้น เพื่อให้ผู้เล่นฟาร์มต่อได้ไม่มีวันหมดชั้น
+    this.time.addEvent({
+      delay: 10000, loop: true, callback: () => {
+        if (this.online || this.inBattle) return
+        const alive = this.monsters.getChildren().filter((c) => {
+          const m = c as Phaser.Physics.Arcade.Sprite
+          return m.active && !m.getData('isBoss')
+        }).length
+        if (alive < this.targetMonsters) {
+          const spot = this.rollMonsterSpawns(1)[0]
+          // spawnMonsterSprite เฟดอินให้อยู่แล้ว (alpha 0→1) — ใช้เป็นสัญญาณตัวใหม่
+          this.spawnMonsterSprite(spot.slug, spot.x, spot.y, 0)
+        }
+      },
+    })
 
     // สุ่มเปลี่ยนทิศเดินทุก ~1.4 วิ: 40% เดินช้าๆ / 60% หยุด (เฉพาะ local — ตัว net ขยับตาม server)
     this.time.addEvent({

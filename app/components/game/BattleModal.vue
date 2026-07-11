@@ -208,6 +208,7 @@ function winBattle() {
   // บอสดรอปเพชร: บอสธรรมดา 1 เม็ด / world boss (ทุก 10 ชั้น) 3 เม็ด
   const gems = enc.isBoss ? (config.value.isMilestone ? 3 : 1) : 0
   player.gainRewards(enc.expReward, enc.goldReward, gems)
+  player.recordDefeat()
   const drops = rollLoot(floor.value, enc.isBoss)
   for (const drop of drops) player.addItem(drop.itemId, drop.qty)
   const dropText = drops.length ? ` Dropped: ${drops.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
