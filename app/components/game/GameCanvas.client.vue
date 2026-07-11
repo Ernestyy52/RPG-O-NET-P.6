@@ -6,6 +6,7 @@
 import { onMounted, onBeforeUnmount, nextTick, ref } from 'vue'
 import { createGame } from '~/game/createGame'
 import { setAssetBase } from '~/game/systems/textures'
+import { setNetUrl } from '~/game/systems/net'
 import { usePlayerStore } from '~/stores/player'
 
 const containerRef = ref<HTMLElement | null>(null)
@@ -17,6 +18,8 @@ onMounted(async () => {
   await nextTick()
   if (!containerRef.value) return
   setAssetBase(config.app.baseURL)
+  // multiplayer: ใช้ URL จาก env (production) หรือ localhost ตอน dev — ว่าง/ต่อไม่ติด = เล่นออฟไลน์ปกติ
+  setNetUrl(config.public.colyseusUrl || (import.meta.dev ? 'ws://localhost:2567' : ''))
   game = createGame(containerRef.value, player.currentFloor, player.classId)
   // dev-only debug handle เธชเธณเธซเธฃเธฑเธ preview/verification (jump floor, inspect scenes) — ไม่ทำงานตอน production build
   if (import.meta.dev) (window as unknown as { __game?: Phaser.Game }).__game = game

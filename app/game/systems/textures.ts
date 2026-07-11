@@ -11,27 +11,49 @@ const ART = {
   goldLight: 0xffe08a,
 }
 
-// แผ่น sprite อาชีพ+เพศ ตัดจาก Occupation.png (scripts/sprite-crop/build-overworld.cjs) — frame size ต่อไฟล์
-// ต้องตรงกับ public/character-sprites/_sheet_manifest.json
+// ผู้เล่นทุกคลาส×เพศรวมอยู่ใน atlas เดียว (public/character-sprites/hero-atlas.png,
+// สร้างด้วย scripts/sprite-crop/build-hero-atlas.cjs) — 1 texture = 1 draw batch
+// จำเป็นเมื่อมีผู้เล่นหลายตัวในฉากแบบ multiplayer; ขนาดเฟรมตาม _atlas_manifest.json
+const HERO_ATLAS = 'hero_atlas'
 const CLASS_SHEETS: Record<string, { fw: number; fh: number }> = {
-  warrior_male: { fw: 78, fh: 162 }, warrior_female: { fw: 71, fh: 160 },
-  archer_male: { fw: 77, fh: 161 }, archer_female: { fw: 74, fh: 161 },
-  mage_male: { fw: 79, fh: 162 }, mage_female: { fw: 78, fh: 157 },
-  guardian_male: { fw: 90, fh: 162 }, guardian_female: { fw: 84, fh: 162 },
+  warrior_male: { fw: 46, fh: 96 }, warrior_female: { fw: 43, fh: 96 },
+  archer_male: { fw: 46, fh: 96 }, archer_female: { fw: 44, fh: 96 },
+  mage_male: { fw: 47, fh: 96 }, mage_female: { fw: 48, fh: 96 },
+  guardian_male: { fw: 53, fh: 96 }, guardian_female: { fw: 50, fh: 96 },
 }
-// เธฅเธณเธ”เธฑเธ frame เนเธ sheet (2 col x 4 row, row-major): down[0,1] left[2,3] right[4,5] up[6,7] — col0=idle, col1=move
-const DIR_ROW: Record<'down' | 'left' | 'right' | 'up', number> = { down: 0, left: 1, right: 2, up: 3 }
 
-export function heroKey(classId: string, gender: string): string {
-  const key = CLASS_SHEETS[`${classId}_${gender}`] ? `${classId}_${gender}` : 'warrior_male'
-  return `char_${key}`
+function heroSheetKey(classId: string, gender: string): string {
+  return CLASS_SHEETS[`${classId}_${gender}`] ? `${classId}_${gender}` : 'warrior_male'
+}
+
+/** texture key ของผู้เล่น (ทุกคลาสใช้ atlas เดียวกัน) — ใช้คู่กับ heroIdleFrame ตอนสร้าง sprite */
+export function heroKey(_classId: string, _gender: string): string {
+  return HERO_ATLAS
+}
+/** เฟรมเริ่มต้น (ยืนหันหน้าลง) ของคลาสนั้นๆ ใน atlas */
+export function heroIdleFrame(classId: string, gender: string, dir: 'down' | 'left' | 'right' | 'up' = 'down'): string {
+  return `${heroSheetKey(classId, gender)}_${dir}_0`
 }
 export function heroSheetSize(classId: string, gender: string): { fw: number; fh: number } {
-  return CLASS_SHEETS[`${classId}_${gender}`] ?? CLASS_SHEETS.warrior_male
+  return CLASS_SHEETS[heroSheetKey(classId, gender)]
 }
 export function heroAnim(classId: string, gender: string, state: 'idle' | 'walk', dir: 'down' | 'left' | 'right' | 'up'): string {
-  const key = CLASS_SHEETS[`${classId}_${gender}`] ? `${classId}_${gender}` : 'warrior_male'
-  return `char_${key}_${state}_${dir}`
+  return `char_${heroSheetKey(classId, gender)}_${state}_${dir}`
+}
+
+/** ขนาดมาตรฐานผู้เล่นบนแมพ (สูง px) — ต้องเท่ากันทุกฉาก เพื่อ hitbox/netcode ตรงกันเสมอ */
+export const HERO_DISPLAY_H = 48
+
+/**
+ * Hitbox มาตรฐานเท่ากันทุกคลาส (~18x12 world px ที่เท้า) — เฟรมแต่ละคลาสกว้างไม่เท่ากัน
+ * ถ้าผูก hitbox กับขนาดเฟรมจะไม่แฟร์และ sync กับ server ยาก จึง fix เป็นค่าโลกเดียว
+ */
+export function applyStandardHeroBody(sprite: Phaser.Physics.Arcade.Sprite, scale: number) {
+  const body = sprite.body as Phaser.Physics.Arcade.Body
+  const w = 18 / scale
+  const h = 12 / scale
+  body.setSize(w, h)
+  body.setOffset((sprite.width - w) / 2, sprite.height - h - 3 / scale)
 }
 
 // เน€เธเธฃเธกเนเธเธชเนเธเธฃเธ—เนเธเธตเธ• tiny-town (12 เธเธญเธฅเธฑเธกเธเน x 11 เนเธ–เธง, 16px เธ•เนเธญเน€เธเธฃเธก)
@@ -95,11 +117,8 @@ export function preloadSharedAssets(scene: Phaser.Scene) {
   if (scene.textures.exists('tiny_town')) return
   scene.load.spritesheet('tiny_town', assetPath('tiny-town/tilemap_packed.png'), { frameWidth: SRC, frameHeight: SRC })
 
-  // Character sprites เธ•เธฑเธ”เธกเธฒเธเธฒเธ Occupation.png (Main Character Asset) — คีย์ตามอาชีพ+เพศ
-  // แผ่นละ 4 ทิศ (down/left/right/up) x 2 คอลัมน์ (idle, movement) → เดินในแมพให้ตรงกับ Character Icon
-  for (const [key, sheet] of Object.entries(CLASS_SHEETS)) {
-    scene.load.spritesheet(`char_${key}`, assetPath(`character-sprites/${key}.png`), { frameWidth: sheet.fw, frameHeight: sheet.fh })
-  }
+  // ผู้เล่นทุกคลาสโหลดจาก atlas เดียว (แหล่งเดิม: Occupation.png ผ่าน build-hero-atlas.cjs)
+  scene.load.atlas(HERO_ATLAS, assetPath('character-sprites/hero-atlas.png'), assetPath('character-sprites/hero-atlas.json'))
 }
 
 export function preloadTownAssets(scene: Phaser.Scene) {
@@ -325,19 +344,23 @@ function buildHeroAnimations(scene: Phaser.Scene) {
   if (scene.anims.exists('char_warrior_male_idle_down')) return
   const dirs = ['down', 'left', 'right', 'up'] as const
   for (const key of Object.keys(CLASS_SHEETS)) {
-    const tex = `char_${key}`
     for (const dir of dirs) {
-      const idle = DIR_ROW[dir] * 2 // col0 = idle
       scene.anims.create({
-        key: `${tex}_idle_${dir}`,
-        frames: [{ key: tex, frame: idle }],
+        key: `char_${key}_idle_${dir}`,
+        frames: [{ key: HERO_ATLAS, frame: `${key}_${dir}_0` }],
         frameRate: 1,
         repeat: -1,
       })
+      // วงจรเดิน 4 สเต็ป step-stand-step-stand (เฟรม 2 คือก้าวขาสลับ/ยกตัว ที่ bake จากเฟรมจริง)
       scene.anims.create({
-        key: `${tex}_walk_${dir}`,
-        frames: scene.anims.generateFrameNumbers(tex, { frames: [idle, idle + 1] }), // idle,move → เดิน 2 เฟรม
-        frameRate: 6,
+        key: `char_${key}_walk_${dir}`,
+        frames: [
+          { key: HERO_ATLAS, frame: `${key}_${dir}_1` },
+          { key: HERO_ATLAS, frame: `${key}_${dir}_0` },
+          { key: HERO_ATLAS, frame: `${key}_${dir}_2` },
+          { key: HERO_ATLAS, frame: `${key}_${dir}_0` },
+        ],
+        frameRate: 8,
         repeat: -1,
       })
     }

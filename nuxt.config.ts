@@ -11,6 +11,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       sheetsApiUrl: process.env.NUXT_PUBLIC_SHEETS_API_URL || '',
+      // Colyseus multiplayer server (ws://... หรือ wss://...) — เว้นว่าง = เล่นออฟไลน์ปกติ
+      colyseusUrl: process.env.NUXT_PUBLIC_COLYSEUS_URL || '',
     },
   },
   nitro: {

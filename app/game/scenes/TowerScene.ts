@@ -16,12 +16,17 @@ import {
   bossVisualForFloor,
   ensureWorldBossAnim,
   heroKey,
+  heroIdleFrame,
   heroAnim,
   heroSheetSize,
+  HERO_DISPLAY_H,
+  applyStandardHeroBody,
 } from '../systems/textures'
 import { applyAtmosphere, createIdleBreath, addPlaque } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
 import { assetPath } from '../systems/textures'
+import { joinDungeon, leaveRoom, requestBattle, sendBattleResult, sendSeed, mySessionId, type NetMonsterSchema } from '../systems/net'
+import { RemotePlayers } from '../systems/remotePlayers'
 
 const TILE = 32
 const MAP_W = 24
@@ -48,6 +53,9 @@ export class TowerScene extends Phaser.Scene {
   private lastNotice = 0
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private hintPlaque?: ReturnType<typeof addPlaque>
+  private netPlayers = new RemotePlayers(this)
+  private online = false
+  private pendingBattle = false
 
   constructor() {
     super('TowerScene')
@@ -107,15 +115,15 @@ export class TowerScene extends Phaser.Scene {
     // ---- player ----
     this.gender = player.gender
     const size = heroSheetSize(this.classId, this.gender)
-    const pScale = 48 / size.fh
+    const pScale = HERO_DISPLAY_H / size.fh
     const startX = TILE * 2
     const startY = TILE * (MAP_H - 2)
     this.add.image(startX, startY + 12, 'shadow_blob').setDepth(startY - 1)
-    this.player = this.physics.add.sprite(startX, startY, heroKey(this.classId, this.gender))
+    this.player = this.physics.add.sprite(startX, startY, heroKey(this.classId, this.gender), heroIdleFrame(this.classId, this.gender))
     this.player.setOrigin(0.5, 0.92).setScale(pScale)
     this.player.setCollideWorldBounds(true)
     this.player.play(heroAnim(this.classId, this.gender, 'idle', 'down'))
-    this.player.body.setSize(size.fw * 0.5, size.fh * 0.22).setOffset(size.fw * 0.25, size.fh * 0.72)
+    applyStandardHeroBody(this.player, pScale)
     this.physics.add.collider(this.player, walls)
     this.idleBreath = createIdleBreath(this, this.player, pScale)
 
@@ -130,34 +138,20 @@ export class TowerScene extends Phaser.Scene {
     this.bossDoor.setOrigin(0.5, 0.7).setDepth(doorY)
     addPlaque(this, doorX, doorY + 12, 'Boss Room', { fontSize: '10px', depth: doorY + 1 })
 
-    // ---- 25+ themed monsters (เดินสุ่มทิศให้โลกมีชีวิต) ----
+    // ---- 25+ themed monsters ----
+    // ออนไลน์: มอนสเตอร์มาจาก server (ทุกคนในชั้นเห็นตำแหน่งเดียวกัน) / ออฟไลน์: สุ่ม local
     this.monsters = this.physics.add.group()
-    const rng = Phaser.Math.RND
-    for (let i = 0; i < config.monsterCount; i++) {
-      const mx = Phaser.Math.Between(3, MAP_W - 3) * TILE
-      const my = Phaser.Math.Between(5, MAP_H - 3) * TILE
-      const slug = this.theme.monsters[rng.between(0, this.theme.monsters.length - 1)]
-      const m = this.monsters.create(mx, my, monsterTextureKey(slug)) as Phaser.Physics.Arcade.Sprite
-      m.setData('slug', slug)
-      const mScale = 46 / m.height
-      m.setScale(mScale).setDepth(my)
-      m.body.setSize(m.width * 0.42, m.height * 0.4).setOffset(m.width * 0.29, m.height * 0.4)
-      m.setCollideWorldBounds(true)
-      m.setAlpha(0)
-      this.tweens.add({ targets: m, alpha: 1, duration: 250, delay: i * 12 })
-      // หายใจ (scale pulse) แทน y-tween เพื่อไม่ตีกับ physics ตอนเดิน
-      this.tweens.add({ targets: m, scaleY: mScale * 1.05, duration: 850 + Math.random() * 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-    }
     this.physics.add.collider(this.monsters, walls)
     this.physics.add.collider(this.monsters, this.monsters)
+    this.setupMultiplayer(config)
 
-    // สุ่มเปลี่ยนทิศเดินทุก ~1.4 วิ: 40% เดินช้าๆ / 60% หยุด (บอสไม่เดิน — คุมเวที)
+    // สุ่มเปลี่ยนทิศเดินทุก ~1.4 วิ: 40% เดินช้าๆ / 60% หยุด (เฉพาะ local — ตัว net ขยับตาม server)
     this.time.addEvent({
       delay: 1400, loop: true, callback: () => {
         if (this.inBattle) return
         for (const child of this.monsters.getChildren()) {
           const m = child as Phaser.Physics.Arcade.Sprite
-          if (!m.active || m.getData('isBoss')) continue
+          if (!m.active || m.getData('isBoss') || m.getData('net')) continue
           if (Math.random() < 0.4) {
             const angle = Math.random() * Math.PI * 2
             const spd = 22 + Math.random() * 18
@@ -193,6 +187,89 @@ export class TowerScene extends Phaser.Scene {
     gameEvents.on('battle:end', this.handleBattleEnd, this)
     this.events.once('shutdown', () => {
       gameEvents.off('battle:end', this.handleBattleEnd, this)
+      leaveRoom()
+      this.netPlayers.destroy()
+    })
+  }
+
+  /** สุ่มมอนสเตอร์แบบ local (โหมดออฟไลน์ หรือใช้เป็น seed ให้ server ตอนเป็นคนแรกที่เข้าห้อง) */
+  private rollMonsterSpawns(count: number) {
+    const rng = Phaser.Math.RND
+    return Array.from({ length: count }, (_, i) => ({
+      id: `m${i}`,
+      slug: this.theme.monsters[rng.between(0, this.theme.monsters.length - 1)],
+      x: Phaser.Math.Between(3, MAP_W - 3) * TILE,
+      y: Phaser.Math.Between(5, MAP_H - 3) * TILE,
+    }))
+  }
+
+  private spawnMonsterSprite(slug: string, x: number, y: number, index: number) {
+    const m = this.monsters.create(x, y, monsterTextureKey(slug)) as Phaser.Physics.Arcade.Sprite
+    m.setData('slug', slug)
+    const mScale = 46 / m.height
+    m.setScale(mScale).setDepth(y)
+    m.body.setSize(m.width * 0.42, m.height * 0.4).setOffset(m.width * 0.29, m.height * 0.4)
+    m.setCollideWorldBounds(true)
+    m.setAlpha(0)
+    this.tweens.add({ targets: m, alpha: 1, duration: 250, delay: index * 12 })
+    // หายใจ (scale pulse) แทน y-tween เพื่อไม่ตีกับ physics ตอนเดิน
+    this.tweens.add({ targets: m, scaleY: mScale * 1.05, duration: 850 + Math.random() * 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+    return m
+  }
+
+  /**
+   * เข้าห้องดันเจี้ยนของชั้นนี้: ผู้เล่นคนอื่นโผล่ในฉาก + มอนสเตอร์ sync จาก server
+   * (คนแรกที่เข้า seed รายการมอนสเตอร์ให้ server เป็นเจ้าของต่อ) — ต่อไม่ติดก็สุ่ม local ตามเดิม
+   */
+  private async setupMultiplayer(config: ReturnType<typeof getFloorConfig>) {
+    const store = usePlayerStore()
+    const room = await joinDungeon({
+      name: store.displayName,
+      classId: this.classId,
+      gender: this.gender,
+      x: this.player.x,
+      y: this.player.y,
+      floor: this.floor,
+    })
+    if (!this.scene.isActive()) { leaveRoom(); return }
+    if (!room) {
+      // ออฟไลน์: สุ่มมอนสเตอร์ local เหมือนเดิมทุกประการ
+      for (const [i, s] of this.rollMonsterSpawns(config.monsterCount).entries()) {
+        this.spawnMonsterSprite(s.slug, s.x, s.y, i)
+      }
+      return
+    }
+    this.online = true
+    this.netPlayers.bind(room)
+    // เสนอ seed — server รับเฉพาะตอนห้องยังว่าง (คนแรกเท่านั้น) จึงส่งได้ปลอดภัยทุกคน
+    sendSeed(this.rollMonsterSpawns(config.monsterCount))
+
+    let spawnIndex = 0
+    room.state.monsters.onAdd((mon: NetMonsterSchema, id: string) => {
+      if (!mon.alive) return
+      const m = this.spawnMonsterSprite(mon.slug, mon.x, mon.y, spawnIndex++)
+      m.setData('net', true)
+      m.setData('netId', id)
+      m.setData('tx', mon.x)
+      m.setData('ty', mon.y)
+      // ป้าย ⚔ เมื่อมีคนอื่นกำลังสู้ตัวนี้ (instanced battle lock)
+      const lockMark = this.add.text(mon.x, mon.y - 30, '⚔', { fontSize: '11px' }).setOrigin(0.5, 1).setVisible(false)
+      m.setData('lockMark', lockMark)
+      mon.onChange(() => {
+        if (!mon.alive) {
+          // ตายจากผลศึกของใครก็ตาม — ทุก client เก็บซากพร้อมกัน
+          lockMark.destroy()
+          if (m.active) {
+            m.setActive(false)
+            this.tweens.add({ targets: m, alpha: 0, scaleX: 0, scaleY: 0, duration: 220, onComplete: () => m.destroy() })
+          }
+          return
+        }
+        m.setData('tx', mon.x)
+        m.setData('ty', mon.y)
+        m.setData('lockedBy', mon.lockedBy)
+        lockMark.setVisible(mon.lockedBy !== '' && mon.lockedBy !== mySessionId())
+      })
     })
   }
 
@@ -234,7 +311,7 @@ export class TowerScene extends Phaser.Scene {
     }
   }
 
-  update() {
+  update(time: number) {
     if (this.inBattle) { this.player.setVelocity(0); return }
     const speed = 120
     this.player.setVelocity(0)
@@ -247,17 +324,51 @@ export class TowerScene extends Phaser.Scene {
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
     this.idleBreath.setMoving(moving)
-    // มอนสเตอร์เดินได้ -> อัปเดต depth ตาม y ให้ซ้อนกันถูก
+    this.netPlayers.update(time, this.player, this.facing, moving)
+
+    // มอนสเตอร์: net = interpolate ไปตำแหน่ง server / local = เดินด้วย physics — depth ตาม y เสมอ
     for (const child of this.monsters.getChildren()) {
       const m = child as Phaser.Physics.Arcade.Sprite
-      if (m.active && !m.getData('isBoss')) m.setDepth(m.y)
+      if (!m.active) continue
+      if (m.getData('net')) {
+        m.x += ((m.getData('tx') as number) - m.x) * 0.2
+        m.y += ((m.getData('ty') as number) - m.y) * 0.2
+        const mark = m.getData('lockMark') as Phaser.GameObjects.Text | undefined
+        mark?.setPosition(m.x, m.y - 30).setDepth(m.y + 0.1)
+      }
+      if (!m.getData('isBoss')) m.setDepth(m.y)
     }
   }
 
   private onEncounterMonster(monster: Phaser.Physics.Arcade.Sprite) {
-    if (this.inBattle || !monster.active) return
+    if (this.inBattle || this.pendingBattle || !monster.active) return
     const isBoss = monster.getData('isBoss') as boolean | undefined
     if (isBoss && !this.bossUnlocked) return
+
+    // instanced battle (ออนไลน์): ขอสิทธิ์จาก server ก่อน — มอนสเตอร์ที่เพื่อนจองอยู่สู้ไม่ได้
+    if (!isBoss && monster.getData('net')) {
+      const lockedBy = (monster.getData('lockedBy') as string) || ''
+      if (lockedBy && lockedBy !== mySessionId()) return
+      this.pendingBattle = true
+      requestBattle(monster.getData('netId') as string).then((granted) => {
+        this.pendingBattle = false
+        if (!this.scene.isActive() || this.inBattle || !monster.active) return
+        if (!granted) {
+          if (this.time.now - this.lastNotice > 2500) {
+            this.lastNotice = this.time.now
+            gameEvents.emit('notice', { text: 'A friend is already fighting that monster!' })
+          }
+          return
+        }
+        this.startEncounter(monster, false)
+      })
+      return
+    }
+
+    this.startEncounter(monster, !!isBoss)
+  }
+
+  private startEncounter(monster: Phaser.Physics.Arcade.Sprite, isBoss: boolean) {
     this.inBattle = true
     monster.setData('inFight', true)
     ;(monster.body as Phaser.Physics.Arcade.Body).enable = false
@@ -305,6 +416,11 @@ export class TowerScene extends Phaser.Scene {
     this.inBattle = false
     const monster = this.activeMonster
     this.activeMonster = undefined
+
+    // แจ้งผลให้ server (มอนสเตอร์ net): ชนะ = ตายทั้งห้อง / แพ้-หนี = ปลดล็อกให้เพื่อนสู้ต่อ
+    if (monster?.getData('net')) {
+      sendBattleResult(monster.getData('netId') as string, payload.won && !payload.isBoss)
+    }
 
     if (!payload.won) {
       // แพ้ = หมดสติ ฟื้นชั้นเดิม (มอนสเตอร์รีเซ็ต)

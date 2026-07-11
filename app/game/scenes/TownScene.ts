@@ -5,8 +5,10 @@ import { getWorldState } from '../../data/world'
 import { gameEvents } from '../systems/eventBus'
 import { applyAtmosphere, addTorchFlicker, addPortalGlow, addWindowGlow, addPlaque, createIdleBreath } from '../systems/atmosphere'
 import { preloadBgm, playBgm } from '../systems/bgm'
-import { assetPath, preloadSharedAssets, buildSharedTextures, heroKey, heroAnim, heroSheetSize } from '../systems/textures'
+import { assetPath, preloadSharedAssets, buildSharedTextures, heroKey, heroIdleFrame, heroAnim, heroSheetSize, HERO_DISPLAY_H, applyStandardHeroBody } from '../systems/textures'
 import { buildTownStructures } from '../systems/buildingArt'
+import { joinTown, leaveRoom } from '../systems/net'
+import { RemotePlayers } from '../systems/remotePlayers'
 import { usePlayerStore } from '../../stores/player'
 
 // ================================================================================================
@@ -29,16 +31,35 @@ interface TownZone {
 }
 
 // ตำแหน่งอาคาร/พร็อพ วัดจากภาพ town-night.png (ครอปจาก mockup ที่ผู้ใช้ส่งมา)
+// กล่องชนครอบเฉพาะ "ตัวกำแพงล่าง" ของอาคาร — เว้นแนวหลังคาให้ผู้เล่นเดินอ้อมหลังตึกได้
+// (เลเยอร์ slice ด้านล่างจะบังตัวละครเอง เกิดมิติหน้า-หลังแบบ RPG จริง)
 const ZONES: TownZone[] = [
-  { box: [185, 55, 420, 180], door: [300, 192], event: 'town:hospital' },
-  { box: [148, 295, 460, 462], door: [300, 478], event: 'town:item-shop' },
-  { box: [955, 25, 1275, 192], door: [1105, 205], event: 'town:guild' },
-  { box: [1085, 290, 1335, 468], door: [1185, 482], event: 'town:equipment-shop' },
-  { box: [652, 5, 822, 175], door: [737, 190], event: 'portal' },
-  { box: [805, 395, 955, 470] }, // บอร์ดประกาศ
+  { box: [185, 100, 420, 184], door: [300, 196], event: 'town:hospital' },
+  { box: [150, 340, 455, 458], door: [300, 476], event: 'town:item-shop' },
+  { box: [960, 100, 1270, 192], door: [1105, 206], event: 'town:guild' },
+  { box: [1090, 350, 1330, 460], door: [1185, 478], event: 'town:equipment-shop' },
+  { box: [640, 62, 835, 178], door: [737, 192], event: 'portal' },
+  { box: [805, 418, 950, 465] }, // บอร์ดประกาศ
   { box: [652, 618, 778, 700] }, // บ่อน้ำ
-  { box: [700, 518, 750, 560] }, // ป้ายบอกทาง
+  { box: [700, 535, 750, 562] }, // ป้ายบอกทาง
 ]
+
+// เลเยอร์อาคาร: ตัดจากภาพเมืองตอนรันไทม์ วางทับตำแหน่งเดิมเป๊ะ พร้อม depth = แนวตีนอาคาร
+// → ผู้เล่น/มอนสเตอร์ y น้อยกว่าตีนตึก = ถูกตึกบัง (เดินอ้อมหลังได้), y มากกว่า = เดินหน้าตึก
+const SLICES: { key: string; rect: [number, number, number, number] }[] = [
+  { key: 'slice_hospital', rect: [160, 5, 295, 181] },
+  { key: 'slice_item_shop', rect: [140, 272, 330, 190] },
+  { key: 'slice_guild', rect: [950, 3, 340, 194] },
+  { key: 'slice_equip', rect: [1080, 275, 265, 190] },
+  { key: 'slice_portal', rect: [618, 0, 238, 183] },
+  { key: 'slice_notice', rect: [798, 385, 165, 85] },
+  { key: 'slice_well', rect: [645, 608, 140, 100] },
+  { key: 'slice_sign', rect: [693, 502, 65, 62] },
+]
+
+// ชั้นความลึก: 0 พื้น | 1 ย้อมสีไบโอม | y-sort โลก (ผู้เล่น+slice) | 700 แสงไฟ | 1000 ป้าย UI
+const DEPTH_LIGHTS = 700
+const DEPTH_UI = 1000
 
 // โคมไฟถนนที่วาดอยู่ในภาพ — วาง glow วิบวับทับหัวโคม
 const LAMP_SPOTS: [number, number][] = [
@@ -68,6 +89,7 @@ export class TownScene extends Phaser.Scene {
   private lastInteract = 0
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private interactHighlights: { x: number; y: number; range: number; glow: Phaser.GameObjects.Image }[] = []
+  private netPlayers = new RemotePlayers(this)
 
   constructor() {
     super('TownScene')
@@ -103,6 +125,18 @@ export class TownScene extends Phaser.Scene {
       this.add.rectangle(0, 0, worldW, WORLD_H, biome.bg, 0.24).setOrigin(0).setDepth(1)
     }
 
+    // เลเยอร์อาคาร (ตัดจากภาพเมืองตำแหน่งเดิมเป๊ะ) — ให้ y-sort กับผู้เล่นได้จริง
+    const artSrc = this.textures.get('town_art').getSourceImage() as HTMLImageElement
+    for (const slice of SLICES) {
+      const [sx, sy, sw, sh] = slice.rect
+      if (!this.textures.exists(slice.key)) {
+        const tex = this.textures.createCanvas(slice.key, sw, sh)!
+        tex.getContext().drawImage(artSrc, sx, sy, sw, sh, 0, 0, sw, sh)
+        tex.refresh()
+      }
+      this.add.image(sx * S, (sy + sh) * S, slice.key).setOrigin(0, 1).setScale(S).setDepth((sy + sh) * S)
+    }
+
     // ---- collision + interact จากตาราง ZONES ----
     const walls = this.physics.add.staticGroup()
     const interactZones = this.physics.add.staticGroup()
@@ -122,7 +156,7 @@ export class TownScene extends Phaser.Scene {
         // แสงนวลบอกจุดโต้ตอบ โผล่เมื่อเดินเข้าใกล้
         const highlight = this.add.image(u(dx), u(dy), 'atmo_dot')
           .setTint(zone.event === 'portal' ? 0xd8b8ff : 0xfff2b0)
-          .setBlendMode(Phaser.BlendModes.ADD).setScale(3.6).setAlpha(0).setDepth(50)
+          .setBlendMode(Phaser.BlendModes.ADD).setScale(3.6).setAlpha(0).setDepth(DEPTH_LIGHTS)
         this.interactHighlights.push({ x: u(dx), y: u(dy), range: u(150), glow: highlight })
       }
     }
@@ -131,40 +165,40 @@ export class TownScene extends Phaser.Scene {
     // วงวนพอร์ทัลหมุน 2 ชั้นสวนทาง ทับวงวนที่วาดในภาพให้ดูไหลวน
     const [vx, vy] = [u(735), u(92)]
     const vortexBack = this.add.image(vx, vy, 'portal_vortex')
-      .setBlendMode(Phaser.BlendModes.ADD).setScale(0.95).setAlpha(0.35).setTint(0x7a4de0).setDepth(2)
+      .setBlendMode(Phaser.BlendModes.ADD).setScale(0.95).setAlpha(0.35).setTint(0x7a4de0).setDepth(DEPTH_LIGHTS)
     const vortexFront = this.add.image(vx, vy, 'portal_vortex')
-      .setBlendMode(Phaser.BlendModes.ADD).setScale(0.78).setAlpha(0.6).setDepth(2.1)
+      .setBlendMode(Phaser.BlendModes.ADD).setScale(0.78).setAlpha(0.6).setDepth(DEPTH_LIGHTS + 1)
     this.tweens.add({ targets: vortexFront, angle: 360, duration: 5200, repeat: -1 })
     this.tweens.add({ targets: vortexBack, angle: -360, duration: 8200, repeat: -1 })
     this.tweens.add({ targets: [vortexFront, vortexBack], scale: '*=1.06', duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-    addPortalGlow(this, vx, vy, 2.2)
+    addPortalGlow(this, vx, vy, DEPTH_LIGHTS)
 
     for (const [fx, fy] of PORTAL_FLAMES) {
-      addTorchFlicker(this, u(fx), u(fy), 3, 0x5aa8ff, [0x8fd0ff, 0x4a86ff])
+      addTorchFlicker(this, u(fx), u(fy), DEPTH_LIGHTS, 0x5aa8ff, [0x8fd0ff, 0x4a86ff])
     }
     for (const [lx, ly] of LAMP_SPOTS) {
-      addTorchFlicker(this, u(lx), u(ly), 3)
+      addTorchFlicker(this, u(lx), u(ly), DEPTH_LIGHTS)
     }
     for (const [wx, wy] of WINDOW_SPOTS) {
-      addWindowGlow(this, u(wx), u(wy), 2.5)
+      addWindowGlow(this, u(wx), u(wy), DEPTH_LIGHTS)
     }
     // น้ำในบ่อเรืองแสงเต้นช้าๆ
     const wellGlow = this.add.image(u(713), u(660), 'atmo_dot')
-      .setTint(0x5a9aff).setBlendMode(Phaser.BlendModes.ADD).setScale(2.6).setAlpha(0.45).setDepth(2.5)
+      .setTint(0x5a9aff).setBlendMode(Phaser.BlendModes.ADD).setScale(2.6).setAlpha(0.45).setDepth(DEPTH_LIGHTS)
     this.tweens.add({ targets: wellGlow, alpha: { from: 0.3, to: 0.6 }, scale: { from: 2.3, to: 2.9 }, duration: 1700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
 
     // ---- ผู้เล่น ----
     this.gender = usePlayerStore().gender
     const size = heroSheetSize(this.classId, this.gender)
-    const scale = 64 / size.fh // ตัวใหญ่ขึ้นให้สมส่วนกับอาคารในภาพ
+    const scale = HERO_DISPLAY_H / size.fh // ขนาดมาตรฐานเดียวกันทุกฉาก (จำเป็นต่อ netcode ในอนาคต)
     const spawnX = u(697)
     const spawnY = u(430)
     this.add.image(spawnX, spawnY + 8, 'shadow_blob').setDepth(spawnY - 1)
-    this.player = this.physics.add.sprite(spawnX, spawnY, heroKey(this.classId, this.gender))
+    this.player = this.physics.add.sprite(spawnX, spawnY, heroKey(this.classId, this.gender), heroIdleFrame(this.classId, this.gender))
     this.player.setOrigin(0.5, 0.92).setScale(scale)
     this.player.setCollideWorldBounds(true)
     this.player.play(heroAnim(this.classId, this.gender, 'idle', 'down'))
-    this.player.body.setSize(size.fw * 0.5, size.fh * 0.22).setOffset(size.fw * 0.25, size.fh * 0.72)
+    applyStandardHeroBody(this.player, scale)
     this.physics.add.collider(this.player, walls)
     this.idleBreath = createIdleBreath(this, this.player, scale)
 
@@ -183,14 +217,21 @@ export class TownScene extends Phaser.Scene {
     gameEvents.on('town:enter-dungeon', enterDungeon)
     this.events.once('shutdown', () => gameEvents.off('town:enter-dungeon', enterDungeon))
 
+    // ---- multiplayer: เข้าห้องเมือง (no-op ถ้าไม่มี server — เล่นออฟไลน์ปกติ) ----
+    this.setupMultiplayer()
+    this.events.once('shutdown', () => {
+      leaveRoom()
+      this.netPlayers.destroy()
+    })
+
     this.cursors = this.input.keyboard!.createCursorKeys()
 
     addPlaque(this, 8, 8, `${biome.name} — Town (Floor ${this.floor})`, {
-      fontSize: '13px', depth: 100, fixed: true, origin: [0, 0],
+      fontSize: '13px', depth: DEPTH_UI, fixed: true, origin: [0, 0],
     })
     // ป้ายวิธีเล่นจางหายเองหลัง 8 วิ — ไม่บังฉากตอนเดินสำรวจ
     const hint = addPlaque(this, 8, 36, 'Walk into a building to use it. Approach the glowing Portal to enter the dungeon.', {
-      fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#cdb27a',
+      fontSize: '10px', depth: DEPTH_UI, fixed: true, origin: [0, 0], color: '#cdb27a',
     })
     this.tweens.add({
       targets: [hint.label, hint.bg], alpha: 0, delay: 8000, duration: 700,
@@ -201,7 +242,7 @@ export class TownScene extends Phaser.Scene {
     playBgm(this, 'town')
   }
 
-  update() {
+  update(time: number) {
     const speed = 130
     this.player.setVelocity(0)
     let moving = false
@@ -213,6 +254,7 @@ export class TownScene extends Phaser.Scene {
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
     this.idleBreath.setMoving(moving)
+    this.netPlayers.update(time, this.player, this.facing, moving)
 
     // แสงบอกจุดโต้ตอบ: ค่อย ๆ เด่นขึ้นเมื่อผู้เล่นเดินเข้าใกล้
     for (const hi of this.interactHighlights) {
@@ -220,6 +262,20 @@ export class TownScene extends Phaser.Scene {
       const target = dist < hi.range ? 0.55 : 0
       hi.glow.alpha += (target - hi.glow.alpha) * 0.18
     }
+  }
+
+  /** เข้าห้องเมือง multiplayer แล้วให้ RemotePlayers จัดการเพื่อนในฉากทั้งหมด */
+  private async setupMultiplayer() {
+    const store = usePlayerStore()
+    const room = await joinTown({
+      name: store.displayName,
+      classId: this.classId,
+      gender: this.gender,
+      x: this.player.x,
+      y: this.player.y,
+    })
+    if (!room || !this.scene.isActive()) return
+    this.netPlayers.bind(room)
   }
 
   private tryInteract(event: string) {
