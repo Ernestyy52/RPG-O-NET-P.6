@@ -3,6 +3,7 @@ import type { HeroClassId } from '~/data/classes'
 import { isTownFloor } from '~/data/floors'
 import { TowerScene } from './scenes/TowerScene'
 import { TownScene } from './scenes/TownScene'
+import { BossScene } from './scenes/BossScene'
 
 export const VIEWPORT_WIDTH = 640
 export const VIEWPORT_HEIGHT = 480
@@ -30,6 +31,7 @@ export function createGame(parent: HTMLElement, startFloor: number, classId: Her
   })
   game.scene.add('TownScene', TownScene, false)
   game.scene.add('TowerScene', TowerScene, false)
+  game.scene.add('BossScene', BossScene, false)
   const startScene = isTownFloor(startFloor) ? 'TownScene' : 'TowerScene'
   game.scene.start(startScene, { floor: startFloor, classId })
   return game

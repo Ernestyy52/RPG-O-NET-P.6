@@ -193,6 +193,7 @@
         <GameCraftModal :open="craftOpen" @close="craftOpen = false" />
         <GameTownModal :open="townOpen" @close="townOpen = false" @shop="townOpen = false; itemShopOpen = true" @guild="townOpen = false; guildOpen = true" />
         <GamePortalModal :open="portalOpen" :floor="portalFloor" @close="portalOpen = false" />
+        <GameBossGateModal :open="bossGateOpen" :floor="bossGateFloor" @close="bossGateOpen = false" />
       </section>
     </div>
   </div>
@@ -224,6 +225,8 @@ const craftOpen = ref(false)
 const townOpen = ref(false)
 const portalOpen = ref(false)
 const portalFloor = ref(2)
+const bossGateOpen = ref(false)
+const bossGateFloor = ref(2)
 const notice = ref('')
 let noticeTimer: ReturnType<typeof setTimeout> | undefined
 const loginName = ref('')
@@ -290,6 +293,8 @@ gameEvents.on('town:item-shop', () => { itemShopOpen.value = true })
 gameEvents.on('town:equipment-shop', () => { equipShopOpen.value = true })
 gameEvents.on('town:guild', () => { guildOpen.value = true })
 gameEvents.on('town:portal', (payload) => { portalFloor.value = payload.floor; portalOpen.value = true })
+gameEvents.on('boss:gate', (payload) => { bossGateFloor.value = payload.floor; bossGateOpen.value = true })
+gameEvents.on('boss:enter', () => { bossGateOpen.value = false })
 gameEvents.on('notice', (payload) => showNotice(payload.text))
 
 function showNotice(text: string) {

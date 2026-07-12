@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import type { HeroClassId } from '../../data/classes'
 import { gameEvents } from '../systems/eventBus'
-import { getFloorConfig, isTownFloor, getBossStats } from '../../data/floors'
+import { getFloorConfig } from '../../data/floors'
 import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { getBossRequirement, describeMissingRequirements } from '../../data/bossRequirements'
@@ -13,8 +13,6 @@ import {
   buildBiomeTextures,
   buildSharedTextures,
   monsterTextureKey,
-  bossVisualForFloor,
-  ensureWorldBossAnim,
   heroKey,
   heroIdleFrame,
   heroAnim,
@@ -41,7 +39,6 @@ export class TowerScene extends Phaser.Scene {
   private gender = 'male'
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private monsters!: Phaser.Physics.Arcade.Group
-  private boss?: Phaser.Physics.Arcade.Sprite
   private bossDoor!: Phaser.Physics.Arcade.Sprite
   private floor = 2
   private inBattle = false
@@ -49,8 +46,8 @@ export class TowerScene extends Phaser.Scene {
   private classId: HeroClassId = 'warrior'
   private theme!: MonsterTheme
   private bossUnlocked = false
-  private bossSpawned = false
   private lastNotice = 0
+  private lastDoorInteract = 0
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private hintPlaque?: ReturnType<typeof addPlaque>
   private netPlayers = new RemotePlayers(this)
@@ -67,8 +64,6 @@ export class TowerScene extends Phaser.Scene {
     this.floor = data.floor ?? 2
     this.classId = data.classId ?? this.classId
     this.inBattle = false
-    this.bossSpawned = false
-    this.boss = undefined
   }
 
   preload() {
@@ -136,12 +131,17 @@ export class TowerScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
 
-    // ---- boss door (top center) ----
+    // ---- boss door (top center) — เดินชนแล้วเปิดกล่องแสดงเงื่อนไข (ไม่มีบอสในห้องนี้แล้ว) ----
     const doorX = (MAP_W / 2) * TILE
     const doorY = TILE * 1.6
     this.bossDoor = this.physics.add.staticSprite(doorX, doorY, 'boss_door_locked')
     this.bossDoor.setOrigin(0.5, 0.7).setDepth(doorY)
     addPlaque(this, doorX, doorY + 12, 'Boss Room', { fontSize: '10px', depth: doorY + 1 })
+    // โซนทริกเกอร์หน้าประตู — เดินเข้าใกล้ = เปิดกล่องเงื่อนไขห้องบอส
+    const doorZone = this.physics.add.staticSprite(doorX, doorY + TILE * 0.7, undefined) as Phaser.Physics.Arcade.Sprite
+    doorZone.setVisible(false)
+    doorZone.body.setSize(TILE * 2, TILE)
+    this.physics.add.overlap(this.player, doorZone, () => this.tryBossGate())
 
     // ---- 25+ themed monsters ----
     // ออนไลน์: มอนสเตอร์มาจาก server (ทุกคนในชั้นเห็นตำแหน่งเดียวกัน) / ออฟไลน์: สุ่ม local
@@ -189,10 +189,10 @@ export class TowerScene extends Phaser.Scene {
 
     this.physics.add.overlap(this.player, this.monsters, (_p, m) => this.onEncounterMonster(m as Phaser.Physics.Arcade.Sprite))
 
-    // ---- boss requirement ----
+    // ---- boss requirement (แค่สลับหน้าตาประตู; ตัวบอสอยู่ในห้องแยก BossScene) ----
     const requirement = getBossRequirement(this.floor)
     this.bossUnlocked = describeMissingRequirements(requirement, player).length === 0
-    if (this.bossUnlocked) this.openBossRoom()
+    if (this.bossUnlocked) this.bossDoor.setTexture('boss_door_open')
 
     this.cursors = this.input.keyboard!.createCursorKeys()
 
@@ -208,11 +208,23 @@ export class TowerScene extends Phaser.Scene {
     playBgm(this, bgmKeyForBiome(biome.id))
 
     gameEvents.on('battle:end', this.handleBattleEnd, this)
+    // เงื่อนไขครบ + กด "เข้าห้องบอส" ในกล่อง → โหลดห้องบอสเดี่ยว
+    const enterBoss = () => this.scene.start('BossScene', { floor: this.floor, classId: this.classId })
+    gameEvents.on('boss:enter', enterBoss)
     this.events.once('shutdown', () => {
       gameEvents.off('battle:end', this.handleBattleEnd, this)
+      gameEvents.off('boss:enter', enterBoss)
       leaveRoom()
       this.netPlayers.destroy()
     })
+  }
+
+  /** เดินชนประตูห้องบอส → เปิดกล่องแสดงเงื่อนไข (ฝั่ง Vue) — throttle กันเปิดรัว */
+  private tryBossGate() {
+    const now = this.time.now
+    if (now - this.lastDoorInteract < 1500) return
+    this.lastDoorInteract = now
+    gameEvents.emit('boss:gate', { floor: this.floor })
   }
 
   /**
@@ -321,39 +333,15 @@ export class TowerScene extends Phaser.Scene {
     })
   }
 
-  private openBossRoom() {
-    if (this.bossSpawned) return
-    this.bossSpawned = true
+  /** ปลดล็อกประตูห้องบอส (สลับ texture + ป้าย) — ตัวบอสอยู่ใน BossScene แยกต่างหาก */
+  private openBossDoor() {
+    if (this.bossUnlocked) return
     this.bossUnlocked = true
     this.bossDoor.setTexture('boss_door_open')
-
-    const config = getFloorConfig(this.floor)
-    const bx = (MAP_W / 2) * TILE
-    const by = TILE * 3.4
-    let boss: Phaser.Physics.Arcade.Sprite
-    if (config.isMilestone) {
-      // World Boss = MCA Boss sheet (idle 4 เฟรม)
-      const v = bossVisualForFloor(this.floor)
-      ensureWorldBossAnim(this, this.floor)
-      boss = this.monsters.create(bx, by, v.textureKey) as Phaser.Physics.Arcade.Sprite
-      boss.setScale(v.scale).play(v.animKey)
-    } else {
-      // per-floor boss = themed MCA creature, scaled up
-      boss = this.monsters.create(bx, by, monsterTextureKey(this.theme.boss)) as Phaser.Physics.Arcade.Sprite
-      boss.setScale(this.theme.bossScale / boss.height)
-    }
-    this.add.image(bx, by + 16, 'shadow_blob').setScale(boss.scaleX * 4).setDepth(by - 1).setAlpha(0.5)
-    boss.setData('isBoss', true)
-    boss.body.setSize(boss.width * 0.5, boss.height * 0.4).setOffset(boss.width * 0.25, boss.height * 0.4)
-    boss.setDepth(by + 200)
-    this.tweens.add({ targets: boss, y: by - 8, duration: 1600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-    this.boss = boss
-
-    // ป้าย hint เป็น plaque (text+bg) — วาดใหม่ทั้งป้ายให้กรอบพอดีข้อความใหม่
     if (this.hintPlaque) {
       this.hintPlaque.label.destroy()
       this.hintPlaque.bg.destroy()
-      this.hintPlaque = addPlaque(this, 8, 36, 'Boss room is OPEN. Enter the door at the top.', {
+      this.hintPlaque = addPlaque(this, 8, 36, 'Boss door is OPEN. Walk into it at the top.', {
         fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#cdb27a',
       })
     }
@@ -391,11 +379,9 @@ export class TowerScene extends Phaser.Scene {
 
   private onEncounterMonster(monster: Phaser.Physics.Arcade.Sprite) {
     if (this.inBattle || this.pendingBattle || !monster.active) return
-    const isBoss = monster.getData('isBoss') as boolean | undefined
-    if (isBoss && !this.bossUnlocked) return
 
     // instanced battle (ออนไลน์): ขอสิทธิ์จาก server ก่อน — มอนสเตอร์ที่เพื่อนจองอยู่สู้ไม่ได้
-    if (!isBoss && monster.getData('net')) {
+    if (monster.getData('net')) {
       const lockedBy = (monster.getData('lockedBy') as string) || ''
       if (lockedBy && lockedBy !== mySessionId()) return
       this.pendingBattle = true
@@ -409,21 +395,21 @@ export class TowerScene extends Phaser.Scene {
           }
           return
         }
-        this.startEncounter(monster, false)
+        this.startEncounter(monster)
       })
       return
     }
 
-    this.startEncounter(monster, !!isBoss)
+    this.startEncounter(monster)
   }
 
-  private startEncounter(monster: Phaser.Physics.Arcade.Sprite, isBoss: boolean) {
+  private startEncounter(monster: Phaser.Physics.Arcade.Sprite) {
     this.inBattle = true
     monster.setData('inFight', true)
     ;(monster.body as Phaser.Physics.Arcade.Body).enable = false
 
     const config = getFloorConfig(this.floor)
-    const slug = (monster.getData('slug') as string) ?? this.theme.boss
+    const slug = (monster.getData('slug') as string) ?? this.theme.monsters[0]
 
     // hit-flash feedback (Phaser 4: setTintFill ถูกลบ ใช้ setTint + TintModes.FILL แทน)
     monster.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL)
@@ -437,25 +423,12 @@ export class TowerScene extends Phaser.Scene {
       (child as Phaser.Physics.Arcade.Sprite).setVelocity(0, 0)
     }
 
-    if (isBoss) {
-      const stats = getBossStats(this.floor)
-      const portrait = config.isMilestone
-        ? bossVisualForFloor(this.floor).portrait
-        : `mob-sprites/mca/${this.theme.boss}.png`
-      gameEvents.emit('battle:start', {
-        floor: this.floor, isBoss: true,
-        name: config.isMilestone ? this.theme.worldBossName : `${titleCase(this.theme.boss)} (Boss)`,
-        sprite: portrait, hp: stats.hp, atk: stats.atk, speed: config.monsterLevel + 4,
-        expReward: stats.expReward, goldReward: stats.goldReward,
-      })
-    } else {
-      gameEvents.emit('battle:start', {
-        floor: this.floor, isBoss: false,
-        name: titleCase(slug), sprite: `mob-sprites/mca/${slug}.png`,
-        hp: config.monsterHp, atk: config.monsterAtk, speed: config.monsterLevel,
-        expReward: config.expReward, goldReward: config.goldReward,
-      })
-    }
+    gameEvents.emit('battle:start', {
+      floor: this.floor, isBoss: false,
+      name: titleCase(slug), sprite: `mob-sprites/mca/${slug}.png`,
+      hp: config.monsterHp, atk: config.monsterAtk, speed: config.monsterLevel,
+      expReward: config.expReward, goldReward: config.goldReward,
+    })
     this.activeMonster = monster
   }
 
@@ -477,19 +450,7 @@ export class TowerScene extends Phaser.Scene {
       return
     }
 
-    if (payload.isBoss) {
-      // ปราบบอส → ขึ้นชั้นถัดไป (หรือหมู่บ้านถ้าครบ 10 ชั้น)
-      const nextFloor = this.floor + 1
-      gameEvents.emit('floor:advance', { floor: nextFloor })
-      this.cameras.main.fade(260, 0, 0, 0)
-      this.time.delayedCall(280, () => {
-        if (isTownFloor(nextFloor)) this.scene.start('TownScene', { floor: nextFloor, classId: this.classId })
-        else this.scene.start('TowerScene', { floor: nextFloor, classId: this.classId })
-      })
-      return
-    }
-
-    // ชนะมอนสเตอร์ทั่วไป → เก็บซาก แล้วเช็คปลดล็อกห้องบอส
+    // ชนะมอนสเตอร์ทั่วไป → เก็บซาก แล้วเช็คปลดล็อกประตูห้องบอส (บอสอยู่ห้องแยก)
     if (monster) {
       monster.setActive(false)
       this.tweens.add({ targets: monster, alpha: 0, scaleX: 0, scaleY: 0, duration: 220, onComplete: () => monster.destroy() })
@@ -498,8 +459,8 @@ export class TowerScene extends Phaser.Scene {
       const player = usePlayerStore()
       const missing = describeMissingRequirements(getBossRequirement(this.floor), player)
       if (missing.length === 0) {
-        this.openBossRoom()
-        gameEvents.emit('notice', { text: 'Boss room unlocked! Head to the door at the top.' })
+        this.openBossDoor()
+        gameEvents.emit('notice', { text: 'Boss door unlocked! Head to the door at the top.' })
       } else if (this.time.now - this.lastNotice > 4000) {
         this.lastNotice = this.time.now
         gameEvents.emit('notice', { text: `Boss locked — need: ${missing.join(', ')}` })

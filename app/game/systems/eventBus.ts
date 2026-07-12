@@ -22,6 +22,8 @@ type Events = {
   'town:guild': void
   'town:portal': { floor: number }
   'town:enter-dungeon': { floor: number }
+  'boss:gate': { floor: number }        // เดินชนประตูห้องบอส → เปิดกล่องแสดงเงื่อนไข
+  'boss:enter': void                     // เงื่อนไขครบ + กดเข้า → โหลดห้องบอสเดี่ยว
   'notice': { text: string }
 }
 
