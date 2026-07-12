@@ -2,11 +2,11 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 01 — Deep architecture & game-design audit
-- **Phase status:** passed (docs written, gate met; committing)
+- **Current phase:** Phase 02 — Project constitution & auto routing
+- **Phase status:** passed (gate met; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `82d2856` (Phase 00 baseline, pushed) — build verified exit 0
-- **Phase 00:** PASSED + pushed to origin (`82d2856`).
+- **Baseline / last validated commit:** `f65f566` (Phase 01 audit, pushed)
+- **Phases 00–01:** PASSED + pushed (`82d2856`, `f65f566`).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -41,4 +41,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 01 audit checkpoint → begin **Phase 02** (project constitution & auto-routing: root CLAUDE.md, settings.json, AUTO_MODEL_ROUTER_INSTALL_REPORT; no app/server/gameplay changes) → then **Phase 03** (Vitest test + diagnostics foundation).
+Commit Phase 02 checkpoint → begin **Phase 03** (Vitest test + diagnostics foundation): add `vitest`, `test` script, pure-logic unit tests (stats, damage seam, skill prereqs, rewards, questions, daily gen, saves, item transactions), dev-only diagnostics, and `docs/testing/*`.

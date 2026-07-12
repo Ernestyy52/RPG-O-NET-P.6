@@ -22,3 +22,10 @@ Chronological record of phase execution. Newest at bottom.
 - Wrote ADRs: `ADR/0001-versioned-save-envelope`, `0002-pure-combat-domain`, `0003-learning-combat-firewall`.
 - Key findings: BattleModal owns all combat formulas+rewards+loot (→Phase 07); player store monolithic no-version (→Phase 04); classes are stat-blocks only, no kits (→Phase 12); questions lack typed schema/status (→Phase 05).
 - Gate: architecture independently reviewable ✓, first slices dependency-ordered (MIGRATION_SEQUENCE) ✓, **no gameplay code changed** (git diff docs-only) ✓.
+- Committed `f65f566`; pushed.
+
+## Phase 02 — Project constitution & auto routing — 2026-07-12 — status: PASSED (pending commit)
+- Created root `CLAUDE.md` (constitution: non-negotiables, ownership boundaries, model/effort routing, workflow, completion-report format).
+- Created `docs/claude/AUTO_MODEL_ROUTER_INSTALL_REPORT.md` (agents/models/effort table, name mapping, fallback policy, validation).
+- Hardened `.claude/settings.json` with a curated safe allow-list (git read/add/branch, npm build/generate/test, vitest) + deny force-push. Valid JSON confirmed.
+- Gate: valid agent files ✓, supported settings only ✓, **no app/server/gameplay changes** ✓.
