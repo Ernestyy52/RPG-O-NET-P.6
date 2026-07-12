@@ -79,3 +79,18 @@ Chronological record of phase execution. Newest at bottom.
 - Rewired UI/store to delegate (no duplicated formula remains): `BattleModal.vue` sources all math from the domain (setupMonster→setupEncounter, heroDamage/heroHit, counter/escape/support, monsterAttack, winBattle→buildRewardRequest+RewardLedger); `player.ts` takeDamage→mitigateDamage. `combatDomain` flag gates the engine-driven turn path (resolveHeroSkill/resolveMonsterAttack); legacy path calls the same domain formulas ⇒ single source in both flag states.
 - Added `test/combat.spec.ts` (19 tests): every formula asserted equal to the pre-extraction legacy expression across parameter grids; engine resolvers, setupEncounter overrides, gems, reward validation + ledger idempotency. **Suite: 107 passing / 11 files.** `npm run build` exit 0. Dev server boots + serves 200, no import/runtime errors.
 - Gate: no duplicated formula (grep clean) ✓, equivalent legacy test cases pass ✓, combat rules no longer owned by UI (formulas in domain, store delegates) ✓, rollback feature flag present (`COMBAT_DOMAIN_ENABLED`) ✓.
+
+## Phase 08 — New Phaser zone runtime (scaffold + lifecycle) — 2026-07-12 — status: PASSED (pending commit)
+- Route: game-architect (Fable-tier) design + implementation-engineer execution, run inline on the main Opus 4.8 session (generic installed roster; full repo context loaded).
+- Added modular, framework-agnostic runtime `app/game/runtime/` (no Vue/Phaser import in the pure systems ⇒ unit-testable in Node):
+  - `lifecycle.ts` — SceneLifecycle: reverse-order, error-isolated, idempotent teardown of every registered Disposer (the leak-free backbone).
+  - `movement.ts` — resolveMovement(input, prevFacing) PlayerController, faithful to the legacy left/up-priority + vertical-wins-facing rules.
+  - `zone.ts` — buildZoneDefinition + TILE/MAP_W/MAP_H/SPAWN_BOUNDS/TREE_SPOTS: the floor layout as data (single source; no render rebuild).
+  - `spawn.ts` — rollMonsterSpawns SpawnSystem with an injected Rng port (Phaser.Math.RND in-scene / mulberryRng seeded in tests); cell-grid placement preserved.
+  - `encounter.ts` — canStartEncounter + isNetMonsterFightable InteractionSystem guards.
+  - `zoneRuntime.ts` — ZoneRuntime enter()/exit() over a RuntimeHost port; registers timers + event listeners into a fresh SceneLifecycle each entry and disposes on exit.
+  - `index.ts` — barrel + `NEW_ZONE_RUNTIME_ENABLED` flag (false, dormant rollback lever).
+- Rewired legacy `TowerScene` to consume the pure systems as single source of truth (behavior-preserving): movement via resolveMovement, spawn via runtime rollMonsterSpawns, encounter/net-lock via the guards, layout constants (TILE/MAP_W/MAP_H/SPAWN_BOUNDS) imported from the runtime. TowerScene remains the active renderer (rollback); no rendered scene runs on ZoneRuntime yet.
+- Added `test/zone-runtime.spec.ts` (18 tests): lifecycle reverse/idempotent/error-isolation/post-dispose-immediate; movement priority + diagonal facing; zone border-ring integrity; spawn bounds/count/determinism/spread; encounter guards; **ZoneRuntime enter/exit ×50 leaves zero live registrations on a FakeHost (headline gate)** + double enter/exit safety + callback routing. **Suite: 125 passing / 12 files.**
+- `npm run build` exit 0. Dev server: TowerScene + runtime/index transform under Vite HTTP 200 (live modules compile with the new wiring).
+- Gate: TowerScene legacy remains ✓, new runtime enters/exits repeatedly with no listener/timer leak (tested) ✓, no full world rebuild yet ✓, `newZoneRuntime` rollback flag present ✓, lifecycle cleanup verified ✓.

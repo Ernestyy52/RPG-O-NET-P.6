@@ -26,10 +26,11 @@ import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
 import { assetPath } from '../systems/textures'
 import { joinDungeon, leaveRoom, requestBattle, sendBattleResult, sendSeed, mySessionId, type NetMonsterSchema } from '../systems/net'
 import { RemotePlayers } from '../systems/remotePlayers'
-
-const TILE = 32
-const MAP_W = 24
-const MAP_H = 18
+import {
+  TILE, MAP_W, MAP_H, SPAWN_BOUNDS,
+  resolveMovement, rollMonsterSpawns as rollSpawns,
+  canStartEncounter, isNetMonsterFightable,
+} from '../runtime'
 
 function titleCase(slug: string): string {
   return slug.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
@@ -235,33 +236,8 @@ export class TowerScene extends Phaser.Scene {
    * (ไม่กระทบ bounds clamp ฝั่ง server/index.js)
    */
   private rollMonsterSpawns(count: number) {
-    const rng = Phaser.Math.RND
-    const minX = 3, maxX = MAP_W - 3
-    const minY = 5, maxY = MAP_H - 3
-    const areaW = maxX - minX
-    const areaH = maxY - minY
-
-    const cols = Math.max(1, Math.round(Math.sqrt((count * areaW) / areaH)))
-    const rows = Math.max(1, Math.ceil(count / cols))
-    const cellW = areaW / cols
-    const cellH = areaH / rows
-
-    const cells = Array.from({ length: cols * rows }, (_, i) => i)
-    Phaser.Utils.Array.Shuffle(cells)
-
-    return Array.from({ length: count }, (_, i) => {
-      const cell = cells[i % cells.length]
-      const cx = cell % cols
-      const cy = Math.floor(cell / cols)
-      const tileX = minX + cx * cellW + cellW * 0.15 + rng.frac() * cellW * 0.7
-      const tileY = minY + cy * cellH + cellH * 0.15 + rng.frac() * cellH * 0.7
-      return {
-        id: `m${i}`,
-        slug: this.theme.monsters[rng.between(0, this.theme.monsters.length - 1)],
-        x: Math.round(tileX * TILE),
-        y: Math.round(tileY * TILE),
-      }
-    })
+    // อัลกอริทึมวางมอนสเตอร์แบบแบ่ง cell อยู่ใน zone runtime (SpawnSystem) — RND ของ Phaser ทำหน้าที่ Rng port
+    return rollSpawns(count, { bounds: SPAWN_BOUNDS, slugs: this.theme.monsters, rng: Phaser.Math.RND })
   }
 
   private spawnMonsterSprite(slug: string, x: number, y: number, index: number) {
@@ -350,13 +326,16 @@ export class TowerScene extends Phaser.Scene {
 
   update(time: number) {
     if (this.inBattle) { this.player.setVelocity(0); return }
-    const speed = 120
-    this.player.setVelocity(0)
-    let moving = false
-    if (this.cursors.left?.isDown) { this.player.setVelocityX(-speed); this.facing = 'left'; moving = true }
-    else if (this.cursors.right?.isDown) { this.player.setVelocityX(speed); this.facing = 'right'; moving = true }
-    if (this.cursors.up?.isDown) { this.player.setVelocityY(-speed); this.facing = 'up'; moving = true }
-    else if (this.cursors.down?.isDown) { this.player.setVelocityY(speed); this.facing = 'down'; moving = true }
+    // การแปลง input → ความเร็ว/ทิศ อยู่ใน zone runtime (PlayerController) — pure + testable
+    const move = resolveMovement({
+      left: !!this.cursors.left?.isDown,
+      right: !!this.cursors.right?.isDown,
+      up: !!this.cursors.up?.isDown,
+      down: !!this.cursors.down?.isDown,
+    }, this.facing)
+    this.facing = move.facing
+    const moving = move.moving
+    this.player.setVelocity(move.vx, move.vy)
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
@@ -379,12 +358,12 @@ export class TowerScene extends Phaser.Scene {
   }
 
   private onEncounterMonster(monster: Phaser.Physics.Arcade.Sprite) {
-    if (this.inBattle || this.pendingBattle || !monster.active) return
+    // เงื่อนไขเริ่มการต่อสู้/ล็อกมอนสเตอร์ net อยู่ใน zone runtime (InteractionSystem) — pure + testable
+    if (!canStartEncounter({ inBattle: this.inBattle, pendingBattle: this.pendingBattle, monsterActive: monster.active })) return
 
     // instanced battle (ออนไลน์): ขอสิทธิ์จาก server ก่อน — มอนสเตอร์ที่เพื่อนจองอยู่สู้ไม่ได้
     if (monster.getData('net')) {
-      const lockedBy = (monster.getData('lockedBy') as string) || ''
-      if (lockedBy && lockedBy !== mySessionId()) return
+      if (!isNetMonsterFightable(monster.getData('lockedBy') as string | undefined, mySessionId())) return
       this.pendingBattle = true
       requestBattle(monster.getData('netId') as string).then((granted) => {
         this.pendingBattle = false

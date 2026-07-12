@@ -2,12 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 07 — Extract combat domain (ADR 0002)
-- **Phase status:** passed (107 tests green, build exit 0, dev smoke 200/no errors; committing)
+- **Current phase:** Phase 08 — New Phaser zone runtime (scaffold + lifecycle)
+- **Phase status:** passed (125 tests green, build exit 0, dev transform 200; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `1524b7a` (Phase 06 learning planner)
-- **Phases 00–06:** PASSED + committed (`82d2856`, `f65f566`, `019d332`, `3a572ad`, `0c52f21`, `1dff865`, `1524b7a`).
-- **Tests:** `npm test` → 107 passing / 11 files (Vitest 3).
+- **Baseline / last validated commit:** `0d05cb1` (Phase 07 combat domain)
+- **Phases 00–07:** PASSED + committed (`…`, `0c52f21`, `1dff865`, `1524b7a`, `0d05cb1`).
+- **Tests:** `npm test` → 125 passing / 12 files (Vitest 3).
 - **Save version:** CURRENT_SAVE_VERSION = 2 (v1→v2 migration added; flag still off).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
@@ -33,10 +33,10 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 07):** `app/data/combat/{formulas,types,skills,engine,rewards,index}.ts` (new pure domain), `app/components/game/BattleModal.vue` (delegates to domain, engine path behind `combatDomain` flag), `app/stores/player.ts` (takeDamage→mitigateDamage), `test/combat.spec.ts`, `docs/execution/*`.
-- **Migrations performed:** none (Phase 07 is behavior-preserving; no save-schema change). CURRENT_SAVE_VERSION stays 2.
-- **Feature flags:** `COMBAT_DOMAIN_ENABLED = false` (engine turn-loop path; legacy path uses the same domain formulas so no formula is duplicated in either state). Flip to true only after a full battle smoke in dev.
-- **Unresolved risks:** engine turn-loop path (flag on) not yet exercised in a live battle — verify a boss + regular fight in dev before flipping. Large scope across 24 phases requires session handoffs.
+- **Files changed (Phase 08):** `app/game/runtime/{lifecycle,movement,zone,spawn,encounter,zoneRuntime,index}.ts` (new modular runtime), `app/game/scenes/TowerScene.ts` (delegates movement/spawn/encounter/layout to the runtime, behavior-preserving), `test/zone-runtime.spec.ts`, `docs/execution/*`.
+- **Migrations performed:** none (behavior-preserving; no save-schema change). CURRENT_SAVE_VERSION stays 2.
+- **Feature flags:** `COMBAT_DOMAIN_ENABLED = false` (P07 engine turn-loop). `NEW_ZONE_RUNTIME_ENABLED = false` (P08 rendered scene on ZoneRuntime; dormant — TowerScene is the active renderer). Pure runtime systems are already live in TowerScene as single source of truth (no flag).
+- **Unresolved risks:** (1) combat engine turn-loop path (flag on) not yet exercised in a live battle; (2) no rendered scene runs on ZoneRuntime yet (comes with World 1, Phase 14). Both flags off, so no live behavior change. A full in-browser walk/battle smoke is recommended before flipping either flag.
 
 ## Rollback point
 
@@ -44,4 +44,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 07 checkpoint → begin **Phase 08** (Zone runtime): see `docs/foundation/MIGRATION_SEQUENCE.md`. Before flipping `COMBAT_DOMAIN_ENABLED` to true, run a live dev-server battle smoke (regular + boss fight) to confirm the engine turn-loop path is behavior-identical to legacy.
+Commit Phase 08 checkpoint → begin **Phase 09** (Real-time action-lite combat, flag `realtimeCombat`; depends 07+08): drive combat via the Phase 07 domain + Phase 08 runtime; no frame-rate-dependent damage, no duplicate rewards, no invalid attacks, safe reset, legacy BattleModal fallback. See `docs/foundation/MIGRATION_SEQUENCE.md`.
