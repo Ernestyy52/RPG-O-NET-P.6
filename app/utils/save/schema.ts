@@ -9,11 +9,13 @@
 import type { HeroClassId } from '~/data/classes'
 import type { EquipmentSlot } from '~/data/equipment'
 import type { DailyQuest } from '~/data/quests'
+import type { SubskillMastery } from '~/data/learning/mastery'
 
 export type GenderId = 'male' | 'female'
 
-/** Bump when the persisted shape changes; add a matching migration in migrations.ts. */
-export const CURRENT_SAVE_VERSION = 1
+/** Bump when the persisted shape changes; add a matching migration in migrations.ts.
+ *  v1: initial envelope. v2: learning slice gains `mastery` + `lastSessionDate` (Phase 06). */
+export const CURRENT_SAVE_VERSION = 2
 
 /** localStorage keys owned by the save system. */
 export const SAVE_KEY = 'save:onet'
@@ -42,6 +44,10 @@ export interface CharacterSlice {
 /** Learning state is deliberately separate from combat power (ADR 0003). */
 export interface LearningSlice {
   correctAnswers: number
+  /** per-subskill spaced-review mastery (Phase 06). */
+  mastery: Record<string, SubskillMastery>
+  /** last day the learner studied (YYYY-MM-DD) — drives rested/catch-up, never a penalty. */
+  lastSessionDate: string
 }
 
 export interface SessionSlice {
@@ -98,7 +104,7 @@ export function defaultSlices(): SaveSlices {
       appearance: { face: 'calm', hair: 'short', color: 'amber' },
     },
     character: { level: 1, exp: 0, skillPoints: 0, learnedSkills: [] },
-    learning: { correctAnswers: 0 },
+    learning: { correctAnswers: 0, mastery: {}, lastSessionDate: '' },
     session: { currentFloor: 1, hp: 72, mp: 30 },
     inventory: { gold: 90, gems: 0, inventory: { potion_s: 2 }, equipment: {} },
     quest: { dailyDate: '', dailyQuests: [], adventureLog: [] },

@@ -71,6 +71,9 @@ export function toSlices(legacy: LegacyPlayer = {}, settings: LegacySettings = {
     },
     learning: {
       correctAnswers: pick(legacy.correctAnswers, d.learning.correctAnswers),
+      // Mastery/session-date did not exist pre-Phase-06; default them (populated at runtime later).
+      mastery: d.learning.mastery,
+      lastSessionDate: d.learning.lastSessionDate,
     },
     session: {
       currentFloor: pick(legacy.currentFloor, d.session.currentFloor),

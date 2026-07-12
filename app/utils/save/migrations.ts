@@ -41,6 +41,17 @@ export const MIGRATIONS: Migration[] = [
       slices: mergeSliceDefaults(env.slices),
     }),
   },
+  // v1 → v2 (Phase 06): learning slice gains `mastery` + `lastSessionDate`. Existing learning data
+  // (correctAnswers) is preserved; new fields default empty. mergeSliceDefaults fills them safely.
+  {
+    from: 1,
+    to: 2,
+    migrate: (env) => ({
+      version: 2,
+      savedAt: env.savedAt ?? 0,
+      slices: mergeSliceDefaults(env.slices),
+    }),
+  },
 ]
 
 /**

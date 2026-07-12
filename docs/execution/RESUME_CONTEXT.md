@@ -3,35 +3,34 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 06 — Mastery, spaced review & daily learning planner** (learning-architect domain).
-- Phases 00–05 complete, committed, and pushed.
+- **Phase 07 — Extract combat domain** (ADR 0002; combat-engineer domain).
+- Phases 00–06 complete, committed, and pushed.
 
 ## Completed work
 - Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).
-- Commits: `64a26d6` router · `82d2856` P00 · `f65f566` P01 · `019d332` P02 · `3a572ad` P03 · `0c52f21` P04 · P05 curriculum (this commit).
-- **69 tests passing** (`npm test`, 9 files). `npm run build` exit 0.
-- P04 save library `app/utils/save/` (flag off, legacy authoritative). P05 curriculum layer `app/data/curriculum/` + answer-key rebalanced in `data/questions.json` (correctness-preserved).
+- Commits: `64a26d6` router · `82d2856` P00 · `f65f566` P01 · `019d332` P02 · `3a572ad` P03 · `0c52f21` P04 · `1dff865` P05 · P06 learning (this commit).
+- **88 tests passing** (`npm test`, 10 files). `npm run build` exit 0.
+- P04 save library (flag off, legacy authoritative), now at CURRENT_SAVE_VERSION=2 (v1→v2 migration). P05 curriculum. P06 learning domain `app/data/learning/` (mastery/scheduler/selector/planner/summary).
 
 ## Commands / results
-- `npm test` → 69 passing / 9 files. `npm run build` → exit 0.
+- `npm test` → 88 passing / 10 files. `npm run build` → exit 0.
 
 ## Failing tests / Assumptions
 - None failing. Master plan doc missing → execution-prompt roadmap + `docs/AI_Development_Bible_V2/` (DECISION_LOG D-001).
 
-## Next exact action (Phase 06)
-1. Route: learning-architect (Opus 4.8) + test-data-engineer (Sonnet 5).
-2. Add a learning-mastery domain (pure TS, seed-testable) separate from combat power (ADR 0003):
-   `SubskillMastery` (per `taxonomy.ts` subskill), misconception tracking, response-time summary, stability + `nextReview` (spaced repetition, e.g. SM-2-lite).
-3. Implement `QuestionSelector` (draws ONLY from `selectableInProduction(CURRICULUM_QUESTIONS)`, weights weak/due subskills), `MasteryUpdater`, `ReviewScheduler`, `DailyLearningPlanGenerator` (10/20/30-min; Adventure vs Learning-Focus), `LearningSessionSummary`.
-4. Non-punitive: catch-up + rested-learning bonuses; no streak penalties.
-5. Seeded deterministic tests: weak skills recur appropriately; due items resurface; mastery never alters combat stats. Add a `learning` save slice hook (already reserved in SaveEnvelope). Verify `npm test` + build.
-6. Update execution docs; commit `feat: add mastery and daily learning planner`; push.
+## Next exact action (Phase 07)
+1. Route: combat-engineer (Opus 4.8) + game-architect (Fable 5) + test-data-engineer (Sonnet 5).
+2. Extract combat rules from `app/components/game/BattleModal.vue` (and reward math from `app/stores/player.ts`) into a pure `app/data/combat/` (or `app/utils/combat/`) domain: `CombatActor`, `RuntimeStats`, `DamageRequest→DamageResult`, `SkillDefinition→SkillExecution`, `Cooldown`, `Resource`, `StatusEffect`, `CombatEvent`, `EncounterResult`, `RewardRequest`. No Vue/Phaser imports.
+3. Reproduce the CURRENT formulas exactly (heroDamage = max(3, round((atk + knowledge*0.6)*mult*worldKnowledgeMod)); monster damage = round(atk*mult); def mitigation in player.takeDamage = max(1, round(amount - def*0.55)); rewards via gainRewards with level-up loop; loot via rollLoot). RewardRequest must be idempotent/validated, never trusted from UI.
+4. Make `BattleModal.vue` a thin adapter over the domain behind a `combatDomain` feature flag; keep the legacy path working (rollback).
+5. Add equivalence tests: domain output matches legacy formula for representative cases; no duplicated formula remains. Verify `npm test` + `npm run build`. Independent qa-release review.
+6. Update execution docs; commit `refactor: extract combat domain`; push.
 
 ## Agents needed next
-- learning-architect (Opus 4.8); test-data-engineer (Sonnet 5) for seeded sims; qa-release (Fable 5) review.
+- combat-engineer (Opus 4.8); game-architect (Fable 5); test-data-engineer (Sonnet 5); qa-release (Fable 5) review.
 
-## Gate (Phase 06)
-Deterministic seeded tests; weak skills recur appropriately; learning state separate from combat power.
+## Gate (Phase 07)
+No duplicated formula; equivalent legacy test cases pass; combat rules no longer owned by UI; rollback feature flag present.
 
 ## Later phases
-07 extract combat domain (ADR 0002) · 08 zone runtime · 09 real-time combat · 10 Knowledge Break · 11 expeditions · 12 class kits · 13 loot/Sigils · 14 World 1 · 15 co-op · 16 teacher · 17 mobile/a11y · 18 S-grade audit · 19–24 MMORPG. See `docs/foundation/MIGRATION_SEQUENCE.md`.
+08 zone runtime · 09 real-time combat · 10 Knowledge Break (consumes P06 `applyAnswer`/`summarizeSession`) · 11 expeditions (consumes P06 `generateDailyPlan`) · 12 class kits · 13 loot/Sigils · 14 World 1 · 15 co-op · 16 teacher (consumes P05 review queue + P06 summaries) · 17 mobile/a11y · 18 S-grade audit · 19–24 MMORPG. See `docs/foundation/MIGRATION_SEQUENCE.md`.

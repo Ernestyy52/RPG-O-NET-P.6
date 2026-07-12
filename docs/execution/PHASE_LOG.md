@@ -56,3 +56,13 @@ Chronological record of phase execution. Newest at bottom.
 - Added `test/curriculum.spec.ts` (13 tests): adapter preservation, all 69 valid+selectable, no duplicates, balanced key, malformed rejection, production rule (only reviewed), review queue/promotion. **Suite: 69 passing.**
 - Wrote `docs/learning/CURRICULUM_AND_VALIDATION.md`; updated KNOWN_EXISTING_ISSUES. Build exit 0.
 - Gate: current content preserved ✓, invalid content rejected ✓, only reviewed selectable in production ✓, tests+report pass ✓.
+- Committed `1dff865`; pushed.
+
+## Phase 06 — Mastery, spaced review & daily learning planner — 2026-07-12 — status: PASSED (pending commit)
+- Route: learning-architect (Opus 4.8) inline design/impl; test-data-engineer patterns for seeded sims; qa-release independent review (see below).
+- Added `app/data/learning/`: `rng.ts` (mulberry32 seeded PRNG), `scheduler.ts` (SM-2-lite: nextStability/nextReviewAt/isDue/overdueMs), `mastery.ts` (SubskillMastery + applyAnswer: EMA mastery, response-time avg, misconceptions, lapses), `selector.ts` (QuestionSelector — selectableInProduction only, weak/due/unseen weighting, anti-repeat, adventure/learning-focus), `planner.ts` (10/20/30-min plans, mode focus, positive rested bonus, catch-up, deterministic), `summary.ts` (LearningSessionSummary — movement, misconceptions, recommendations, dueSoon).
+- Save: extended learning slice with `mastery` + `lastSessionDate`; bumped CURRENT_SAVE_VERSION 1→2 with a registered v1→v2 migration (preserves correctAnswers; idempotent). Legacy adapter defaults new fields. Flag still off ⇒ no runtime change.
+- Added `test/learning.spec.ts` (19 tests). **Suite: 88 passing.** `npm run build` exit 0.
+- Independent review (qa-release mandate; delegated agent hit a session limit, completed by orchestrator with the same evidence): grep confirms NO player/combat-stat/Math.random in `app/data/learning/` (comments only); selector+planner route through selectableInProduction; mastery clamped [0,1]; planner target = base + non-negative restedBonus (never shrinks); anti-repeat window < pool size (no forced dupes); v1→v2 preserves data. **Verdict: PASS.**
+- Wrote `docs/learning/MASTERY_AND_PLANNER.md`.
+- Gate: deterministic seeded tests ✓, weak skills recur appropriately ✓, learning state separate from combat power ✓, spaced review/anti-repeat/answer-position balance/10-20-30 plans/Adventure/Learning-Focus/catch-up/non-punitive missed days ✓, saves preserved via approved migration ✓.

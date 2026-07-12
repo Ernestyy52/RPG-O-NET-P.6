@@ -2,12 +2,13 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 05 — O-NET curriculum & content validation
-- **Phase status:** passed (69 tests green, build exit 0, answer-key rebalanced; committing)
+- **Current phase:** Phase 06 — Mastery, spaced review & daily learning planner
+- **Phase status:** passed (88 tests green, build exit 0, qa-release PASS; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `0c52f21` (Phase 04 versioned saves, pushed)
-- **Phases 00–04:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`, `3a572ad`, `0c52f21`).
-- **Tests:** `npm test` → 69 passing / 9 files (Vitest 3).
+- **Baseline / last validated commit:** `1dff865` (Phase 05 curriculum, pushed)
+- **Phases 00–05:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`, `3a572ad`, `0c52f21`, `1dff865`).
+- **Tests:** `npm test` → 88 passing / 10 files (Vitest 3).
+- **Save version:** CURRENT_SAVE_VERSION = 2 (v1→v2 migration added; flag still off).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -32,8 +33,8 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 05):** `app/data/curriculum/{taxonomy,schema,adapter,validation,reviewQueue}.ts`, `data/questions.json` (answer-key rebalance, content preserved), `test/curriculum.spec.ts`, `docs/learning/CURRICULUM_AND_VALIDATION.md`, `docs/foundation/KNOWN_EXISTING_ISSUES.md`.
-- **Migrations performed:** none in live storage. Content: `data/questions.json` answer positions rebalanced (correctness-preserving, verified).
+- **Files changed (Phase 06):** `app/data/learning/{rng,scheduler,mastery,selector,planner,summary}.ts`, `app/utils/save/{schema,migrations,legacyAdapter}.ts` (learning slice + v1→v2), `test/learning.spec.ts`, `docs/learning/MASTERY_AND_PLANNER.md`.
+- **Migrations performed:** save schema v1→v2 registered + tested (idempotent, preserves correctAnswers); no live-storage migration run (flag off, legacy authoritative).
 - **Unresolved risks:** master-plan doc missing (assumption logged); large scope across 24 phases requires session handoffs. Phase 04 (versioned saves) is the next code-bearing, save-schema-touching phase — must land legacy adapter + idempotent migrations before class/loot/expedition data changes.
 
 ## Rollback point
@@ -42,4 +43,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 05 checkpoint → begin **Phase 06** (Mastery, spaced review, daily learning planner): subskill mastery + misconception tracking, response-time summary, stability/next-review scheduling, `QuestionSelector` (drawing only from `selectableInProduction`), `MasteryUpdater`, `ReviewScheduler`, `DailyLearningPlanGenerator`, `LearningSessionSummary`, 10/20/30-min modes, Adventure/Learning-Focus modes, catch-up + rested learning, no punitive streak. Route: learning-architect (Opus 4.8) + test-data-engineer (Sonnet 5). Gate: deterministic seeded tests; weak skills recur; learning state separate from combat power (ADR 0003).
+Commit Phase 06 checkpoint → begin **Phase 07** (Extract combat domain, ADR 0002): pull `CombatActor`, `RuntimeStats`, `DamageRequest/Result`, `SkillDefinition/Execution`, `Cooldown`, `Resource`, `StatusEffect`, `CombatEvent`, `EncounterResult`, `RewardRequest` out of `BattleModal.vue`/`player.ts` into a pure combat domain. Keep the legacy BattleModal functional through an adapter (feature flag `combatDomain`). Gate: no duplicated formula; equivalent legacy test cases; rules no longer owned by UI; rollback flag. Route: combat-engineer (Opus 4.8) + game-architect (Fable 5) + test-data-engineer (Sonnet 5).
