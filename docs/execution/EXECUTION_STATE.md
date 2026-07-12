@@ -2,13 +2,13 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 11 — Adaptive Daily Expeditions
-- **Phase status:** passed (154 tests green, build exit 0; committing)
+- **Current phase:** Phase 12 — Four class kits
+- **Phase status:** passed (164 tests green, build exit 0; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `3ee8ea9` (Phase 10 Knowledge Break, pushed)
-- **Phases 00–10:** PASSED + committed (`…`, `0d05cb1`, `c76f452`, `7deb127`, `3ee8ea9`).
-- **Tests:** `npm test` → 154 passing / 15 files (Vitest 3).
-- **Save version:** CURRENT_SAVE_VERSION = 2 (v1→v2 migration added; flag still off).
+- **Baseline / last validated commit:** `b4fbb22` (Phase 11 expeditions, pushed)
+- **Phases 00–11:** PASSED + committed (`…`, `c76f452`, `7deb127`, `3ee8ea9`, `b4fbb22`).
+- **Tests:** `npm test` → 164 passing / 16 files (Vitest 3).
+- **Save version:** CURRENT_SAVE_VERSION = 3 (v1→v2 learning, v2→v3 class-kit loadout; envelope flag still off, legacy authoritative).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -33,10 +33,10 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 11):** `app/data/learning/expedition.ts` (new generateExpedition/evaluateExpedition + `ADAPTIVE_EXPEDITIONS_ENABLED` flag), `test/expedition.spec.ts`, `docs/execution/*`. **No game-page file touched.**
-- **Migrations performed:** none. CURRENT_SAVE_VERSION stays 2.
-- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07), `NEW_ZONE_RUNTIME_ENABLED` (P08), `REALTIME_COMBAT_ENABLED` (P09), `KNOWLEDGE_BREAK_ENABLED` (P10), `ADAPTIVE_EXPEDITIONS_ENABLED` (P11) — all false/dormant. Turn-based BattleModal + TowerScene renderer + legacy daily quests remain the live paths.
-- **Unresolved risks:** five domain/runtime capabilities are built + tested but not yet wired into a rendered scene/UI (real-time combat, zone runtime scene, Knowledge Break integrate at World 1, Phase 14; expeditions surface via UI later; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
+- **Files changed (Phase 12):** `app/data/combat/classKits.ts` (new + `CLASS_KITS_ENABLED` flag), `app/data/combat/index.ts` (export), `app/utils/save/{schema,migrations,legacyAdapter}.ts` (v3 kitLoadout + v2→v3 migration), `test/class-kits.spec.ts`, `test/save.spec.ts` (+3), `test/learning.spec.ts` (stale version literal fixed), `docs/execution/*`. **Live Pinia store + game page untouched.**
+- **Migrations performed:** save schema v2→v3 registered + tested (adds `kitLoadout`, class-correct default, idempotent, preserves custom). No live-storage migration run (envelope flag off, legacy authoritative; existing localStorage `player` still loads).
+- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07), `NEW_ZONE_RUNTIME_ENABLED` (P08), `REALTIME_COMBAT_ENABLED` (P09), `KNOWLEDGE_BREAK_ENABLED` (P10), `ADAPTIVE_EXPEDITIONS_ENABLED` (P11), `CLASS_KITS_ENABLED` (P12) — all false/dormant. Turn-based BattleModal + TowerScene renderer + legacy daily quests + legacy player store remain the live paths.
+- **Unresolved risks:** six domain/runtime capabilities are built + tested but not yet wired into a rendered scene/UI/live store (integrate at World 1, Phase 14, and the save-envelope cutover; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
 
 ## Rollback point
 
@@ -44,4 +44,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 11 checkpoint → begin **Phase 12** (Four class kits; depends 07+09; flag per-class data; rollback save migration): give each class a distinct kit of skills built on the combat domain. Gate: identity obvious; no mandatory best path; no useless solo class; save migration passes. See `docs/foundation/MIGRATION_SEQUENCE.md`.
+Commit Phase 12 checkpoint → begin **Phase 13** (Progression / loot / crafting / Sigils; depends 04+07): build on the versioned saves + combat domain. Gate: seeded economy sim; no negative currency; no duplicate claims; no extreme grind; no paid loot box. See `docs/foundation/MIGRATION_SEQUENCE.md`.

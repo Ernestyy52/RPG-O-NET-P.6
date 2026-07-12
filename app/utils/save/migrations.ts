@@ -12,6 +12,8 @@
 import {
   CURRENT_SAVE_VERSION, defaultSlices, type SaveEnvelope, type SaveSlices,
 } from './schema'
+import { defaultLoadout } from '~/data/combat/classKits'
+import type { HeroClassId } from '~/data/classes'
 
 export interface Migration {
   from: number
@@ -51,6 +53,21 @@ export const MIGRATIONS: Migration[] = [
       savedAt: env.savedAt ?? 0,
       slices: mergeSliceDefaults(env.slices),
     }),
+  },
+  // v2 → v3 (Phase 12): character slice gains `kitLoadout`. When absent, default it to the SAVE's own
+  // class starter kit (not the generic warrior default), so an existing mage/archer keeps its identity.
+  // Idempotent: a save that already carries a kitLoadout is preserved untouched.
+  {
+    from: 2,
+    to: 3,
+    migrate: (env) => {
+      const hadKit = Array.isArray(env.slices?.character?.kitLoadout) && env.slices.character.kitLoadout.length > 0
+      const slices = mergeSliceDefaults(env.slices)
+      if (!hadKit) {
+        slices.character.kitLoadout = defaultLoadout((slices.profile.classId ?? 'warrior') as HeroClassId)
+      }
+      return { version: 3, savedAt: env.savedAt ?? 0, slices }
+    },
   },
 ]
 

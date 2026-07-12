@@ -6,6 +6,7 @@ import {
 import { toEnvelope, toSlices, toLegacyPlayer, type LegacyPlayer } from '~/utils/save/legacyAdapter'
 import { runMigrations, mergeSliceDefaults } from '~/utils/save/migrations'
 import { loadSave, writeSave, migrateLegacyIfNeeded, type StorageLike } from '~/utils/save/saveManager'
+import { defaultLoadout } from '~/data/combat/classKits'
 
 class MemoryStorage implements StorageLike {
   private m = new Map<string, string>()
@@ -75,6 +76,37 @@ describe('save — migrations are idempotent', () => {
     const migrated = runMigrations(weird)
     expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
     expect(isValidEnvelope(migrated)).toBe(true)
+  })
+})
+
+describe('save — v2 → v3 adds class-kit loadout (Phase 12)', () => {
+  /** Build a version-2 envelope (no character.kitLoadout) for the given class. */
+  function v2Envelope(classId: string): SaveEnvelope {
+    const slices = toSlices({ ...sampleLegacy, classId })
+    delete (slices.character as unknown as Record<string, unknown>).kitLoadout
+    return { version: 2, savedAt: 0, slices } as SaveEnvelope
+  }
+
+  it('defaults kitLoadout to the SAVE\'s own class kit', () => {
+    const migrated = runMigrations(v2Envelope('mage'))
+    expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
+    expect(migrated.slices.character.kitLoadout).toEqual(defaultLoadout('mage'))
+  })
+
+  it('is idempotent and preserves an existing custom loadout', () => {
+    const migrated = runMigrations(v2Envelope('archer'))
+    const again = runMigrations(migrated)
+    expect(again.slices).toEqual(migrated.slices)
+
+    const custom = v2Envelope('mage')
+    custom.slices.character.kitLoadout = ['warrior_power_strike']
+    const kept = runMigrations(custom)
+    expect(kept.slices.character.kitLoadout).toEqual(['warrior_power_strike'])
+  })
+
+  it('legacy migration seeds kitLoadout from the class', () => {
+    const env = toEnvelope({ ...sampleLegacy, classId: 'guardian' })
+    expect(env.slices.character.kitLoadout).toEqual(defaultLoadout('guardian'))
   })
 })
 

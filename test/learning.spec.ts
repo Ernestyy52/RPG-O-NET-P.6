@@ -214,8 +214,8 @@ describe('save — learning slice migrates v1 → v2', () => {
       },
     } as unknown as SaveEnvelope
     const migrated = runMigrations(v1)
+    // v1 steps all the way to the current version; the learning fields are added and preserved.
     expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
-    expect(migrated.version).toBe(2)
     expect(migrated.slices.learning.correctAnswers).toBe(42)
     expect(migrated.slices.learning.mastery).toEqual({})
     expect(migrated.slices.learning.lastSessionDate).toBe('')

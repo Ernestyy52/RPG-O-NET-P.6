@@ -10,12 +10,14 @@ import type { HeroClassId } from '~/data/classes'
 import type { EquipmentSlot } from '~/data/equipment'
 import type { DailyQuest } from '~/data/quests'
 import type { SubskillMastery } from '~/data/learning/mastery'
+import { defaultLoadout } from '~/data/combat/classKits'
 
 export type GenderId = 'male' | 'female'
 
 /** Bump when the persisted shape changes; add a matching migration in migrations.ts.
- *  v1: initial envelope. v2: learning slice gains `mastery` + `lastSessionDate` (Phase 06). */
-export const CURRENT_SAVE_VERSION = 2
+ *  v1: initial envelope. v2: learning slice gains `mastery` + `lastSessionDate` (Phase 06).
+ *  v3: character slice gains `kitLoadout` — the equipped class-kit ability ids (Phase 12). */
+export const CURRENT_SAVE_VERSION = 3
 
 /** localStorage keys owned by the save system. */
 export const SAVE_KEY = 'save:onet'
@@ -39,6 +41,8 @@ export interface CharacterSlice {
   exp: number
   skillPoints: number
   learnedSkills: string[]
+  /** equipped class-kit ability ids (Phase 12); defaults to the class's starter loadout. */
+  kitLoadout: string[]
 }
 
 /** Learning state is deliberately separate from combat power (ADR 0003). */
@@ -103,7 +107,7 @@ export function defaultSlices(): SaveSlices {
       classId: 'warrior',
       appearance: { face: 'calm', hair: 'short', color: 'amber' },
     },
-    character: { level: 1, exp: 0, skillPoints: 0, learnedSkills: [] },
+    character: { level: 1, exp: 0, skillPoints: 0, learnedSkills: [], kitLoadout: defaultLoadout('warrior') },
     learning: { correctAnswers: 0, mastery: {}, lastSessionDate: '' },
     session: { currentFloor: 1, hp: 72, mp: 30 },
     inventory: { gold: 90, gems: 0, inventory: { potion_s: 2 }, equipment: {} },

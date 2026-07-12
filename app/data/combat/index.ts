@@ -25,6 +25,7 @@ export * from './skills'
 export * from './engine'
 export * from './rewards'
 export * from './realtime'
+export * from './classKits'
 export type {
   RuntimeStats, Resource, StatusEffect, Cooldown, CombatActor,
   DamageRequest, DamageResult, CombatEvent,

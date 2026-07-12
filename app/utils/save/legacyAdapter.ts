@@ -9,6 +9,8 @@
 import {
   CURRENT_SAVE_VERSION, defaultSlices, type SaveEnvelope, type SaveSlices, type SettingsSlice,
 } from './schema'
+import { defaultLoadout } from '~/data/combat/classKits'
+import type { HeroClassId } from '~/data/classes'
 
 /** Shape of the pre-Phase-04 monolithic player store (all optional for partial-save tolerance). */
 export interface LegacyPlayer {
@@ -68,6 +70,8 @@ export function toSlices(legacy: LegacyPlayer = {}, settings: LegacySettings = {
       exp: pick(legacy.exp, d.character.exp),
       skillPoints: pick(legacy.skillPoints, d.character.skillPoints),
       learnedSkills: pick(legacy.learnedSkills, d.character.learnedSkills),
+      // Kits did not exist pre-Phase-12 — start with the class's default loadout.
+      kitLoadout: defaultLoadout(pick(legacy.classId, d.profile.classId) as HeroClassId),
     },
     learning: {
       correctAnswers: pick(legacy.correctAnswers, d.learning.correctAnswers),
