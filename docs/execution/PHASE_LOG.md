@@ -38,3 +38,12 @@ Chronological record of phase execution. Newest at bottom.
 - Wrote `docs/testing/{TEST_STRATEGY, DIAGNOSTIC_MODE, MANUAL_SMOKE_MATRIX}.md`.
 - Verified `npm run build` exit 0 AND diagnostics absent from `.output/public` (production debug disabled by default).
 - Gate: deterministic tests ✓, production debug off by default ✓, build passes ✓.
+- Committed `3a572ad`; pushed.
+
+## Phase 04 — State separation & versioned saves — 2026-07-12 — status: PASSED (pending commit)
+- Route: inline on Opus 4.8 (= save-migration-engineer's model; correct route, avoids cold-context re-derivation).
+- Added `app/utils/save/`: `schema.ts` (SaveEnvelope{version,savedAt,slices} + 7 slices + defaults + isValidEnvelope), `legacyAdapter.ts` (monolithic player ↔ slices, partial-tolerant), `migrations.ts` (idempotent registry + runMigrations), `saveManager.ts` (loadSave primary→backup→legacy→default with corrupt-blob preservation, writeSave backup-before-write, migrateLegacyIfNeeded one-time; injectable StorageLike; `SAVE_ENVELOPE_ENABLED=false`).
+- Added `test/save.spec.ts` (11 tests): round-trip, idempotent migration, v0→v1, corruption recovery + corrupt-blob preservation, load precedence, backup-before-write, one-time legacy migration. **Total suite 56 passing.**
+- Wrote `docs/foundation/SAVE_MIGRATION_GUIDE.md` (integration + rollback).
+- **Legacy `player` store retained and authoritative; flag off ⇒ zero runtime behavior change.** Build exit 0.
+- Gate: existing saves migrate ✓, repeated migration safe ✓, corrupted/partial recovery ✓, rollback documented ✓, legacy retained until compat passes ✓.

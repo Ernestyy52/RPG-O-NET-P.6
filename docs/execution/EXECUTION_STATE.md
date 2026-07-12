@@ -2,12 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 03 — Test/diagnostic/observability foundation
-- **Phase status:** passed (45 tests green, build exit 0, diagnostics dev-gated; committing)
+- **Current phase:** Phase 04 — State separation & versioned saves
+- **Phase status:** passed (56 tests green, build exit 0, flag off ⇒ no runtime change; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `019d332` (Phase 02 constitution, pushed)
-- **Phases 00–02:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`).
-- **Tests:** `npm test` → 45 passing / 7 files (Vitest 3).
+- **Baseline / last validated commit:** `3a572ad` (Phase 03 test foundation, pushed)
+- **Phases 00–03:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`, `3a572ad`).
+- **Tests:** `npm test` → 56 passing / 8 files (Vitest 3).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -32,8 +32,8 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 03):** `package.json` (+test scripts), `package-lock.json`, `vitest.config.ts`, `test/*.spec.ts` (7), `app/plugins/diagnostics.client.ts` (dev-only), `docs/testing/*` (3).
-- **Migrations performed:** none.
+- **Files changed (Phase 04):** `app/utils/save/{schema,legacyAdapter,migrations,saveManager}.ts`, `test/save.spec.ts`, `docs/foundation/SAVE_MIGRATION_GUIDE.md`.
+- **Migrations performed:** none in live storage (envelope machinery ready, flag off; legacy `player` still authoritative).
 - **Unresolved risks:** master-plan doc missing (assumption logged); large scope across 24 phases requires session handoffs. Phase 04 (versioned saves) is the next code-bearing, save-schema-touching phase — must land legacy adapter + idempotent migrations before class/loot/expedition data changes.
 
 ## Rollback point
@@ -42,4 +42,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 03 checkpoint → begin **Phase 04** (State separation & versioned saves): introduce `SaveEnvelope { version, slices }` (profile/character/learning/session/inventory/quest/settings), migration registry, legacy adapter reading today's monolithic `player` blob, backup + corruption recovery, idempotent migrations, feature flag; keep legacy player store until compatibility passes. Add seeded migration tests. See ADR 0001.
+Commit Phase 04 checkpoint → begin **Phase 05** (O-NET curriculum & content validation): typed question schema with draft/reviewed/retired status + provenance, taxonomy (domain/skill/subskill), prerequisites/misconceptions, current-question adapter (preserve the 69 existing), validation pipeline (answer-position & duplicate analysis), teacher review queue. Hard rule: only reviewed content selectable in production. Route: learning-architect (Opus 4.8) + test-data-engineer (Sonnet 5).
