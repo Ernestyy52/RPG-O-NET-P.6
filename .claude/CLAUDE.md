@@ -47,3 +47,85 @@ Nuxt 4 ใช้ `app/` เป็น srcDir หลัก (ไม่ใช่ roo
 - ทุกครั้งที่แก้โค้ดที่กระทบหน้าเกม ให้รัน dev server ทดสอบจริงก่อนสรุปว่าเสร็จ (ดู `<preview_tools>` workflow)
 - ระวัง path asset ต้องผ่าน `assetPath()`/`app.baseURL` เสมอ ห้าม hardcode `/` เพราะจะพังตอน deploy ขึ้น
   GitHub Pages subpath (บั๊กนี้เคยเกิดมาแล้ว — ดูคอมมิต "Fix sprite asset 404s on GitHub Pages")
+
+## Automatic Model and Agent Routing
+
+> Installed by the Auto Model & Effort Router (master plan §26–31). Main session runs
+> `opusplan` + `high` (see `.claude/settings.json`); specialist agents in `.claude/agents/`
+> carry their own `model`/`effort`. Full install report: `docs/claude/AUTO_MODEL_ROUTER_INSTALL_REPORT.md`.
+
+For every substantive request, classify the work before editing.
+
+### Mandatory routing
+
+Delegate automatically:
+
+- Whole-repository analysis, architecture, cross-domain refactors, unknown root-cause bugs, and final release decisions:
+  use `game-architect`.
+
+- O-NET taxonomy, question validation, mastery, spaced review, misconceptions, adaptive learning, and teacher analytics:
+  use `learning-architect`.
+
+- Phaser combat, skills, targeting, enemy AI, boss phases, status effects, Knowledge Break combat behavior:
+  use `combat-engineer`.
+
+- Save schema, persistence, migration, backup, recovery, and compatibility:
+  use `save-migration-engineer`.
+
+- Colyseus rooms, synchronization, server authority, reconnect, anti-duplication, and party state:
+  use `multiplayer-engineer`.
+
+- Loot, inventory transactions, crafting, prices, rewards, drop tables, Sigils, and economy exploits:
+  use `economy-engineer`.
+
+- Approved scoped implementation, UI, mobile controls, quests, adapters, and normal fixes:
+  use `implementation-engineer`.
+
+- Asset manifests, Phaser asset loading, map composition, animation slicing, Y-sort, collision, VFX and audio integration:
+  use `world-art-engineer`.
+
+- Tests, validators, fixtures, deterministic simulation, data cleanup, reports, and safe mechanical refactors:
+  use `test-data-engineer`.
+
+- Trivial documentation, exact renames, comments, and tiny configuration edits:
+  use `routine-worker`.
+
+- Independent completion review:
+  use `qa-release`.
+
+### Escalation rules
+
+Escalate from Sonnet/Haiku to Opus/Fable when any condition is true:
+
+- more than two domains are affected
+- save compatibility is uncertain
+- multiplayer state or rewards are involved
+- the root cause remains unknown after one reproduction attempt
+- the same fix failed twice
+- architecture must change
+- security, privacy, or educational correctness is at risk
+- the task may remove or migrate data
+- the task changes core combat or learning formulas
+- release approval is requested
+
+### De-escalation rules
+
+Use Sonnet medium or Haiku only when:
+
+- the expected files are already known
+- behavior is fully specified
+- no schema or architecture decision is needed
+- rollback is trivial
+- tests already cover the behavior
+- no student data, rewards, save, combat, or network authority is involved
+
+### Execution discipline
+
+1. Classify the request.
+2. Name the selected agent and why.
+3. Delegate rather than changing the main session model repeatedly.
+4. Do not delegate overlapping write ownership in parallel.
+5. Use worktree isolation for risky implementation agents.
+6. Require tests, build, changed-file report, risks, and rollback.
+7. If an agent cannot access its configured model, use the strongest allowed model and disclose the fallback.
+8. Do not claim completion until `qa-release` or a phase-specific reviewer passes the acceptance criteria.
