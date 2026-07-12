@@ -4,8 +4,9 @@
     <div class="hud-top">
       <section class="glass-panel char-panel">
         <div class="char-head">
-          <div class="char-avatar-frame">
+          <div class="char-avatar-frame" :style="{ borderColor: player.gearAuraColor, boxShadow: `0 0 0 1px #050302, 0 0 10px ${player.gearAuraColor}55, inset 0 0 10px rgba(0,0,0,0.6)` }">
             <img :src="avatar" class="char-avatar pixelated" alt="hero" @error="onImgError">
+            <img v-if="weaponIcon" :src="weaponIcon" class="char-weapon" alt="weapon" @error="onImgError">
           </div>
           <div class="char-id">
             <div class="char-name gold-text">{{ player.displayName }}</div>
@@ -76,10 +77,12 @@
 import { computed } from 'vue'
 import { GAME_TAGLINE, GAME_TITLE_EN, GAME_TITLE_TH } from '~/data/branding'
 import { getWorldState } from '~/data/world'
-import { getItemById } from '~/data/equipment'
+import { getItemById, itemIconPath } from '~/data/equipment'
 import { usePlayerStore } from '~/stores/player'
 
-defineProps<{ avatar: string }>()
+const props = defineProps<{ avatar: string }>()
+const config = useRuntimeConfig()
+void props
 defineEmits<{
   (e: 'recreate'): void
   (e: 'reset-save'): void
@@ -96,6 +99,13 @@ const equippedSummary = computed(() => {
     .map((id) => getItemById(id)?.name)
     .filter(Boolean)
   return names.length ? names.join(', ') : 'starter gear'
+})
+
+const weaponIcon = computed(() => {
+  const w = player.equippedWeapon
+  if (!w) return ''
+  const base = config.app.baseURL.endsWith('/') ? config.app.baseURL : `${config.app.baseURL}/`
+  return `${base}${itemIconPath(w.id).replace(/^\/+/, '')}`
 })
 
 function onImgError(event: Event) { (event.target as HTMLImageElement).style.visibility = 'hidden' }
@@ -135,6 +145,19 @@ function onImgError(event: Event) { (event.target as HTMLImageElement).style.vis
 .char-avatar {
   width: 44px;
   height: 44px;
+  object-fit: contain;
+}
+.char-avatar-frame { position: relative; }
+/* ไอคอนอาวุธที่ถืออยู่ โผล่มุมขวาล่างของกรอบรูป — เปลี่ยนตามอาวุธที่สวม */
+.char-weapon {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: #0d0a06;
+  box-shadow: 0 0 0 1px #050302;
   object-fit: contain;
 }
 .char-id { min-width: 0; line-height: 1.3; }

@@ -214,6 +214,24 @@ export function addPlaque(
   return { label, bg }
 }
 
+/**
+ * ออร่ารอบตัวละครตามความหายากของเครื่องแต่งกาย (paper-doll) — แผ่แสงสีที่เท้าตัวละคร
+ * คืน image ที่ต้องอัพเดตตำแหน่งตามผู้เล่นใน update() (คืน null ถ้าเป็น common = ไม่มีออร่า)
+ */
+export function addGearAura(scene: Phaser.Scene, colorHex: string, rarity: string): Phaser.GameObjects.Image | null {
+  if (rarity === 'common') return null
+  ensureTextures(scene)
+  const tint = parseInt(colorHex.replace('#', ''), 16)
+  const strong = rarity === 'legendary' || rarity === 'epic'
+  const aura = scene.add.image(0, 0, 'atmo_dot').setTint(tint).setBlendMode(Phaser.BlendModes.ADD)
+    .setScale(strong ? 2.6 : 2.0).setAlpha(strong ? 0.5 : 0.35)
+  scene.tweens.add({
+    targets: aura, alpha: { from: aura.alpha * 0.6, to: aura.alpha }, scale: { from: aura.scaleX * 0.85, to: aura.scaleX },
+    duration: strong ? 900 : 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+  })
+  return aura
+}
+
 /** เสาไฟถนนสไตล์โคมแก๊ส: เสาเงาดำ + โคมเรืองแสงอุ่น + แอ่งแสงบนพื้น */
 export function addStreetLamp(scene: Phaser.Scene, x: number, y: number) {
   ensureTextures(scene)

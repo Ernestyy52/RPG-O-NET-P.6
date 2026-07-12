@@ -75,25 +75,50 @@ function round(stats: StatBlock, mult: number): StatBlock {
   return out
 }
 
-// ---- weapon types (slot: weapon) — โปรไฟล์สเตตัสต่างกันตามสาย ----
-interface SubType { id: string; label: string; base: StatBlock; per: StatBlock }
+// ---- subtypes: แต่ละสายมีโปรไฟล์สเตตัส + ไอคอนหมวดของตัวเอง (public/item-icons/<icon>.png) ----
+interface SubType { id: string; label: string; icon: string; base: StatBlock; per: StatBlock }
 const WEAPON_TYPES: SubType[] = [
-  { id: 'sword', label: 'Sword', base: { atk: 5, hp: 2 }, per: { atk: 4, hp: 3 } },
-  { id: 'greatsword', label: 'Greatsword', base: { atk: 7 }, per: { atk: 6 } },
-  { id: 'dagger', label: 'Dagger', base: { atk: 3, speed: 2 }, per: { atk: 3, speed: 2 } },
-  { id: 'bow', label: 'Bow', base: { atk: 4, speed: 1 }, per: { atk: 4, knowledge: 1 } },
-  { id: 'staff', label: 'Staff', base: { mag: 5, knowledge: 1 }, per: { mag: 4, knowledge: 2 } },
+  { id: 'sword', label: 'Sword', icon: 'wpn_sword', base: { atk: 5, hp: 2 }, per: { atk: 4, hp: 3 } },
+  { id: 'longsword', label: 'Longsword', icon: 'wpn_sword', base: { atk: 6, hp: 1 }, per: { atk: 5, hp: 2 } },
+  { id: 'greatsword', label: 'Greatsword', icon: 'wpn_greatsword', base: { atk: 8 }, per: { atk: 7 } },
+  { id: 'dagger', label: 'Dagger', icon: 'wpn_dagger', base: { atk: 3, speed: 2 }, per: { atk: 3, speed: 2 } },
+  { id: 'kris', label: 'Kris', icon: 'wpn_dagger', base: { atk: 4, speed: 2, mag: 1 }, per: { atk: 3, speed: 1, mag: 1 } },
+  { id: 'rapier', label: 'Rapier', icon: 'wpn_rapier', base: { atk: 4, speed: 3 }, per: { atk: 4, speed: 2 } },
+  { id: 'axe', label: 'Axe', icon: 'wpn_axe', base: { atk: 7, def: 1 }, per: { atk: 6, def: 1 } },
+  { id: 'battleaxe', label: 'Battleaxe', icon: 'wpn_axe', base: { atk: 9 }, per: { atk: 8 } },
+  { id: 'mace', label: 'Mace', icon: 'wpn_mace', base: { atk: 6, def: 2 }, per: { atk: 5, def: 2 } },
+  { id: 'warhammer', label: 'Warhammer', icon: 'wpn_mace', base: { atk: 9, def: 1 }, per: { atk: 8, hp: 3 } },
+  { id: 'spear', label: 'Spear', icon: 'wpn_spear', base: { atk: 5, speed: 2 }, per: { atk: 5, speed: 1 } },
+  { id: 'halberd', label: 'Halberd', icon: 'wpn_spear', base: { atk: 7, def: 1 }, per: { atk: 6, speed: 1 } },
+  { id: 'bow', label: 'Bow', icon: 'wpn_bow', base: { atk: 4, speed: 1 }, per: { atk: 4, knowledge: 1 } },
+  { id: 'longbow', label: 'Longbow', icon: 'wpn_bow', base: { atk: 6, speed: 1 }, per: { atk: 5, speed: 1 } },
+  { id: 'crossbow', label: 'Crossbow', icon: 'wpn_crossbow', base: { atk: 6 }, per: { atk: 6, knowledge: 1 } },
+  { id: 'staff', label: 'Staff', icon: 'wpn_staff', base: { mag: 5, knowledge: 1 }, per: { mag: 4, knowledge: 2 } },
+  { id: 'wand', label: 'Wand', icon: 'wpn_wand', base: { mag: 4, speed: 1 }, per: { mag: 4, speed: 1 } },
+  { id: 'scythe', label: 'Scythe', icon: 'wpn_scythe', base: { atk: 5, mag: 3 }, per: { atk: 4, mag: 3 } },
 ]
 const ARMOR_TYPES: SubType[] = [
-  { id: 'light', label: 'Garb', base: { hp: 8, def: 2, speed: 1 }, per: { hp: 9, def: 2, speed: 1 } },
-  { id: 'medium', label: 'Mail', base: { hp: 12, def: 3 }, per: { hp: 12, def: 3 } },
-  { id: 'heavy', label: 'Plate', base: { hp: 16, def: 5 }, per: { hp: 15, def: 5 } },
+  { id: 'robe', label: 'Robe', icon: 'arm_robe', base: { hp: 6, mag: 2, knowledge: 1 }, per: { hp: 8, mag: 2 } },
+  { id: 'mage_robe', label: 'Mystic Robe', icon: 'arm_robe', base: { hp: 8, mag: 3 }, per: { hp: 9, mag: 3, knowledge: 1 } },
+  { id: 'leather', label: 'Leather', icon: 'arm_leather', base: { hp: 8, def: 2, speed: 1 }, per: { hp: 9, def: 2, speed: 1 } },
+  { id: 'hide', label: 'Hide', icon: 'arm_leather', base: { hp: 10, def: 2 }, per: { hp: 11, def: 2 } },
+  { id: 'chain', label: 'Chainmail', icon: 'arm_chain', base: { hp: 11, def: 3 }, per: { hp: 11, def: 3 } },
+  { id: 'scale', label: 'Scale Armor', icon: 'arm_scale', base: { hp: 12, def: 4 }, per: { hp: 12, def: 3 } },
+  { id: 'plate', label: 'Plate', icon: 'arm_plate', base: { hp: 15, def: 5 }, per: { hp: 15, def: 5 } },
+  { id: 'fullplate', label: 'Full Plate', icon: 'arm_plate', base: { hp: 18, def: 6 }, per: { hp: 17, def: 6 } },
+  { id: 'dragon', label: 'Dragon Armor', icon: 'arm_dragon', base: { hp: 16, def: 5, atk: 2 }, per: { hp: 16, def: 5, atk: 1 } },
+  { id: 'cloak', label: 'Cloak', icon: 'arm_cloak', base: { hp: 7, speed: 2, knowledge: 1 }, per: { hp: 8, speed: 2 } },
 ]
 const TRINKET_TYPES: SubType[] = [
-  { id: 'ring', label: 'Ring', base: { atk: 1, mag: 1 }, per: { atk: 1, mag: 1 } },
-  { id: 'amulet', label: 'Amulet', base: { hp: 6, knowledge: 1 }, per: { hp: 6, knowledge: 1 } },
-  { id: 'charm', label: 'Charm', base: { speed: 1, knowledge: 1 }, per: { speed: 1, knowledge: 1 } },
-  { id: 'tome', label: 'Tome', base: { knowledge: 2, mag: 1 }, per: { knowledge: 2, mag: 1 } },
+  { id: 'ring', label: 'Ring', icon: 'trk_ring', base: { atk: 1, mag: 1 }, per: { atk: 1, mag: 1 } },
+  { id: 'signet', label: 'Signet', icon: 'trk_ring', base: { atk: 2 }, per: { atk: 2 } },
+  { id: 'amulet', label: 'Amulet', icon: 'trk_amulet', base: { hp: 6, knowledge: 1 }, per: { hp: 6, knowledge: 1 } },
+  { id: 'pendant', label: 'Pendant', icon: 'trk_amulet', base: { hp: 5, def: 1 }, per: { hp: 6, def: 1 } },
+  { id: 'charm', label: 'Charm', icon: 'trk_charm', base: { speed: 1, knowledge: 1 }, per: { speed: 1, knowledge: 1 } },
+  { id: 'talisman', label: 'Talisman', icon: 'trk_charm', base: { mag: 2, knowledge: 1 }, per: { mag: 1, knowledge: 1 } },
+  { id: 'tome', label: 'Tome', icon: 'trk_tome', base: { knowledge: 2, mag: 1 }, per: { knowledge: 2, mag: 1 } },
+  { id: 'orb', label: 'Orb', icon: 'trk_orb', base: { mag: 3 }, per: { mag: 2, knowledge: 1 } },
+  { id: 'badge', label: 'Guild Badge', icon: 'trk_badge', base: { atk: 1, def: 1, knowledge: 1 }, per: { atk: 1, def: 1 } },
 ]
 
 /** ความหายากที่ผลิตต่อเทียร์ — เทียร์สูงมีของหายากมากขึ้น (epic/legendary = craftable เท่านั้น) */
@@ -117,7 +142,7 @@ function nameFor(rarity: Rarity, tier: number, typeLabel: string): string {
 
 function buildCatalog(): EquipmentItem[] {
   const items: EquipmentItem[] = []
-  const push = (slot: EquipmentSlot, t: SubType, iconBase: string) => {
+  const push = (slot: EquipmentSlot, t: SubType) => {
     for (let tier = 1; tier <= 5; tier++) {
       for (const rarity of raritiesForTier(tier)) {
         const craftable = rarity === 'epic' || rarity === 'legendary'
@@ -128,16 +153,16 @@ function buildCatalog(): EquipmentItem[] {
           name: nameFor(rarity, tier, t.label),
           cost, minFloor: (tier - 1) * 10 + 1,
           stats: buildStats(t.base, t.per, tier, rarity),
-          icon: `${iconBase}_t${tier}`,
+          icon: t.icon,
           visual: `${rarity} ${t.label.toLowerCase()}`,
           craftable,
         })
       }
     }
   }
-  for (const w of WEAPON_TYPES) push('weapon', w, 'weapon')
-  for (const a of ARMOR_TYPES) push('armor', a, 'armor')
-  for (const t of TRINKET_TYPES) push('trinket', t, 'trinket')
+  for (const w of WEAPON_TYPES) push('weapon', w)
+  for (const a of ARMOR_TYPES) push('armor', a)
+  for (const t of TRINKET_TYPES) push('trinket', t)
   return items
 }
 
@@ -233,7 +258,7 @@ export function shopInventoryForFloor(floor: number): InventoryItem[] {
 /** เดิม: ชุดพื้นฐานของเทียร์นั้น — คงไว้เพื่อความเข้ากันได้ */
 export function generateEquipmentForFloor(floor: number): EquipmentItem[] {
   const tier = equipmentTierForFloor(floor)
-  return ALL_EQUIPMENT.filter((it) => it.tier === tier && it.rarity === 'common' && ['sword', 'medium', 'ring'].includes(it.type))
+  return ALL_EQUIPMENT.filter((it) => it.tier === tier && it.rarity === 'common' && ['sword', 'plate', 'ring'].includes(it.type))
 }
 
 export function findShopItem(floor: number, id: string): InventoryItem | undefined {

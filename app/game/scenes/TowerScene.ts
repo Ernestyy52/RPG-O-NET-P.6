@@ -22,7 +22,7 @@ import {
   HERO_DISPLAY_H,
   applyStandardHeroBody,
 } from '../systems/textures'
-import { applyAtmosphere, createIdleBreath, addPlaque } from '../systems/atmosphere'
+import { applyAtmosphere, createIdleBreath, addPlaque, addGearAura } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
 import { assetPath } from '../systems/textures'
 import { joinDungeon, leaveRoom, requestBattle, sendBattleResult, sendSeed, mySessionId, type NetMonsterSchema } from '../systems/net'
@@ -57,6 +57,7 @@ export class TowerScene extends Phaser.Scene {
   private online = false
   private pendingBattle = false
   private targetMonsters = 25
+  private gearAura?: Phaser.GameObjects.Image | null
 
   constructor() {
     super('TowerScene')
@@ -127,6 +128,9 @@ export class TowerScene extends Phaser.Scene {
     applyStandardHeroBody(this.player, pScale)
     this.physics.add.collider(this.player, walls)
     this.idleBreath = createIdleBreath(this, this.player, pScale)
+    // ออร่าตามเครื่องแต่งกาย (paper-doll) — เห็นชัดว่าใส่ของหายาก
+    this.gearAura = addGearAura(this, player.gearAuraColor, player.gearRarity)
+    this.gearAura?.setDepth(startY - 2)
 
     this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
     this.cameras.main.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
@@ -367,6 +371,7 @@ export class TowerScene extends Phaser.Scene {
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
+    this.gearAura?.setPosition(this.player.x, this.player.y + 4)
     this.idleBreath.setMoving(moving)
     this.netPlayers.update(time, this.player, this.facing, moving)
 

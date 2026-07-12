@@ -3,7 +3,7 @@ import type { HeroClassId } from '../../data/classes'
 import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { gameEvents } from '../systems/eventBus'
-import { applyAtmosphere, addTorchFlicker, addPortalGlow, addWindowGlow, addPlaque, createIdleBreath } from '../systems/atmosphere'
+import { applyAtmosphere, addTorchFlicker, addPortalGlow, addWindowGlow, addPlaque, createIdleBreath, addGearAura } from '../systems/atmosphere'
 import { preloadBgm, playBgm } from '../systems/bgm'
 import { assetPath, preloadSharedAssets, buildSharedTextures, heroKey, heroIdleFrame, heroAnim, heroSheetSize, HERO_DISPLAY_H, applyStandardHeroBody } from '../systems/textures'
 import { buildTownStructures } from '../systems/buildingArt'
@@ -90,6 +90,7 @@ export class TownScene extends Phaser.Scene {
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private interactHighlights: { x: number; y: number; range: number; glow: Phaser.GameObjects.Image }[] = []
   private netPlayers = new RemotePlayers(this)
+  private gearAura?: Phaser.GameObjects.Image | null
 
   constructor() {
     super('TownScene')
@@ -201,6 +202,10 @@ export class TownScene extends Phaser.Scene {
     applyStandardHeroBody(this.player, scale)
     this.physics.add.collider(this.player, walls)
     this.idleBreath = createIdleBreath(this, this.player, scale)
+    // ออร่าตามเครื่องแต่งกาย (paper-doll)
+    const store = usePlayerStore()
+    this.gearAura = addGearAura(this, store.gearAuraColor, store.gearRarity)
+    this.gearAura?.setDepth(spawnY - 2)
 
     // กันเดินทะลุแนวรั้ว/พุ่มไม้ขอบภาพ
     this.physics.world.setBounds(u(20), u(30), worldW - u(40), WORLD_H - u(60))
@@ -253,6 +258,7 @@ export class TownScene extends Phaser.Scene {
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
+    this.gearAura?.setPosition(this.player.x, this.player.y + 4)
     this.idleBreath.setMoving(moving)
     this.netPlayers.update(time, this.player, this.facing, moving)
 

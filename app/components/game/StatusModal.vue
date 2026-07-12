@@ -7,8 +7,9 @@
       </div>
       <div class="pixel-window-body grid gap-3 p-4 sm:grid-cols-[220px_1fr]">
         <div class="glass-panel p-3 text-center">
-          <div class="status-portrait mx-auto">
+          <div class="status-portrait mx-auto" :style="{ borderColor: player.gearAuraColor, boxShadow: `0 0 0 1px #050302, 0 0 14px ${player.gearAuraColor}55, inset 0 0 12px rgba(0,0,0,0.6)` }">
             <img :src="avatar" class="h-full w-full object-contain pixelated" alt="hero" @error="onImageError">
+            <img v-for="g in gearBadges" :key="g.slot" :src="assetPath(itemIconPath(g.id))" class="gear-badge pixelated" :class="`gear-${g.slot}`" :style="{ borderColor: g.color }" :alt="g.slot" @error="onImageError">
           </div>
           <div class="gold-text mt-2 font-bold">{{ player.displayName }}</div>
           <div class="text-xs uppercase tracking-wide opacity-75">Lv. {{ player.level }} · {{ player.heroClass.name }}</div>
@@ -86,6 +87,16 @@ const slots = computed(() => ([
   { id: 'trinket', label: 'Trinket', item: player.equipment.trinket ? getItemById(player.equipment.trinket) : undefined },
 ]))
 
+// ป้ายเครื่องแต่งกายรอบพอร์เทรต — เปลี่ยนตามของที่สวมใส่จริง (paper-doll)
+const gearBadges = computed(() =>
+  (['weapon', 'armor', 'trinket'] as const)
+    .map((slot) => {
+      const id = player.equipment[slot]
+      return id ? { slot, id, color: rarityColor(rarityOf(id)) } : null
+    })
+    .filter((g): g is { slot: 'weapon' | 'armor' | 'trinket'; id: string; color: string } => !!g),
+)
+
 const bagItems = computed(() =>
   Object.entries(player.inventory)
     .filter(([, qty]) => qty > 0)
@@ -106,14 +117,27 @@ const bagItems = computed(() =>
 
 <style scoped>
 .status-portrait {
+  position: relative;
   width: 96px;
   height: 96px;
   border-radius: 8px;
   border: 1px solid #a8823f;
   background: radial-gradient(circle at 50% 35%, rgba(255, 216, 121, 0.18), transparent 60%), #0d0a06;
-  box-shadow: 0 0 0 1px #050302, inset 0 0 12px rgba(0, 0, 0, 0.6);
   padding: 6px;
 }
+.gear-badge {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1.5px solid;
+  background: #0d0a06;
+  object-fit: contain;
+  padding: 1px;
+}
+.gear-weapon { right: -8px; bottom: 8px; }
+.gear-armor { right: -8px; top: 8px; }
+.gear-trinket { left: -8px; bottom: 8px; }
 .status-stat {
   display: flex;
   align-items: center;

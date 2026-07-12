@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { getHeroClass, type HeroClassId } from '~/data/classes'
-import { findShopItem, getItemById, getEquipmentById, getRecipeByOutput, type EquipmentSlot } from '~/data/equipment'
+import { findShopItem, getItemById, getEquipmentById, getRecipeByOutput, rarityColor, type EquipmentSlot, type Rarity } from '~/data/equipment'
 import { rollDailyQuests, type DailyQuest, type QuestKind } from '~/data/quests'
-import { SKILL_TREE } from '~/data/skills'
+import { SKILL_TREE, canLearnSkill } from '~/data/skills'
 
 export type GenderId = 'male' | 'female'
 
@@ -98,6 +98,20 @@ export const usePlayerStore = defineStore('player', {
     maxHp(): number { return this.stats.maxHp },
     // MP = พลังสมาธิ ใช้กับสกิลในสนามรบ (Support/Counter) — โตตามเลเวลและค่า MAG
     maxMp(): number { return 20 + this.level * 4 + this.stats.mag * 3 },
+    // ---- เครื่องแต่งกายที่สวมใส่ (paper-doll): ตัวละคร/พอร์เทรตเปลี่ยนตามของที่ใส่ ----
+    equippedWeapon: (state) => (state.equipment.weapon ? getEquipmentById(state.equipment.weapon) : undefined),
+    equippedArmor: (state) => (state.equipment.armor ? getEquipmentById(state.equipment.armor) : undefined),
+    equippedTrinket: (state) => (state.equipment.trinket ? getEquipmentById(state.equipment.trinket) : undefined),
+    // ความหายากสูงสุดในบรรดาของที่ใส่ → ใช้เป็นสี "ออร่า" รอบตัวละคร
+    gearRarity(): Rarity {
+      const order: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary']
+      let best = 0
+      for (const it of [this.equippedWeapon, this.equippedArmor, this.equippedTrinket]) {
+        if (it) best = Math.max(best, order.indexOf(it.rarity))
+      }
+      return order[best]
+    },
+    gearAuraColor(): string { return rarityColor(this.gearRarity) },
     atk(): number { return this.stats.atk },
     def(): number { return this.stats.def },
     speed(): number { return this.stats.speed },
@@ -273,9 +287,8 @@ export const usePlayerStore = defineStore('player', {
     },
     learnSkill(skillId: string) {
       const skill = SKILL_TREE.find((node) => node.id === skillId)
-      if (!skill || this.learnedSkills.includes(skillId) || this.skillPoints < skill.cost) return false
-      const previousRank = skill.rank === 1 || this.learnedSkills.includes(`${skill.branch}_${skill.rank - 1}`)
-      if (!previousRank) return false
+      if (!skill || skill.classId !== this.classId) return false
+      if (!canLearnSkill(skill, this.learnedSkills, this.skillPoints)) return false
       this.skillPoints -= skill.cost
       this.learnedSkills.push(skillId)
       this.hp = Math.min(this.maxHp, this.hp + (skill.stats.hp ?? 0))
