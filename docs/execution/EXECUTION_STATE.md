@@ -2,12 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 08 — New Phaser zone runtime (scaffold + lifecycle)
-- **Phase status:** passed (125 tests green, build exit 0, dev transform 200; committing)
+- **Current phase:** Phase 09 — Real-time action-lite combat (domain)
+- **Phase status:** passed (137 tests green, build exit 0; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `0d05cb1` (Phase 07 combat domain)
-- **Phases 00–07:** PASSED + committed (`…`, `0c52f21`, `1dff865`, `1524b7a`, `0d05cb1`).
-- **Tests:** `npm test` → 125 passing / 12 files (Vitest 3).
+- **Baseline / last validated commit:** `c76f452` (Phase 08 zone runtime, pushed)
+- **Phases 00–08:** PASSED + committed (`…`, `1dff865`, `1524b7a`, `0d05cb1`, `c76f452`).
+- **Tests:** `npm test` → 137 passing / 13 files (Vitest 3).
 - **Save version:** CURRENT_SAVE_VERSION = 2 (v1→v2 migration added; flag still off).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
@@ -33,10 +33,10 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 08):** `app/game/runtime/{lifecycle,movement,zone,spawn,encounter,zoneRuntime,index}.ts` (new modular runtime), `app/game/scenes/TowerScene.ts` (delegates movement/spawn/encounter/layout to the runtime, behavior-preserving), `test/zone-runtime.spec.ts`, `docs/execution/*`.
-- **Migrations performed:** none (behavior-preserving; no save-schema change). CURRENT_SAVE_VERSION stays 2.
-- **Feature flags:** `COMBAT_DOMAIN_ENABLED = false` (P07 engine turn-loop). `NEW_ZONE_RUNTIME_ENABLED = false` (P08 rendered scene on ZoneRuntime; dormant — TowerScene is the active renderer). Pure runtime systems are already live in TowerScene as single source of truth (no flag).
-- **Unresolved risks:** (1) combat engine turn-loop path (flag on) not yet exercised in a live battle; (2) no rendered scene runs on ZoneRuntime yet (comes with World 1, Phase 14). Both flags off, so no live behavior change. A full in-browser walk/battle smoke is recommended before flipping either flag.
+- **Files changed (Phase 09):** `app/data/combat/realtime.ts` (new RealtimeCombat engine), `app/data/combat/index.ts` (+`REALTIME_COMBAT_ENABLED` flag + export), `test/combat-realtime.spec.ts`, `docs/execution/*`. **No game-page file touched.**
+- **Migrations performed:** none. CURRENT_SAVE_VERSION stays 2.
+- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07 engine turn-loop), `NEW_ZONE_RUNTIME_ENABLED` (P08 rendered scene), `REALTIME_COMBAT_ENABLED` (P09 real-time loop) — all false/dormant. Turn-based BattleModal + TowerScene renderer remain the live paths.
+- **Unresolved risks:** three domain/runtime capabilities are built + tested but not yet wired into a rendered scene (real-time combat + zone runtime scene arrive with World 1, Phase 14; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
 
 ## Rollback point
 
@@ -44,4 +44,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 08 checkpoint → begin **Phase 09** (Real-time action-lite combat, flag `realtimeCombat`; depends 07+08): drive combat via the Phase 07 domain + Phase 08 runtime; no frame-rate-dependent damage, no duplicate rewards, no invalid attacks, safe reset, legacy BattleModal fallback. See `docs/foundation/MIGRATION_SEQUENCE.md`.
+Commit Phase 09 checkpoint → begin **Phase 10** (Knowledge Break, flag `knowledgeBreak`; depends 06+09): weave the P06 learning loop (`applyAnswer`/`summarizeSession`) into combat via `RealtimeCombat.registerAnswer`; not every hit triggers a question, one wrong answer ≠ instant death, learning state updates, scene changes don't duplicate/lock events, no-question fallback. See `docs/foundation/MIGRATION_SEQUENCE.md`.

@@ -14,10 +14,17 @@
 /** Rollback flag for the engine-driven turn loop in BattleModal. Legacy path stays authoritative until true. */
 export const COMBAT_DOMAIN_ENABLED = false
 
+/**
+ * Rollback flag for the real-time action-lite combat loop (Phase 09). Dormant — the turn-based
+ * BattleModal remains authoritative until a rendered real-time scene passes the World 1 gate.
+ */
+export const REALTIME_COMBAT_ENABLED = false
+
 export * from './formulas'
 export * from './skills'
 export * from './engine'
 export * from './rewards'
+export * from './realtime'
 export type {
   RuntimeStats, Resource, StatusEffect, Cooldown, CombatActor,
   DamageRequest, DamageResult, CombatEvent,

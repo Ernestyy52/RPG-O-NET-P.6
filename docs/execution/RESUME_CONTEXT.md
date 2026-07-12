@@ -3,8 +3,8 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 09 — Real-time action-lite combat** (next; flag `realtimeCombat`, depends 07+08). See `docs/foundation/MIGRATION_SEQUENCE.md`.
-- Phases 00–08 complete and committed. P07 pure combat domain `app/data/combat/` (BattleModal + store delegate). P08 modular zone runtime `app/game/runtime/` (SceneLifecycle, movement, spawn, encounter guards, ZoneRuntime enter/exit — leak-free, tested); TowerScene delegates movement/spawn/encounter/layout to it and stays the active renderer. Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` both off/dormant.
+- **Phase 10 — Knowledge Break** (next; flag `knowledgeBreak`, depends 06+09). See `docs/foundation/MIGRATION_SEQUENCE.md`.
+- Phases 00–09 complete and committed. P07 pure combat domain `app/data/combat/` (BattleModal + store delegate). P08 modular zone runtime `app/game/runtime/` (SceneLifecycle, movement, spawn, encounter, ZoneRuntime enter/exit — leak-free); TowerScene delegates to it and stays the active renderer. P09 `RealtimeCombat` (`app/data/combat/realtime.ts`) — action-lite loop on the P07 domain: frame-rate-independent, validated attacks, idempotent reward, safe reset; `registerAnswer(correct)` is the hook for P10. Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` + `REALTIME_COMBAT_ENABLED` all off/dormant.
 
 ## Completed work
 - Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).
