@@ -2,13 +2,13 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 12 — Four class kits
-- **Phase status:** passed (164 tests green, build exit 0; committing)
+- **Current phase:** Phase 13 — Progression / loot / crafting / Sigils
+- **Phase status:** passed (177 tests green, build exit 0; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `b4fbb22` (Phase 11 expeditions, pushed)
-- **Phases 00–11:** PASSED + committed (`…`, `c76f452`, `7deb127`, `3ee8ea9`, `b4fbb22`).
-- **Tests:** `npm test` → 164 passing / 16 files (Vitest 3).
-- **Save version:** CURRENT_SAVE_VERSION = 3 (v1→v2 learning, v2→v3 class-kit loadout; envelope flag still off, legacy authoritative).
+- **Baseline / last validated commit:** `89452e6` (Phase 12 class kits, pushed)
+- **Phases 00–12:** PASSED + committed (`…`, `7deb127`, `3ee8ea9`, `b4fbb22`, `89452e6`).
+- **Tests:** `npm test` → 177 passing / 17 files (Vitest 3).
+- **Save version:** CURRENT_SAVE_VERSION = 4 (v1→v2 learning, v2→v3 class-kit loadout, v3→v4 sigil inventory; envelope flag still off, legacy authoritative).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -33,10 +33,10 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 12):** `app/data/combat/classKits.ts` (new + `CLASS_KITS_ENABLED` flag), `app/data/combat/index.ts` (export), `app/utils/save/{schema,migrations,legacyAdapter}.ts` (v3 kitLoadout + v2→v3 migration), `test/class-kits.spec.ts`, `test/save.spec.ts` (+3), `test/learning.spec.ts` (stale version literal fixed), `docs/execution/*`. **Live Pinia store + game page untouched.**
-- **Migrations performed:** save schema v2→v3 registered + tested (adds `kitLoadout`, class-correct default, idempotent, preserves custom). No live-storage migration run (envelope flag off, legacy authoritative; existing localStorage `player` still loads).
-- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07), `NEW_ZONE_RUNTIME_ENABLED` (P08), `REALTIME_COMBAT_ENABLED` (P09), `KNOWLEDGE_BREAK_ENABLED` (P10), `ADAPTIVE_EXPEDITIONS_ENABLED` (P11), `CLASS_KITS_ENABLED` (P12) — all false/dormant. Turn-based BattleModal + TowerScene renderer + legacy daily quests + legacy player store remain the live paths.
-- **Unresolved risks:** six domain/runtime capabilities are built + tested but not yet wired into a rendered scene/UI/live store (integrate at World 1, Phase 14, and the save-envelope cutover; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
+- **Files changed (Phase 13):** `app/data/economy/{currency,sigils,crafting,sim,index}.ts` (new domain), `app/utils/save/{schema,migrations,legacyAdapter}.ts` (v4 sigils + v3→v4 migration), `test/economy.spec.ts`, `test/save.spec.ts` (+1), `docs/execution/*`. **Live Pinia store + game page untouched.**
+- **Migrations performed:** save schema v3→v4 registered + tested (adds `sigils` + `socketedSigils`, empty default, idempotent, preserves inventory). No live-storage migration run (envelope flag off, legacy authoritative; existing localStorage `player` still loads).
+- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07), `NEW_ZONE_RUNTIME_ENABLED` (P08), `REALTIME_COMBAT_ENABLED` (P09), `KNOWLEDGE_BREAK_ENABLED` (P10), `ADAPTIVE_EXPEDITIONS_ENABLED` (P11), `CLASS_KITS_ENABLED` (P12), `SIGILS_ENABLED` (P13) — all false/dormant. Turn-based BattleModal + TowerScene renderer + legacy daily quests + legacy player store remain the live paths.
+- **Unresolved risks:** seven domain/economy capabilities are built + tested but not yet wired into a rendered scene/UI/live store (integrate at World 1, Phase 14, and the save-envelope cutover; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
 
 ## Rollback point
 
@@ -44,4 +44,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 12 checkpoint → begin **Phase 13** (Progression / loot / crafting / Sigils; depends 04+07): build on the versioned saves + combat domain. Gate: seeded economy sim; no negative currency; no duplicate claims; no extreme grind; no paid loot box. See `docs/foundation/MIGRATION_SEQUENCE.md`.
+Commit Phase 13 checkpoint → begin **Phase 14 — World 1 vertical slice** (depends 08–13; first big integration gate; per-zone flags). This is where the dormant domains/runtime get wired into a rendered scene. Gate: new player can finish the World 1 boss; no soft lock; mobile flow; learning summary produced; readable boss phases; no placeholder-critical areas. Likely requires flipping flags + a real in-browser smoke. See `docs/foundation/MIGRATION_SEQUENCE.md`.

@@ -69,6 +69,17 @@ export const MIGRATIONS: Migration[] = [
       return { version: 3, savedAt: env.savedAt ?? 0, slices }
     },
   },
+  // v3 → v4 (Phase 13): inventory slice gains `sigils` + `socketedSigils`. Both default empty and are
+  // filled by mergeSliceDefaults; existing inventory (gold/gems/items/equipment) is preserved.
+  {
+    from: 3,
+    to: 4,
+    migrate: (env) => ({
+      version: 4,
+      savedAt: env.savedAt ?? 0,
+      slices: mergeSliceDefaults(env.slices),
+    }),
+  },
 ]
 
 /**

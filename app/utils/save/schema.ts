@@ -16,8 +16,9 @@ export type GenderId = 'male' | 'female'
 
 /** Bump when the persisted shape changes; add a matching migration in migrations.ts.
  *  v1: initial envelope. v2: learning slice gains `mastery` + `lastSessionDate` (Phase 06).
- *  v3: character slice gains `kitLoadout` — the equipped class-kit ability ids (Phase 12). */
-export const CURRENT_SAVE_VERSION = 3
+ *  v3: character slice gains `kitLoadout` — the equipped class-kit ability ids (Phase 12).
+ *  v4: inventory slice gains `sigils` + `socketedSigils` — sigil progression (Phase 13). */
+export const CURRENT_SAVE_VERSION = 4
 
 /** localStorage keys owned by the save system. */
 export const SAVE_KEY = 'save:onet'
@@ -65,6 +66,10 @@ export interface InventorySlice {
   gems: number
   inventory: Record<string, number>
   equipment: Partial<Record<EquipmentSlot, string>>
+  /** owned sigils by id → count (Phase 13). */
+  sigils: Record<string, number>
+  /** sigils socketed per equipment slot (Phase 13). */
+  socketedSigils: Partial<Record<EquipmentSlot, string[]>>
 }
 
 export interface QuestSlice {
@@ -110,7 +115,7 @@ export function defaultSlices(): SaveSlices {
     character: { level: 1, exp: 0, skillPoints: 0, learnedSkills: [], kitLoadout: defaultLoadout('warrior') },
     learning: { correctAnswers: 0, mastery: {}, lastSessionDate: '' },
     session: { currentFloor: 1, hp: 72, mp: 30 },
-    inventory: { gold: 90, gems: 0, inventory: { potion_s: 2 }, equipment: {} },
+    inventory: { gold: 90, gems: 0, inventory: { potion_s: 2 }, equipment: {}, sigils: {}, socketedSigils: {} },
     quest: { dailyDate: '', dailyQuests: [], adventureLog: [] },
     settings: { sound: true, reducedMotion: false, language: 'en' },
   }

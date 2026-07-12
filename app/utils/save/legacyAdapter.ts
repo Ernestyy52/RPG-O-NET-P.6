@@ -89,6 +89,9 @@ export function toSlices(legacy: LegacyPlayer = {}, settings: LegacySettings = {
       gems: pick(legacy.gems, d.inventory.gems),
       inventory: pick(legacy.inventory, d.inventory.inventory),
       equipment: pick(legacy.equipment, d.inventory.equipment) as SaveSlices['inventory']['equipment'],
+      // Sigils did not exist pre-Phase-13 — start empty.
+      sigils: d.inventory.sigils,
+      socketedSigils: d.inventory.socketedSigils,
     },
     quest: {
       dailyDate: pick(legacy.dailyDate, d.quest.dailyDate),

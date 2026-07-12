@@ -110,6 +110,22 @@ describe('save — v2 → v3 adds class-kit loadout (Phase 12)', () => {
   })
 })
 
+describe('save — v3 → v4 adds sigil inventory (Phase 13)', () => {
+  it('adds empty sigils + socketedSigils while preserving inventory', () => {
+    const slices = toSlices({ ...sampleLegacy })
+    delete (slices.inventory as unknown as Record<string, unknown>).sigils
+    delete (slices.inventory as unknown as Record<string, unknown>).socketedSigils
+    const v3 = { version: 3, savedAt: 0, slices } as SaveEnvelope
+    const migrated = runMigrations(v3)
+    expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
+    expect(migrated.slices.inventory.sigils).toEqual({})
+    expect(migrated.slices.inventory.socketedSigils).toEqual({})
+    expect(migrated.slices.inventory.gold).toBe(sampleLegacy.gold) // preserved
+    // idempotent
+    expect(runMigrations(migrated).slices).toEqual(migrated.slices)
+  })
+})
+
 describe('save — load precedence & corruption recovery', () => {
   it('reads a valid primary envelope', () => {
     const s = new MemoryStorage()
