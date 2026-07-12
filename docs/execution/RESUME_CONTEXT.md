@@ -3,8 +3,8 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 11 — Adaptive Daily Expeditions** (next; depends 06+09; consumes P06 `generateDailyPlan`). See `docs/foundation/MIGRATION_SEQUENCE.md`.
-- Phases 00–10 complete and committed. P07 pure combat domain `app/data/combat/`. P08 zone runtime `app/game/runtime/` (leak-free; TowerScene delegates, still the renderer). P09 `RealtimeCombat` (`app/data/combat/realtime.ts`). P10 `KnowledgeBreakController` (`app/data/learning/knowledgeBreak.ts`) — bridges P06 learning ↔ P09 combat: cadence-gated question interrupts, idempotent open/resolve, no-question fallback, wrong ≠ death, `summarize()` → mastery. Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` + `REALTIME_COMBAT_ENABLED` + `KNOWLEDGE_BREAK_ENABLED` all off/dormant. Nothing is wired into a rendered scene yet (integrates at World 1, Phase 14).
+- **Phase 12 — Four class kits** (next; depends 07+09; flag per-class data; rollback save migration). See `docs/foundation/MIGRATION_SEQUENCE.md`.
+- Phases 00–11 complete and committed. P07 combat domain `app/data/combat/`. P08 zone runtime `app/game/runtime/` (TowerScene delegates, still the renderer). P09 `RealtimeCombat`. P10 `KnowledgeBreakController` (`app/data/learning/knowledgeBreak.ts`). P11 `generateExpedition`/`evaluateExpedition` (`app/data/learning/expedition.ts`) — themed multi-objective daily expeditions on the P06 planner: adaptive, non-punitive, deterministic, content-tied objectives, fallback. Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` + `REALTIME_COMBAT_ENABLED` + `KNOWLEDGE_BREAK_ENABLED` + `ADAPTIVE_EXPEDITIONS_ENABLED` all off/dormant. Nothing wired into a rendered scene/UI yet (integrates at World 1, Phase 14). NOTE: P12 touches save shape (per-class kit data) → needs a versioned save migration (see P04 machinery, ADR 0001).
 
 ## Completed work
 - Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).
