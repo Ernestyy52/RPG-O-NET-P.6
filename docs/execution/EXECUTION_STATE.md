@@ -2,12 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 09 — Real-time action-lite combat (domain)
-- **Phase status:** passed (137 tests green, build exit 0; committing)
+- **Current phase:** Phase 10 — Knowledge Break
+- **Phase status:** passed (147 tests green, build exit 0; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `c76f452` (Phase 08 zone runtime, pushed)
-- **Phases 00–08:** PASSED + committed (`…`, `1dff865`, `1524b7a`, `0d05cb1`, `c76f452`).
-- **Tests:** `npm test` → 137 passing / 13 files (Vitest 3).
+- **Baseline / last validated commit:** `7deb127` (Phase 09 real-time combat, pushed)
+- **Phases 00–09:** PASSED + committed (`…`, `1524b7a`, `0d05cb1`, `c76f452`, `7deb127`).
+- **Tests:** `npm test` → 147 passing / 14 files (Vitest 3).
 - **Save version:** CURRENT_SAVE_VERSION = 2 (v1→v2 migration added; flag still off).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
@@ -33,10 +33,10 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 09):** `app/data/combat/realtime.ts` (new RealtimeCombat engine), `app/data/combat/index.ts` (+`REALTIME_COMBAT_ENABLED` flag + export), `test/combat-realtime.spec.ts`, `docs/execution/*`. **No game-page file touched.**
+- **Files changed (Phase 10):** `app/data/learning/knowledgeBreak.ts` (new KnowledgeBreakController + `KNOWLEDGE_BREAK_ENABLED` flag), `test/knowledge-break.spec.ts`, `docs/execution/*`. **No game-page file touched.**
 - **Migrations performed:** none. CURRENT_SAVE_VERSION stays 2.
-- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07 engine turn-loop), `NEW_ZONE_RUNTIME_ENABLED` (P08 rendered scene), `REALTIME_COMBAT_ENABLED` (P09 real-time loop) — all false/dormant. Turn-based BattleModal + TowerScene renderer remain the live paths.
-- **Unresolved risks:** three domain/runtime capabilities are built + tested but not yet wired into a rendered scene (real-time combat + zone runtime scene arrive with World 1, Phase 14; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
+- **Feature flags:** `COMBAT_DOMAIN_ENABLED` (P07), `NEW_ZONE_RUNTIME_ENABLED` (P08), `REALTIME_COMBAT_ENABLED` (P09), `KNOWLEDGE_BREAK_ENABLED` (P10) — all false/dormant. Turn-based BattleModal + TowerScene renderer remain the live paths.
+- **Unresolved risks:** four domain/runtime capabilities are built + tested but not yet wired into a rendered scene (real-time combat, zone runtime scene, Knowledge Break all integrate at World 1, Phase 14; combat engine turn-loop awaits a live battle smoke). All flags off ⇒ no live behavior change.
 
 ## Rollback point
 
@@ -44,4 +44,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 09 checkpoint → begin **Phase 10** (Knowledge Break, flag `knowledgeBreak`; depends 06+09): weave the P06 learning loop (`applyAnswer`/`summarizeSession`) into combat via `RealtimeCombat.registerAnswer`; not every hit triggers a question, one wrong answer ≠ instant death, learning state updates, scene changes don't duplicate/lock events, no-question fallback. See `docs/foundation/MIGRATION_SEQUENCE.md`.
+Commit Phase 10 checkpoint → begin **Phase 11** (Adaptive Daily Expeditions; depends 06+09; consumes P06 `generateDailyPlan`): build multi-objective daily expeditions on the learning planner. Gate: plans vary meaningfully; missed days don't punish; objectives completable & deterministic; no numeric-only filler; shallow-counter fallback. See `docs/foundation/MIGRATION_SEQUENCE.md`.

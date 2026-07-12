@@ -3,8 +3,8 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 10 — Knowledge Break** (next; flag `knowledgeBreak`, depends 06+09). See `docs/foundation/MIGRATION_SEQUENCE.md`.
-- Phases 00–09 complete and committed. P07 pure combat domain `app/data/combat/` (BattleModal + store delegate). P08 modular zone runtime `app/game/runtime/` (SceneLifecycle, movement, spawn, encounter, ZoneRuntime enter/exit — leak-free); TowerScene delegates to it and stays the active renderer. P09 `RealtimeCombat` (`app/data/combat/realtime.ts`) — action-lite loop on the P07 domain: frame-rate-independent, validated attacks, idempotent reward, safe reset; `registerAnswer(correct)` is the hook for P10. Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` + `REALTIME_COMBAT_ENABLED` all off/dormant.
+- **Phase 11 — Adaptive Daily Expeditions** (next; depends 06+09; consumes P06 `generateDailyPlan`). See `docs/foundation/MIGRATION_SEQUENCE.md`.
+- Phases 00–10 complete and committed. P07 pure combat domain `app/data/combat/`. P08 zone runtime `app/game/runtime/` (leak-free; TowerScene delegates, still the renderer). P09 `RealtimeCombat` (`app/data/combat/realtime.ts`). P10 `KnowledgeBreakController` (`app/data/learning/knowledgeBreak.ts`) — bridges P06 learning ↔ P09 combat: cadence-gated question interrupts, idempotent open/resolve, no-question fallback, wrong ≠ death, `summarize()` → mastery. Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` + `REALTIME_COMBAT_ENABLED` + `KNOWLEDGE_BREAK_ENABLED` all off/dormant. Nothing is wired into a rendered scene yet (integrates at World 1, Phase 14).
 
 ## Completed work
 - Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).
