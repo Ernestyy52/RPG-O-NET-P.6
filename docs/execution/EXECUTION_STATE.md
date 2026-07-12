@@ -2,11 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 02 — Project constitution & auto routing
-- **Phase status:** passed (gate met; committing)
+- **Current phase:** Phase 03 — Test/diagnostic/observability foundation
+- **Phase status:** passed (45 tests green, build exit 0, diagnostics dev-gated; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `f65f566` (Phase 01 audit, pushed)
-- **Phases 00–01:** PASSED + pushed (`82d2856`, `f65f566`).
+- **Baseline / last validated commit:** `019d332` (Phase 02 constitution, pushed)
+- **Phases 00–02:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`).
+- **Tests:** `npm test` → 45 passing / 7 files (Vitest 3).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -30,10 +31,10 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 ## Status snapshot
 
 - **Build:** PASS (exit 0, benign warnings only).
-- **Tests:** none yet (framework added Phase 03).
-- **Files changed this phase:** `.claude/agents/*.md` (11), `RPG_ONET_..._EXECUTION_PROMPT_TH.md`, `docs/foundation/*` (5), `docs/execution/*` (5).
+- **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
+- **Files changed (Phase 03):** `package.json` (+test scripts), `package-lock.json`, `vitest.config.ts`, `test/*.spec.ts` (7), `app/plugins/diagnostics.client.ts` (dev-only), `docs/testing/*` (3).
 - **Migrations performed:** none.
-- **Unresolved risks:** master-plan doc missing (assumption logged); large scope across 24 phases requires session handoffs.
+- **Unresolved risks:** master-plan doc missing (assumption logged); large scope across 24 phases requires session handoffs. Phase 04 (versioned saves) is the next code-bearing, save-schema-touching phase — must land legacy adapter + idempotent migrations before class/loot/expedition data changes.
 
 ## Rollback point
 
@@ -41,4 +42,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 02 checkpoint → begin **Phase 03** (Vitest test + diagnostics foundation): add `vitest`, `test` script, pure-logic unit tests (stats, damage seam, skill prereqs, rewards, questions, daily gen, saves, item transactions), dev-only diagnostics, and `docs/testing/*`.
+Commit Phase 03 checkpoint → begin **Phase 04** (State separation & versioned saves): introduce `SaveEnvelope { version, slices }` (profile/character/learning/session/inventory/quest/settings), migration registry, legacy adapter reading today's monolithic `player` blob, backup + corruption recovery, idempotent migrations, feature flag; keep legacy player store until compatibility passes. Add seeded migration tests. See ADR 0001.

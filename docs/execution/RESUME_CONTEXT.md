@@ -3,35 +3,36 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 01 — Deep architecture & game-design audit** (audit-only; no gameplay code changes).
-- Phase 00 (baseline) is complete and committed.
+- **Phase 04 — State separation & versioned saves** (first save-schema-touching phase; ADR 0001).
+- Phases 00–03 complete, committed, and pushed.
 
 ## Completed work
-- Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` created + checked out.
-- Router committed `64a26d6` (11 subagents + orchestrator).
-- Phase 00 docs written under `docs/foundation/` (5) and `docs/execution/` (5).
-- Production build verified exit 0.
+- Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).
+- `64a26d6` router · `82d2856` Phase 00 baseline · `f65f566` Phase 01 audit · `019d332` Phase 02 constitution · Phase 03 (this commit) test+diagnostics.
+- Vitest 3 installed; **45 tests passing** (`npm test`). Dev-only diagnostics at `app/plugins/diagnostics.client.ts`.
+- Architecture docs in `docs/foundation/` (+ADR 0001/0002/0003); testing docs in `docs/testing/`.
 
 ## Current git commit
-- Integration branch tip after Phase 00 commit (see PHASE_LOG / `git log`). Baseline validated commit: `64a26d6`.
-
-## Changed files (Phase 00)
-- `.claude/agents/*.md` (11), `RPG_ONET_CLAUDE_CODE_FULL_AUTONOMOUS_EXECUTION_PROMPT_TH.md`
-- `docs/foundation/{BASELINE,CURRENT_RUNTIME_FLOW,KNOWN_EXISTING_ISSUES,ROLLBACK_GUIDE,ENVIRONMENT_REQUIREMENTS}.md`
-- `docs/execution/{EXECUTION_STATE,PHASE_LOG,DECISION_LOG,KNOWN_BLOCKERS,RESUME_CONTEXT}.md`
+- Integration branch tip = Phase 03 commit (see `git log`). Last validated: `019d332` + Phase 03.
 
 ## Commands / results
-- `npm run build` → exit 0 (client ~14s, 4 routes prerendered, ~24 MB).
+- `npm test` → 45 passing / 7 files. `npm run build` → exit 0; diagnostics absent from `.output/public`.
 
 ## Failing tests
-- None (no test framework yet; added Phase 03).
+- None.
 
 ## Assumptions
 - Master plan doc missing → using execution-prompt roadmap + `docs/AI_Development_Bible_V2/` (DECISION_LOG D-001).
 
-## Next exact action
-1. Produce Phase 01 audit docs under `docs/foundation/`: `KEEP_REFACTOR_REPLACE_MATRIX.md`, `DOMAIN_BOUNDARIES.md`, `DEPENDENCY_MAP.md`, `NEW_RUNTIME_ARCHITECTURE.md`, `MIGRATION_SEQUENCE.md`, `ACCEPTANCE_GATES.md`, `MMORPG_TARGET_ARCHITECTURE.md`, and at least one ADR under `docs/foundation/ADR/`.
-2. No gameplay code changes. Commit Phase 01, then proceed to Phase 02 (constitution/router) and Phase 03 (Vitest test foundation).
+## Next exact action (Phase 04)
+1. Route to **save-migration-engineer** (Opus 4.8). Introduce `SaveEnvelope { version, slices }` with slices `profile/character/learning/session/inventory/quest/settings`.
+2. Build a migration registry (idempotent, versioned) + legacy adapter that reads today's monolithic localStorage `player` blob and maps it into slices; back up prior blob before writing; recover from partial/corrupted saves; never silently reset.
+3. Guard with a `saveEnvelope` feature flag; **keep the legacy `player` store until compatibility passes** (do not remove it).
+4. Add seeded migration tests (round-trip legacy→envelope→legacy; repeated migration is a no-op; corrupted-blob recovery). Verify `npm test` + `npm run build`.
+5. Manual smoke: existing save still loads; reload persists. Update execution docs; commit `refactor: split state and version saves`; push.
 
 ## Agents needed next
-- game-architect (Fable 5) + qa-release (Fable 5) as reviewers; learning/combat/save/mp/economy (Opus 4.8) for domain input. May run inline on main Opus 4.8 session for audit docs.
+- save-migration-engineer (Opus 4.8) primary; test-data-engineer (Sonnet 5) for migration fixtures/seeded tests; qa-release (Fable 5) independent review.
+
+## Gate (Phase 04)
+Existing saves migrate; repeated migration safe; corrupted/partial recovery; rollback documented; legacy store retained until compat passes.

@@ -29,3 +29,12 @@ Chronological record of phase execution. Newest at bottom.
 - Created `docs/claude/AUTO_MODEL_ROUTER_INSTALL_REPORT.md` (agents/models/effort table, name mapping, fallback policy, validation).
 - Hardened `.claude/settings.json` with a curated safe allow-list (git read/add/branch, npm build/generate/test, vitest) + deny force-push. Valid JSON confirmed.
 - Gate: valid agent files ✓, supported settings only ✓, **no app/server/gameplay changes** ✓.
+- Committed `019d332`; pushed.
+
+## Phase 03 — Test/diagnostic/observability foundation — 2026-07-12 — status: PASSED (pending commit)
+- Added Vitest 3 (devDep) + `vitest.config.ts` (node env, `~`/`@`→app alias, deterministic order); `npm test` / `test:watch` scripts.
+- Wrote 45 deterministic tests / 7 files: floors, questions (CEFR + shuffle-bag), skills (prereqs), quests (seeded daily gen), equipment (catalog/shop/recipes), loot (seeded randomness), player-store (stats, rewards+level-up, damage seam, item transactions, idempotent quest claim). **All 45 pass.**
+- Added dev-only diagnostics plugin `app/plugins/diagnostics.client.ts` (gated by `import.meta.dev`): setFloor/setClass/grant/spawnEnemy/spawnBoss/knowledgeBreak(placeholder)/bossPhase/stats(FPS,entities,listeners)/snapshot/reset(save-safe). Reads existing `window.__game`; no gameplay files modified.
+- Wrote `docs/testing/{TEST_STRATEGY, DIAGNOSTIC_MODE, MANUAL_SMOKE_MATRIX}.md`.
+- Verified `npm run build` exit 0 AND diagnostics absent from `.output/public` (production debug disabled by default).
+- Gate: deterministic tests ✓, production debug off by default ✓, build passes ✓.
