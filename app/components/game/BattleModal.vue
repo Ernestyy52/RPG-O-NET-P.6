@@ -57,6 +57,12 @@ import { getFloorConfig, getQuestionDifficulty } from '~/data/floors'
 import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/questions'
 import { getWorldState } from '~/data/world'
 import { rollLoot } from '~/data/loot'
+import {
+  COMBAT_DOMAIN_ENABLED, COUNTER_MP, SUPPORT_MP, RewardLedger,
+  buildRewardRequest, comboBonus as domainComboBonus, escapeChance, gemsForEncounter,
+  heroDamage as domainHeroDamage, heroWinsInitiative, monsterDamage,
+  resolveHeroSkill, resolveMonsterAttack, setupEncounter, supportHeal,
+} from '~/data/combat'
 import { usePlayerStore } from '~/stores/player'
 
 const runtimeConfig = useRuntimeConfig()
@@ -74,9 +80,13 @@ const question = reactive<Question>({ id: '', category: 'vocabulary', cefr: 'Pre
 const monster = reactive({ name: 'Slime', hp: 30, maxHp: 30, atk: 4, speed: 4, sprite: assetPath('mob-sprites/mca/slime.png') })
 const enc = reactive<{ isBoss: boolean; expReward: number; goldReward: number }>({ isBoss: false, expReward: 0, goldReward: 0 })
 const isBossFight = computed(() => enc.isBoss)
-// คอมโบ: ตอบถูกติดกันดาเมจแรงขึ้น +15%/สแตค (สูงสุด +60%) ตอบผิด = รีเซ็ต
+// คอมโบ: ตอบถูกติดกันดาเมจแรงขึ้น +15%/สแตค (สูงสุด +60%) ตอบผิด = รีเซ็ต — สูตรอยู่ใน combat domain
 const combo = ref(0)
-const comboBonus = computed(() => Math.min(0.6, Math.max(0, combo.value - 1) * 0.15))
+const comboBonus = computed(() => domainComboBonus(combo.value))
+// idempotency guard: ป้องกันจ่ายรางวัลซ้ำถ้า winBattle ยิงมากกว่าหนึ่งครั้งต่อการต่อสู้ (กติกาข้อ 3)
+const rewardLedger = new RewardLedger()
+const encounterId = ref('')
+let battleSeq = 0
 const monsterHit = ref(false)
 const playerHit = ref(false)
 // Icon ฝั่งผู้เล่นใช้ตัวเดียวกับ sprite ในแมพ (Occupation.png)
@@ -101,18 +111,18 @@ function loadQuestion() {
 }
 
 function setupMonster(payload: import('~/game/systems/eventBus').EncounterInfo) {
-  const cfg = config.value
-  const boss = !!payload.isBoss
-  enc.isBoss = boss
-  enc.expReward = payload.expReward ?? cfg.expReward
-  enc.goldReward = payload.goldReward ?? cfg.goldReward
-  monster.name = payload.name ?? (boss ? 'Floor Boss' : 'Dungeon Monster')
-  monster.maxHp = Math.round(payload.hp ?? cfg.monsterHp)
-  monster.hp = monster.maxHp
-  monster.atk = Math.round((payload.atk ?? cfg.monsterAtk) * world.value.combatModifier.monsterAtk)
-  monster.speed = (payload.speed ?? cfg.monsterLevel) + (boss ? 4 : 0)
+  // สูตรตั้งค่ามอนสเตอร์/รางวัล/ลำดับการโจมตี อยู่ใน combat domain (ADR 0002)
+  const setup = setupEncounter(payload, config.value, world.value.combatModifier)
+  enc.isBoss = setup.isBoss
+  enc.expReward = setup.expReward
+  enc.goldReward = setup.goldReward
+  monster.name = setup.name
+  monster.maxHp = setup.maxHp
+  monster.hp = setup.maxHp
+  monster.atk = setup.atk
+  monster.speed = setup.speed
   monster.sprite = assetPath(payload.sprite ?? 'mob-sprites/mca/slime.png')
-  turn.value = player.speed * world.value.combatModifier.playerSpeed >= monster.speed ? 'Hero' : 'Monster'
+  turn.value = heroWinsInitiative(player.speed, monster.speed, world.value.combatModifier.playerSpeed) ? 'Hero' : 'Monster'
 }
 
 gameEvents.on('battle:start', (payload) => {
@@ -120,6 +130,7 @@ gameEvents.on('battle:start', (payload) => {
   active.value = true
   locked.value = false
   combo.value = 0
+  encounterId.value = `f${payload.floor}:${Date.now()}:${battleSeq++}`
   setupMonster(payload)
   loadQuestion()
   log.value = turn.value === 'Hero' ? 'Your speed wins initiative. Answer correctly to attack.' : 'The monster is faster.'
@@ -131,8 +142,24 @@ function finish(won: boolean) {
   gameEvents.emit('battle:end', { won, isBoss: enc.isBoss })
 }
 
+// ดาเมจฮีโร่มาจาก combat domain (single source). flag COMBAT_DOMAIN_ENABLED สลับไปใช้ engine resolver
+// ซึ่งจัดการหัก HP มอนสเตอร์ให้ด้วย; path เดิม (flag off) เรียกสูตร domain ตรงๆ แล้วหัก HP เอง
 function heroDamage(multiplier = 1) {
-  return Math.max(3, Math.round((player.atk + player.knowledge * 0.6) * multiplier * world.value.combatModifier.knowledge))
+  return domainHeroDamage(player.atk, player.knowledge, multiplier, world.value.combatModifier.knowledge)
+}
+
+function heroHit(skill: 'attack' | 'counter'): number {
+  if (COMBAT_DOMAIN_ENABLED) {
+    const res = resolveHeroSkill(skill, {
+      atk: player.atk, knowledge: player.knowledge, combo: combo.value,
+      monsterHp: monster.hp, world: world.value.combatModifier,
+    })
+    monster.hp = res.targetHpAfter
+    return res.raw
+  }
+  const damage = heroDamage(skill === 'attack' ? 1 + comboBonus.value : 0.65)
+  monster.hp = Math.max(0, monster.hp - damage)
+  return damage
 }
 
 function answer(index: number) {
@@ -140,8 +167,7 @@ function answer(index: number) {
   if (index === question.answerIndex) {
     player.recordCorrectAnswer()
     combo.value++
-    const damage = heroDamage(1 + comboBonus.value)
-    monster.hp = Math.max(0, monster.hp - damage)
+    const damage = heroHit('attack')
     pulse(monsterHit)
     log.value = combo.value >= 2
       ? `Correct! Combo x${combo.value} — you attack for ${damage} damage.`
@@ -154,14 +180,11 @@ function answer(index: number) {
   setTimeout(monsterAttack, 800)
 }
 
-// ค่าร่าย MP ของสกิลต่อสู้ — ตอบคำถามถูกจะฟื้น MP กลับ (+2/ข้อ ผ่าน recordCorrectAnswer)
-const SUPPORT_MP = 8
-const COUNTER_MP = 6
-
+// ค่าร่าย MP ของสกิลต่อสู้ (SUPPORT_MP/COUNTER_MP) นิยามใน combat domain — ตอบถูกฟื้น MP +2/ข้อ (recordCorrectAnswer)
 function support() {
   if (!player.spendMp(SUPPORT_MP)) return
   locked.value = true
-  const heal = Math.round(14 + player.knowledge * 2)
+  const heal = supportHeal(player.knowledge)
   player.heal(heal)
   log.value = `Support skill restores ${heal} HP and steadies your next answer. (-${SUPPORT_MP} MP)`
   setTimeout(monsterAttack, 700)
@@ -178,20 +201,22 @@ function usePotion() {
 function counter() {
   if (!player.spendMp(COUNTER_MP)) return
   locked.value = true
-  const damage = heroDamage(0.65)
-  monster.hp = Math.max(0, monster.hp - damage)
+  const damage = heroHit('counter')
   log.value = `Counter stance deals ${damage} damage and reduces the next hit. (-${COUNTER_MP} MP)`
   if (monster.hp <= 0) return winBattle()
   setTimeout(() => monsterAttack(0.45), 700)
 }
 
 function escape() {
-  const chance = Math.min(0.85, 0.35 + player.speed / 40)
+  const chance = escapeChance(player.speed)
   finish(Math.random() < chance ? false : true)
 }
 
 function monsterAttack(multiplier = 1) {
-  const damage = Math.round(monster.atk * multiplier)
+  // raw damage มาจาก domain (engine resolver เมื่อ flag on / monsterDamage ตรงๆ เมื่อ off); การหัก def อยู่ใน player.takeDamage
+  const damage = COMBAT_DOMAIN_ENABLED
+    ? resolveMonsterAttack({ monsterAtk: monster.atk, multiplier, heroHp: player.hp, heroDef: player.def }).raw
+    : monsterDamage(monster.atk, multiplier)
   player.takeDamage(damage)
   pulse(playerHit)
   if (player.hp <= 0) {
@@ -205,16 +230,26 @@ function monsterAttack(multiplier = 1) {
 }
 
 function winBattle() {
-  // บอสดรอปเพชร: บอสธรรมดา 1 เม็ด / world boss (ทุก 10 ชั้น) 3 เม็ด
-  const gems = enc.isBoss ? (config.value.isMilestone ? 3 : 1) : 0
-  player.gainRewards(enc.expReward, enc.goldReward, gems)
-  player.recordDefeat()
+  // บอสดรอปเพชร: บอสธรรมดา 1 เม็ด / world boss (ทุก 10 ชั้น) 3 เม็ด — สูตรใน combat domain
+  const gems = gemsForEncounter(enc.isBoss, config.value.isMilestone)
   const drops = rollLoot(floor.value, enc.isBoss)
-  for (const drop of drops) player.addItem(drop.itemId, drop.qty)
-  const dropText = drops.length ? ` Dropped: ${drops.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
-  const gemText = gems ? ` +${gems} Gems.` : ''
-  log.value = `Victory. +${enc.expReward} EXP, +${enc.goldReward} gold.${gemText}${dropText}`
-  player.addLog(`Defeated ${monster.name} on Floor ${floor.value} (+${enc.expReward} EXP, +${enc.goldReward}g${gems ? `, +${gems} Gems` : ''})`)
+  const reward = buildRewardRequest({
+    encounterId: encounterId.value,
+    exp: enc.expReward,
+    gold: enc.goldReward,
+    gems,
+    loot: drops.map((d) => ({ itemId: d.itemId, name: d.name, qty: d.qty })),
+  })
+  // จ่ายรางวัลครั้งเดียวต่อ encounter — winBattle ที่ยิงซ้ำจะไม่จ่ายซ้ำ (validated + idempotent, กติกาข้อ 3)
+  if (rewardLedger.claim(reward)) {
+    player.gainRewards(reward.exp, reward.gold, reward.gems)
+    player.recordDefeat()
+    for (const drop of reward.loot) player.addItem(drop.itemId, drop.qty)
+  }
+  const dropText = reward.loot.length ? ` Dropped: ${reward.loot.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
+  const gemText = reward.gems ? ` +${reward.gems} Gems.` : ''
+  log.value = `Victory. +${reward.exp} EXP, +${reward.gold} gold.${gemText}${dropText}`
+  player.addLog(`Defeated ${monster.name} on Floor ${floor.value} (+${reward.exp} EXP, +${reward.gold}g${reward.gems ? `, +${reward.gems} Gems` : ''})`)
   setTimeout(() => finish(true), 1100)
 }
 </script>

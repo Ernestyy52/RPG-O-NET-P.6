@@ -3,8 +3,8 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 07 — Extract combat domain** (ADR 0002; combat-engineer domain).
-- Phases 00–06 complete, committed, and pushed.
+- **Phase 08 — Zone runtime** (next). See `docs/foundation/MIGRATION_SEQUENCE.md`.
+- Phases 00–07 complete and committed. Phase 07 extracted the pure combat domain (`app/data/combat/`); BattleModal + player store delegate to it; `COMBAT_DOMAIN_ENABLED` flag off (engine turn-loop path awaits a live battle smoke before flipping).
 
 ## Completed work
 - Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).

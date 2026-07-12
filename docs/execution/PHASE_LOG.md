@@ -66,3 +66,16 @@ Chronological record of phase execution. Newest at bottom.
 - Independent review (qa-release mandate; delegated agent hit a session limit, completed by orchestrator with the same evidence): grep confirms NO player/combat-stat/Math.random in `app/data/learning/` (comments only); selector+planner route through selectableInProduction; mastery clamped [0,1]; planner target = base + non-negative restedBonus (never shrinks); anti-repeat window < pool size (no forced dupes); v1→v2 preserves data. **Verdict: PASS.**
 - Wrote `docs/learning/MASTERY_AND_PLANNER.md`.
 - Gate: deterministic seeded tests ✓, weak skills recur appropriately ✓, learning state separate from combat power ✓, spaced review/anti-repeat/answer-position balance/10-20-30 plans/Adventure/Learning-Focus/catch-up/non-punitive missed days ✓, saves preserved via approved migration ✓.
+
+## Phase 07 — Extract combat domain (ADR 0002) — 2026-07-12 — status: PASSED (pending commit)
+- Route: combat-engineer + game-architect + test-data-engineer work executed inline on the main Opus 4.8 session (installed agent roster is generic; reasoning-heavy combat extraction kept on the strongest model with full repo context).
+- Added pure `app/data/combat/` (no Vue/Phaser/Pinia imports, no Math.random/clock):
+  - `formulas.ts` — comboBonus, heroDamage, monsterDamage, mitigateDamage, supportHeal, escapeChance, heroWinsInitiative, scaleMonsterAtk (single source of truth for every combat number).
+  - `types.ts` — RuntimeStats, Resource, StatusEffect, Cooldown, CombatActor, DamageRequest/DamageResult, CombatEvent.
+  - `skills.ts` — CombatSkillId + COMBAT_SKILLS catalog (attack/support/counter/escape), SUPPORT_MP=8/COUNTER_MP=6/CORRECT_ANSWER_MP_REGEN=2, heroActionMultiplier.
+  - `engine.ts` — setupEncounter (mirrors setupMonster), resolveHeroSkill, resolveMonsterAttack.
+  - `rewards.ts` — gemsForEncounter, buildRewardRequest (non-negative integer clamp + empty-loot drop), RewardLedger (idempotent per-encounter payout; constitution rule 3).
+  - `index.ts` — barrel + `COMBAT_DOMAIN_ENABLED` rollback flag (false).
+- Rewired UI/store to delegate (no duplicated formula remains): `BattleModal.vue` sources all math from the domain (setupMonster→setupEncounter, heroDamage/heroHit, counter/escape/support, monsterAttack, winBattle→buildRewardRequest+RewardLedger); `player.ts` takeDamage→mitigateDamage. `combatDomain` flag gates the engine-driven turn path (resolveHeroSkill/resolveMonsterAttack); legacy path calls the same domain formulas ⇒ single source in both flag states.
+- Added `test/combat.spec.ts` (19 tests): every formula asserted equal to the pre-extraction legacy expression across parameter grids; engine resolvers, setupEncounter overrides, gems, reward validation + ledger idempotency. **Suite: 107 passing / 11 files.** `npm run build` exit 0. Dev server boots + serves 200, no import/runtime errors.
+- Gate: no duplicated formula (grep clean) ✓, equivalent legacy test cases pass ✓, combat rules no longer owned by UI (formulas in domain, store delegates) ✓, rollback feature flag present (`COMBAT_DOMAIN_ENABLED`) ✓.

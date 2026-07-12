@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { mitigateDamage } from '~/data/combat'
 import { getHeroClass, type HeroClassId } from '~/data/classes'
 import { findShopItem, getItemById, getEquipmentById, getRecipeByOutput, rarityColor, type EquipmentSlot, type Rarity } from '~/data/equipment'
 import { rollDailyQuests, type DailyQuest, type QuestKind } from '~/data/quests'
@@ -189,7 +190,8 @@ export const usePlayerStore = defineStore('player', {
       if (this.adventureLog.length > 60) this.adventureLog.splice(0, this.adventureLog.length - 60)
     },
     takeDamage(amount: number) {
-      this.hp = Math.max(0, this.hp - Math.max(1, Math.round(amount - this.def * 0.55)))
+      // Defense mitigation lives in the combat domain (single source of truth, ADR 0002).
+      this.hp = Math.max(0, this.hp - mitigateDamage(amount, this.def))
     },
     heal(amount?: number) {
       this.hp = Math.min(this.maxHp, this.hp + (amount ?? this.maxHp))
