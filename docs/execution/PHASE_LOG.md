@@ -14,3 +14,11 @@ Chronological record of phase execution. Newest at bottom.
 - Wrote `docs/foundation/{BASELINE, CURRENT_RUNTIME_FLOW, KNOWN_EXISTING_ISSUES, ROLLBACK_GUIDE, ENVIRONMENT_REQUIREMENTS}.md`.
 - Wrote `docs/execution/{EXECUTION_STATE, PHASE_LOG, DECISION_LOG, KNOWN_BLOCKERS, RESUME_CONTEXT}.md`.
 - Gate: reproducible baseline ✓, clean phase diff (docs + router only, no gameplay code) ✓, build/test state documented ✓, safe rollback exists ✓.
+- Committed `82d2856`; pushed integration branch to origin (new remote branch, tracking set).
+
+## Phase 01 — Deep architecture & design audit — 2026-07-12 — status: PASSED (pending commit)
+- Read domain files (BattleModal, classes, player store, createGame, eventBus, questions) to ground the audit.
+- Wrote `docs/foundation/{KEEP_REFACTOR_REPLACE_MATRIX, DOMAIN_BOUNDARIES, DEPENDENCY_MAP, NEW_RUNTIME_ARCHITECTURE, MIGRATION_SEQUENCE, ACCEPTANCE_GATES, MMORPG_TARGET_ARCHITECTURE}.md`.
+- Wrote ADRs: `ADR/0001-versioned-save-envelope`, `0002-pure-combat-domain`, `0003-learning-combat-firewall`.
+- Key findings: BattleModal owns all combat formulas+rewards+loot (→Phase 07); player store monolithic no-version (→Phase 04); classes are stat-blocks only, no kits (→Phase 12); questions lack typed schema/status (→Phase 05).
+- Gate: architecture independently reviewable ✓, first slices dependency-ordered (MIGRATION_SEQUENCE) ✓, **no gameplay code changed** (git diff docs-only) ✓.
