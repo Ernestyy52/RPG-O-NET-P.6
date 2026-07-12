@@ -12,6 +12,7 @@ import {
   buildBiomeTextures,
   buildSharedTextures,
   monsterTextureKey,
+  biomeFloorKey,
   bossVisualForFloor,
   ensureWorldBossAnim,
   heroKey,
@@ -85,9 +86,15 @@ export class BossScene extends Phaser.Scene {
 
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
-        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_grass`).setDepth(0)
+        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, biomeFloorKey(biome.id, x, y)).setDepth(0)
       }
     }
+    // เวทีบอส: วงแหวนหินกลางลาน + กดโทนกลางให้ดูเป็นสังเวียน
+    const arenaCx = (MAP_W / 2) * TILE, arenaCy = TILE * 4.4
+    const ring = this.add.graphics().setDepth(0.5)
+    ring.fillStyle(0x000000, 0.14).fillCircle(arenaCx, arenaCy, TILE * 3.3)
+    ring.lineStyle(3, 0x1a120a, 0.5).strokeCircle(arenaCx, arenaCy, TILE * 3.2)
+    ring.lineStyle(1.5, 0xffd977, 0.25).strokeCircle(arenaCx, arenaCy, TILE * 3.0)
 
     // กำแพงล้อมรอบ (ห้องปิด ไม่มีทางออกจนกว่าจะปราบบอส)
     const walls = this.physics.add.staticGroup()

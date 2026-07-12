@@ -168,6 +168,87 @@ function buildTree(scene: Phaser.Scene, biome: Biome) {
   bakeFrame(scene, `${biome.id}_tree`, TREE_FRAME, { color: biome.tree.leaf, alpha: 0.3 })
 }
 
+// ================================================================================================
+// พื้นห้องดันเจี้ยน/บอสแบบสมจริงต่อไบโอม — วาดเป็น canvas texture 3 แบบต่อไบโอม (สุ่มสลับต่อ tile)
+// แต่ละไบโอมมีลวดลายเฉพาะ: ป่า=ใบหญ้า, ทะเลทราย=คลื่นทราย, หิมะ=ประกาย+รอยแตก,
+// ภูเขาไฟ=รอยลาวาเรืองแสง, ถ้ำ=เกล็ดคริสตัล — โทนสีมาจาก biome palette (grass base/dark/light)
+// ================================================================================================
+export const FLOOR_VARIANTS = 3
+
+function toRgb(hex: number): [number, number, number] { return [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255] }
+function clampByte(n: number): number { return n < 0 ? 0 : n > 255 ? 255 : Math.round(n) }
+function shade([r, g, b]: [number, number, number], f: number, a = 1): string {
+  return `rgba(${clampByte(r * f)},${clampByte(g * f)},${clampByte(b * f)},${a})`
+}
+function mulberry32(seed: number) {
+  let s = seed >>> 0
+  return () => { s |= 0; s = (s + 0x6d2b79f5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296 }
+}
+
+function drawFloorMotif(ctx: CanvasRenderingContext2D, biomeId: string, base: [number, number, number], dark: [number, number, number], light: [number, number, number], rnd: () => number) {
+  const R = () => Math.floor(rnd() * TILE)
+  if (biomeId === 'forest') {
+    for (let i = 0; i < 26; i++) { // ใบหญ้าสั้นๆ
+      const x = R(), y = R(), h = 2 + rnd() * 3
+      ctx.strokeStyle = shade(rnd() < 0.5 ? light : dark, 1, 0.85); ctx.lineWidth = 1
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (rnd() - 0.5) * 2, y - h); ctx.stroke()
+    }
+    for (let i = 0; i < 3; i++) { ctx.fillStyle = `rgba(${230},${210 + rnd() * 40},${120},0.8)`; ctx.fillRect(R(), R(), 1, 1) } // ดอกไม้จิ๋ว
+  } else if (biomeId === 'desert') {
+    ctx.strokeStyle = shade(dark, 1, 0.5); ctx.lineWidth = 1
+    for (let y = 3; y < TILE; y += 5 + Math.floor(rnd() * 3)) { // คลื่นทราย
+      ctx.beginPath(); ctx.moveTo(0, y)
+      for (let x = 0; x <= TILE; x += 4) ctx.lineTo(x, y + Math.sin(x * 0.6 + y) * 1.2)
+      ctx.stroke()
+    }
+    for (let i = 0; i < 5; i++) { ctx.fillStyle = shade(dark, 0.9, 0.7); ctx.fillRect(R(), R(), 2, 1) } // กรวด
+  } else if (biomeId === 'snow') {
+    for (let i = 0; i < 18; i++) { ctx.fillStyle = `rgba(255,255,255,${0.5 + rnd() * 0.5})`; ctx.fillRect(R(), R(), 1, 1) } // ประกายหิมะ
+    ctx.strokeStyle = shade(dark, 1, 0.4); ctx.lineWidth = 1 // รอยแตกน้ำแข็ง
+    for (let i = 0; i < 2; i++) { const x = R(); ctx.beginPath(); ctx.moveTo(x, 0); for (let y = 0; y < TILE; y += 6) ctx.lineTo(x + (rnd() - 0.5) * 8, y); ctx.stroke() }
+  } else if (biomeId === 'volcano') {
+    for (let i = 0; i < 3; i++) { // รอยลาวาเรืองแสง
+      let x = R(), y = R()
+      ctx.strokeStyle = `rgba(255,${110 + Math.floor(rnd() * 60)},40,0.9)`; ctx.lineWidth = 1.4
+      ctx.beginPath(); ctx.moveTo(x, y)
+      for (let s = 0; s < 5; s++) { x += (rnd() - 0.5) * 10; y += (rnd() - 0.5) * 10; ctx.lineTo(x, y) }
+      ctx.stroke()
+      ctx.fillStyle = 'rgba(255,220,120,0.9)'; ctx.fillRect(x, y, 2, 2) // จุดเรืองแสง
+    }
+  } else { // cave
+    for (let i = 0; i < 10; i++) { // เกล็ดคริสตัล
+      const x = R(), y = R()
+      ctx.fillStyle = `rgba(${150 + rnd() * 60},${140 + rnd() * 60},255,${0.5 + rnd() * 0.4})`
+      ctx.fillRect(x, y, 1, 1); if (rnd() < 0.4) ctx.fillRect(x, y - 1, 1, 3)
+    }
+    ctx.strokeStyle = shade(dark, 0.8, 0.5); ctx.lineWidth = 1
+    const x = R(); ctx.beginPath(); ctx.moveTo(x, 0); for (let y = 0; y < TILE; y += 7) ctx.lineTo(x + (rnd() - 0.5) * 7, y); ctx.stroke()
+  }
+}
+
+function buildBiomeFloorTiles(scene: Phaser.Scene, biome: Biome) {
+  if (scene.textures.exists(`${biome.id}_floor0`)) return
+  const base = toRgb(biome.grass.base), dark = toRgb(biome.grass.dark), light = toRgb(biome.grass.light)
+  for (let v = 0; v < FLOOR_VARIANTS; v++) {
+    const tex = scene.textures.createCanvas(`${biome.id}_floor${v}`, TILE, TILE)!
+    const ctx = tex.getContext()
+    const rnd = mulberry32(biome.id.length * 131 + v * 977 + 7)
+    ctx.fillStyle = shade(base, 1); ctx.fillRect(0, 0, TILE, TILE)
+    // ช่องย่อย 8x8 สลับโทนเล็กน้อยให้พื้นไม่แบน
+    for (let cy = 0; cy < TILE; cy += 8) for (let cx = 0; cx < TILE; cx += 8) {
+      ctx.fillStyle = shade(base, 0.92 + rnd() * 0.16); ctx.fillRect(cx, cy, 8, 8)
+    }
+    drawFloorMotif(ctx, biome.id, base, dark, light, rnd)
+    tex.refresh()
+  }
+}
+
+/** เลือก floor variant แบบ deterministic ตามพิกัด tile — ให้ลายพื้นกระจายสม่ำเสมอ ไม่ซ้ำเป็นบล็อก */
+export function biomeFloorKey(biomeId: string, tx: number, ty: number): string {
+  const h = (tx * 73856093) ^ (ty * 19349663)
+  return `${biomeId}_floor${(h >>> 0) % FLOOR_VARIANTS}`
+}
+
 function buildGroundExtras(scene: Phaser.Scene, biome: Biome) {
   if (scene.textures.exists(`${biome.id}_path0`)) return
   PATH_VARIANT_FRAMES.forEach((frame, i) => {
@@ -368,6 +449,7 @@ function buildHeroAnimations(scene: Phaser.Scene) {
 }
 
 export function buildBiomeTextures(scene: Phaser.Scene, biome: Biome) {
+  buildBiomeFloorTiles(scene, biome)
   if (scene.textures.exists(`${biome.id}_grass`)) return
   buildGrass(scene, biome)
   buildTree(scene, biome)

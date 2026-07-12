@@ -13,6 +13,7 @@ import {
   buildBiomeTextures,
   buildSharedTextures,
   monsterTextureKey,
+  biomeFloorKey,
   heroKey,
   heroIdleFrame,
   heroAnim,
@@ -85,7 +86,7 @@ export class TowerScene extends Phaser.Scene {
 
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
-        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_grass`).setDepth(0)
+        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, biomeFloorKey(biome.id, x, y)).setDepth(0)
       }
     }
 
