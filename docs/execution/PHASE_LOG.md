@@ -47,3 +47,12 @@ Chronological record of phase execution. Newest at bottom.
 - Wrote `docs/foundation/SAVE_MIGRATION_GUIDE.md` (integration + rollback).
 - **Legacy `player` store retained and authoritative; flag off ⇒ zero runtime behavior change.** Build exit 0.
 - Gate: existing saves migrate ✓, repeated migration safe ✓, corrupted/partial recovery ✓, rollback documented ✓, legacy retained until compat passes ✓.
+- Committed `0c52f21`; pushed.
+
+## Phase 05 — O-NET curriculum & content validation — 2026-07-12 — status: PASSED (pending commit)
+- Route: learning-architect (Opus 4.8) inline + test-data-engineer patterns for validators.
+- Added `app/data/curriculum/`: `taxonomy.ts` (4 domains → 13 subskills w/ prereqs+misconceptions), `schema.ts` (CurriculumQuestion + status/provenance/subskill/pedagogy), `adapter.ts` (69 existing → reviewed, grandfathered; authorQuestion→draft), `validation.ts` (validateQuestion, analyzeAnswerPositions, findDuplicatePrompts, selectableInProduction, validationReport), `reviewQueue.ts` (buildReviewQueue, promoteToReviewed).
+- **Content fix:** validator caught a biased answer key ([27,34,7,1] → 49% "B"). Deterministic correctness-preserving rebalance of `data/questions.json` → [18,17,17,17] (maxShare 0.26); verified every correct-answer text + choice set unchanged (54/69 reordered). Only `data/questions.json` touched, never `app/data/questions.ts`.
+- Added `test/curriculum.spec.ts` (13 tests): adapter preservation, all 69 valid+selectable, no duplicates, balanced key, malformed rejection, production rule (only reviewed), review queue/promotion. **Suite: 69 passing.**
+- Wrote `docs/learning/CURRICULUM_AND_VALIDATION.md`; updated KNOWN_EXISTING_ISSUES. Build exit 0.
+- Gate: current content preserved ✓, invalid content rejected ✓, only reviewed selectable in production ✓, tests+report pass ✓.

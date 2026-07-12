@@ -14,6 +14,7 @@ Pre-existing conditions observed at baseline commit `64a26d6`. These predate the
 
 - 🟠 **Small question pool (69).** Well under what daily play + spaced review needs; no typed schema, no draft/reviewed/retired status, no misconception metadata, no provenance enforcement in-app. → Phases 05–06.
 - 🟡 **No mastery / spaced-review model.** Only `correctAnswers` counter exists; no subskill mastery, review scheduling, or daily learning planner. → Phase 06.
+- ✅ **[FIXED Phase 05] Biased answer key.** Baseline `data/questions.json` answer positions were [27,34,7,1] (49% "B", 1.4% "D") — position-guessable. Rebalanced deterministically to [18,17,17,17] (correctness/choice-set preserved, verified). Detection now enforced by `analyzeAnswerPositions` in the validation pipeline.
 
 ## Multiplayer / security
 

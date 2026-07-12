@@ -2,12 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 04 — State separation & versioned saves
-- **Phase status:** passed (56 tests green, build exit 0, flag off ⇒ no runtime change; committing)
+- **Current phase:** Phase 05 — O-NET curriculum & content validation
+- **Phase status:** passed (69 tests green, build exit 0, answer-key rebalanced; committing)
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `3a572ad` (Phase 03 test foundation, pushed)
-- **Phases 00–03:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`, `3a572ad`).
-- **Tests:** `npm test` → 56 passing / 8 files (Vitest 3).
+- **Baseline / last validated commit:** `0c52f21` (Phase 04 versioned saves, pushed)
+- **Phases 00–04:** PASSED + pushed (`82d2856`, `f65f566`, `019d332`, `3a572ad`, `0c52f21`).
+- **Tests:** `npm test` → 69 passing / 9 files (Vitest 3).
 - **Backup tag:** `backup/pre-transformation-20260712-162236` (→ `33a2815`)
 
 ## Agents / models / effort in use
@@ -32,8 +32,8 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 - **Build:** PASS (exit 0, benign warnings only).
 - **Tests:** 45 passing / 7 files (Vitest 3, `npm test`).
-- **Files changed (Phase 04):** `app/utils/save/{schema,legacyAdapter,migrations,saveManager}.ts`, `test/save.spec.ts`, `docs/foundation/SAVE_MIGRATION_GUIDE.md`.
-- **Migrations performed:** none in live storage (envelope machinery ready, flag off; legacy `player` still authoritative).
+- **Files changed (Phase 05):** `app/data/curriculum/{taxonomy,schema,adapter,validation,reviewQueue}.ts`, `data/questions.json` (answer-key rebalance, content preserved), `test/curriculum.spec.ts`, `docs/learning/CURRICULUM_AND_VALIDATION.md`, `docs/foundation/KNOWN_EXISTING_ISSUES.md`.
+- **Migrations performed:** none in live storage. Content: `data/questions.json` answer positions rebalanced (correctness-preserving, verified).
 - **Unresolved risks:** master-plan doc missing (assumption logged); large scope across 24 phases requires session handoffs. Phase 04 (versioned saves) is the next code-bearing, save-schema-touching phase — must land legacy adapter + idempotent migrations before class/loot/expedition data changes.
 
 ## Rollback point
@@ -42,4 +42,4 @@ Foundational doc/audit phases (00–02) executed inline on the main Opus 4.8 ses
 
 ## Exact next action
 
-Commit Phase 04 checkpoint → begin **Phase 05** (O-NET curriculum & content validation): typed question schema with draft/reviewed/retired status + provenance, taxonomy (domain/skill/subskill), prerequisites/misconceptions, current-question adapter (preserve the 69 existing), validation pipeline (answer-position & duplicate analysis), teacher review queue. Hard rule: only reviewed content selectable in production. Route: learning-architect (Opus 4.8) + test-data-engineer (Sonnet 5).
+Commit Phase 05 checkpoint → begin **Phase 06** (Mastery, spaced review, daily learning planner): subskill mastery + misconception tracking, response-time summary, stability/next-review scheduling, `QuestionSelector` (drawing only from `selectableInProduction`), `MasteryUpdater`, `ReviewScheduler`, `DailyLearningPlanGenerator`, `LearningSessionSummary`, 10/20/30-min modes, Adventure/Learning-Focus modes, catch-up + rested learning, no punitive streak. Route: learning-architect (Opus 4.8) + test-data-engineer (Sonnet 5). Gate: deterministic seeded tests; weak skills recur; learning state separate from combat power (ADR 0003).
