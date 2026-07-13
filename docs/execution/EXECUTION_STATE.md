@@ -2,8 +2,9 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 14 — World 1 Vertical Slice (**in progress — Increments 1–2 of 5 complete**)
-- **Phase status:** Inc 1 (plan) + Inc 2 (DungeonScene) done; Inc 3–5 pending. Build exit 0, 186 tests (was 177; +9 dungeon-layout tests). See `docs/execution/PHASE_14_PLAN.md`.
+- **Current phase:** Phase 14 — World 1 Vertical Slice (**in progress — Inc 1–2 done; Inc 3 partial**)
+- **Phase status:** Inc 1 (plan) + Inc 2 (DungeonScene) done; **Inc 3 browser-independent slice done** (pure boss 3-phase state machine + tests); Inc 3 live flag-flips + realtime/telegraph wiring, Inc 4–5 pending. Build exit 0, 196 tests (was 177; +9 dungeon-layout, +10 boss-phase). See `docs/execution/PHASE_14_PLAN.md`.
+- **Inc 3 (partial):** `app/data/combat/bossPhases.ts` — pure Myco Colossus 3-phase machine (HP-derived at 0.70/0.35, monotonic, idempotent, resume-safe, telegraph grows ≥600ms). `test/boss-phases.spec.ts` (10 tests). **All 7 domain flags remain `false`** — no live behavior change; realtime-stream wiring + BossScene telegraph rendering are the browser-verified remainder of Inc 3, deferred to a dev-server session.
 - **Current branch:** `foundation/sgrade-full-transformation`
 - **Baseline / last validated commit:** Inc 2 commit (below); Phase 13 `5d935bd` + Inc 1 `40339b5` pushed.
 - **Phase 14 increments:** [1] architecture plan ✅ · [2] standalone DungeonScene (2 layouts, tested data/collision) ✅ *(build+unit-tests green; in-browser visual smoke PENDING a `npm run dev` run — cannot render Phaser headless here)* · [3] flag flips + boss 3-phase telegraph · [4] World 1 content (quests/NPCs/secrets/gear/Sigils/expedition/audio) · [5] qa-release gate + smoke.
