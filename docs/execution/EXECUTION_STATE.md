@@ -2,10 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 13 — Progression / loot / crafting / Sigils
-- **Phase status:** passed (177 tests green, build exit 0; committing)
+- **Current phase:** Phase 14 — World 1 Vertical Slice (**in progress — Increment 1 of 5 complete**)
+- **Phase status:** Inc 1 (architecture plan) done; Inc 2–5 pending. Baseline still green (build exit 0, 177 tests). See `docs/execution/PHASE_14_PLAN.md`.
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `89452e6` (Phase 12 class kits, pushed)
+- **Baseline / last validated commit:** `c7ab53c` (Phase 13.5 audit docs cherry-picked); Phase 13 `5d935bd` pushed.
+- **Phase 14 increments:** [1] architecture plan ✅ · [2] standalone DungeonScene (2 layouts) · [3] flag flips + boss 3-phase telegraph · [4] World 1 content (quests/NPCs/secrets/gear/Sigils/expedition/audio) · [5] qa-release gate + smoke.
+- **Phase 14 rollback point:** tag `backup/pre-phase-14` @ `c7ab53c`. Flag-flip order + preservation contract in the plan doc.
 - **Phases 00–12:** PASSED + committed (`…`, `7deb127`, `3ee8ea9`, `b4fbb22`, `89452e6`).
 - **Tests:** `npm test` → 177 passing / 17 files (Vitest 3).
 - **Save version:** CURRENT_SAVE_VERSION = 4 (v1→v2 learning, v2→v3 class-kit loadout, v3→v4 sigil inventory; envelope flag still off, legacy authoritative).

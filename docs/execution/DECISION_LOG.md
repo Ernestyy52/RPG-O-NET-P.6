@@ -24,3 +24,24 @@ Key decisions and assumptions made during autonomous transformation. Each entry:
 ## D-005 — Add Vitest as the Phase 03 test framework (planned)
 - **Decision (pending Phase 03):** Use Vitest for pure-logic unit tests — it is the native test runner for the Vite/Nuxt 4 toolchain already present, minimizing new dependencies and config.
 - **Reversibility:** Test-only; isolated under a `test` script + `*.spec.ts` files.
+
+## D-006 — Phase 14 executed in 5 verified increments on `foundation/sgrade-full-transformation`
+- **Decision:** Build the World 1 vertical slice as 5 sequenced, independently-committed increments (architecture → DungeonScene → flag flips + boss phases → content → qa gate) rather than one push. Each increment must pass `npm run build` (exit 0) + full test suite + dev smoke before the next. Phase 13.5 audit docs cherry-picked onto the integration branch (`c7ab53c`).
+- **Rationale:** Phase 14 is the first big integration gate and too large to build-and-verify atomically; increments keep every step revertible and honestly verifiable. User-approved execution mode. Plan: `docs/execution/PHASE_14_PLAN.md`.
+- **Reversibility:** Rollback point tag `backup/pre-phase-14` @ `c7ab53c`; each increment reverts cleanly.
+
+## D-007 — Standalone `DungeonScene` over a TowerScene `dungeon` mode-flag
+- **Decision:** New purpose-specific `DungeonScene.ts` (two data-only layout configs: `world01-mini`, `world01-main`), additive to the runtime; TowerScene touched only by a flag-guarded entry door on floors 5/10.
+- **Rationale:** TowerScene (450 LOC) owns multiplayer join, offline respawn, biome baking, boss-door flow — threading dungeon conditionals through it makes every dungeon bug a floors-11+ regression risk. Matches audit finding #2 and the TownScene/BossScene precedent. **Reversibility:** don't route to the scene; floors 11+ byte-identical.
+
+## D-008 — `SAVE_ENVELOPE_ENABLED` deferred out of Phase 14; envelope kept in sync via a v4→v5 migration
+- **Decision:** The envelope cutover is NOT part of Phase 14. Legacy `player` blob stays authoritative; new World-1 progress is additive-only Pinia fields with safe defaults; save-migration-engineer registers an idempotent envelope v4→v5 migration mirroring the same shape so the future cutover never diverges.
+- **Rationale:** Mixing the envelope cutover into the first big integration phase multiplies rollback ambiguity (risk #2). **Reversibility:** flag untouched at `false`; migration additive/idempotent.
+
+## D-009 — Realtime combat + boss fight scoped World-1/dungeon-first; floors 11+ stay legacy
+- **Decision:** `REALTIME_COMBAT_ENABLED` gated by `isWorld1Floor(1..10)`; realtime lands dungeon-only first, expanding to World-1 fields only on clean smoke. The floor-10 boss runs on the realtime path (required for readable 3-phase telegraphs); the static-portrait BattleModal boss becomes the floors-11+ legacy fallback.
+- **Rationale:** Smallest blast radius for the first-ever live run of the Phase-09 engine (risk #4); BattleModal fallback remains one revert away. **Reversibility:** per-zone flag; revert → World-1 encounters fall back to BattleModal via the retained `battle:start` path.
+
+## D-010 — Flag-flip order + one-flag-per-commit discipline; boss phases derived from HP fraction
+- **Decision:** Enable the 7 dormant flags in dependency order (`COMBAT_DOMAIN` → `NEW_ZONE_RUNTIME` → `REALTIME_COMBAT` → `KNOWLEDGE_BREAK` → `CLASS_KITS` → `SIGILS` → `ADAPTIVE_EXPEDITIONS`), one flag per commit with live smoke between flips. Boss phase state is derived from current HP fraction (thresholds 0.70 / 0.35, monotonic) rather than a stored counter, so it re-derives correctly on save/quit/resume.
+- **Rationale:** Composable rollback (each flip is a one-commit revert) and no soft-lock/double-trigger on resume. **Reversibility:** per-commit revert returns each flag to `false`.
