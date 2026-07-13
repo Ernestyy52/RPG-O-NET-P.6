@@ -30,7 +30,11 @@ import {
   TILE, MAP_W, MAP_H, SPAWN_BOUNDS,
   resolveMovement, rollMonsterSpawns as rollSpawns,
   canStartEncounter, isNetMonsterFightable,
+  NEW_ZONE_RUNTIME_ENABLED, type DungeonLayoutId,
 } from '../runtime'
+
+/** World-1 floors that host a dungeon interior, and which layout each opens (Phase 14). */
+const WORLD1_DUNGEON_FLOORS: Record<number, DungeonLayoutId> = { 5: 'world01-mini', 10: 'world01-main' }
 
 function titleCase(slug: string): string {
   return slug.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
@@ -197,6 +201,23 @@ export class TowerScene extends Phaser.Scene {
     if (this.bossUnlocked) this.bossDoor.setTexture('boss_door_open')
 
     this.cursors = this.input.keyboard!.createCursorKeys()
+
+    // ---- World-1 dungeon entry (Phase 14) — additive, gated: only appears when the zone runtime is
+    // enabled AND this is a World-1 dungeon floor. Flag off ⇒ live path byte-identical. ----
+    const dungeonLayoutId = WORLD1_DUNGEON_FLOORS[this.floor]
+    if (NEW_ZONE_RUNTIME_ENABLED && dungeonLayoutId) {
+      const dx = (MAP_W / 2) * TILE
+      const dy = (MAP_H - 4) * TILE
+      const entry = this.physics.add.staticSprite(dx, dy, 'boss_door_open')
+      entry.setOrigin(0.5, 0.7).setDepth(dy).setTint(0x9a7bd0)
+      addPlaque(this, dx, dy + 12, 'Dungeon', { fontSize: '10px', depth: dy + 1, color: '#cdb27a' })
+      let lastDungeonEnter = 0
+      this.physics.add.overlap(this.player, entry, () => {
+        if (this.inBattle || this.time.now - lastDungeonEnter < 1500) return
+        lastDungeonEnter = this.time.now
+        this.scene.start('DungeonScene', { layoutId: dungeonLayoutId, floor: this.floor, classId: this.classId })
+      })
+    }
 
     addPlaque(this, 8, 8, `${this.theme.nameTh}  ·  Floor ${this.floor}${config.isMilestone ? '  · WORLD BOSS' : ''}`, {
       fontSize: '13px', depth: 100, fixed: true, origin: [0, 0],

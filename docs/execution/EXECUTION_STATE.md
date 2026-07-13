@@ -2,11 +2,12 @@
 
 > Single source of truth for autonomous transformation progress. Update after every meaningful task and before any context handoff.
 
-- **Current phase:** Phase 14 — World 1 Vertical Slice (**in progress — Increment 1 of 5 complete**)
-- **Phase status:** Inc 1 (architecture plan) done; Inc 2–5 pending. Baseline still green (build exit 0, 177 tests). See `docs/execution/PHASE_14_PLAN.md`.
+- **Current phase:** Phase 14 — World 1 Vertical Slice (**in progress — Increments 1–2 of 5 complete**)
+- **Phase status:** Inc 1 (plan) + Inc 2 (DungeonScene) done; Inc 3–5 pending. Build exit 0, 186 tests (was 177; +9 dungeon-layout tests). See `docs/execution/PHASE_14_PLAN.md`.
 - **Current branch:** `foundation/sgrade-full-transformation`
-- **Baseline / last validated commit:** `c7ab53c` (Phase 13.5 audit docs cherry-picked); Phase 13 `5d935bd` pushed.
-- **Phase 14 increments:** [1] architecture plan ✅ · [2] standalone DungeonScene (2 layouts) · [3] flag flips + boss 3-phase telegraph · [4] World 1 content (quests/NPCs/secrets/gear/Sigils/expedition/audio) · [5] qa-release gate + smoke.
+- **Baseline / last validated commit:** Inc 2 commit (below); Phase 13 `5d935bd` + Inc 1 `40339b5` pushed.
+- **Phase 14 increments:** [1] architecture plan ✅ · [2] standalone DungeonScene (2 layouts, tested data/collision) ✅ *(build+unit-tests green; in-browser visual smoke PENDING a `npm run dev` run — cannot render Phaser headless here)* · [3] flag flips + boss 3-phase telegraph · [4] World 1 content (quests/NPCs/secrets/gear/Sigils/expedition/audio) · [5] qa-release gate + smoke.
+- **Inc 2 delivered:** `app/game/runtime/dungeonLayouts.ts` (two layout configs `world01-mini`/`world01-main` + `buildCollisionMap`/`layoutReachability` proving no-soft-lock by BFS), `app/game/scenes/DungeonScene.ts` (standalone, offline-only, Y-sort/shadows/torch-glow/zone-scoped load+unload, elite tint+scale+nameplate), scene registered in `createGame.ts`, flag-guarded entry door on TowerScene floors 5/10 (`NEW_ZONE_RUNTIME_ENABLED` still **false** ⇒ live path byte-identical), `test/dungeon-layouts.spec.ts` (9 tests). No production asset modified.
 - **Phase 14 rollback point:** tag `backup/pre-phase-14` @ `c7ab53c`. Flag-flip order + preservation contract in the plan doc.
 - **Phases 00–12:** PASSED + committed (`…`, `7deb127`, `3ee8ea9`, `b4fbb22`, `89452e6`).
 - **Tests:** `npm test` → 177 passing / 17 files (Vitest 3).
