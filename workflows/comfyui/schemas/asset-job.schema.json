@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ComfyUI Asset Job",
+  "description": "A single generation job (Setup Pack §14).",
+  "type": "object",
+  "required": ["schemaVersion", "jobId", "assetType", "workflowId", "seedPolicy", "output", "prompt", "approval"],
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "jobId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "assetType": { "type": "string", "enum": ["ui_icon", "skill_icon", "item_icon", "prop", "monster_concept", "character_concept", "tileset_concept", "vfx_icon", "portrait", "boss_concept", "background"] },
+    "purpose": { "type": "string" },
+    "status": { "type": "string", "enum": ["draft", "queued", "generated", "candidate", "approved", "rejected"] },
+    "workflowId": { "type": "string" },
+    "seedPolicy": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["fixed", "random"] },
+        "seed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["targetWidth", "targetHeight", "format", "fileStem"],
+      "properties": {
+        "canvasWidth": { "type": "integer", "minimum": 1 },
+        "canvasHeight": { "type": "integer", "minimum": 1 },
+        "targetWidth": { "type": "integer", "minimum": 1 },
+        "targetHeight": { "type": "integer", "minimum": 1 },
+        "format": { "type": "string", "enum": ["png"] },
+        "transparentBackground": { "type": "boolean" },
+        "fileStem": { "type": "string", "pattern": "^[a-z0-9_]+$" }
+      }
+    },
+    "prompt": {
+      "type": "object",
+      "required": ["positive", "negative"],
+      "properties": {
+        "positive": { "type": "string", "minLength": 1 },
+        "negative": { "type": "string" }
+      }
+    },
+    "modelId": { "type": ["string", "null"] },
+    "loraIds": { "type": "array", "items": { "type": "string" } },
+    "requestedVariants": { "type": "integer", "minimum": 1, "maximum": 8 },
+    "approval": {
+      "type": "object",
+      "required": ["required"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "approvedBy": { "type": ["string", "null"] },
+        "approvedAt": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

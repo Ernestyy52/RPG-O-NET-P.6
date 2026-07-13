@@ -1,0 +1,67 @@
+# Prompt style guide (Setup Pack §18). Shared language for every generation job so outputs stay on
+# the original-fantasy, 16-bit-inspired, top-down spine and never imitate protected IP.
+
+shared:
+  positive:
+    - original fantasy game asset
+    - top-down RPG visual language where applicable
+    - 16-bit inspired pixel-art readability
+    - clean silhouette
+    - consistent dark outline
+    - limited harmonious palette
+    - no text
+    - no logo
+  negative:
+    - photorealistic
+    - 3D render
+    - watermark
+    - signature
+    - logo
+    - letters
+    - numbers
+    - multiple unrelated objects
+    - cropped subject
+    - blur
+    - compression artifact
+    - irregular perspective
+    - copyrighted character
+    - recognizable commercial game UI
+
+byAssetType:
+  ui_icon:
+    - single centered object
+    - strong silhouette at 32 to 64 pixels
+    - pixel-safe margin
+    - simple background or isolated object
+    - clear selected and disabled state potential
+  prop:
+    - isolated top-down fantasy prop
+    - consistent camera angle
+    - ground-contact readable
+    - transparent-background candidate
+    - suitable for 32x32 world grid integration
+  monster:
+    - original fantasy creature
+    - readable silhouette
+    - clear attack anatomy
+    - top-down action RPG readability
+    - no gore
+    - age-appropriate
+  character:
+    - original fantasy adventurer
+    - clear class silhouette
+    - front/back/left/right reference intent
+    - equipment readable at game scale
+    - neutral pose
+    - consistent proportions
+  tileset:
+    - orthographic top-down tile concept
+    - 32x32 grid language
+    - seamless ground intent
+    - edges corners inner corners and transitions
+    - no perspective drift
+
+notes:
+  - "transparent background" in a prompt does NOT guarantee real alpha — always run background
+    removal / alpha validation (Setup Pack §9, §36).
+  - Tileset output is CONCEPT until it passes a 3x3 seam test (Setup Pack §18, §33).

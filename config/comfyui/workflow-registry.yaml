@@ -1,0 +1,30 @@
+# Workflow registry (Setup Pack §16). Maps a workflow id to its exported UI + API JSON and the
+# patch points the pipeline mutates. Node IDs MUST be read from the real exported API JSON
+# (File -> Export Workflow (API)); they are never guessed. Until a workflow is exported the entry
+# stays status: unregistered with empty patch points.
+
+workflows:
+  ui_icon_v1:
+    status: unregistered        # unregistered | registered
+    uiFile: workflows/comfyui/ui/ui_icon_v1.workflow.json
+    apiFile: workflows/comfyui/api/ui_icon_v1.api.json
+    workflowHash: null          # sha256 of the API JSON, filled at registration
+    assetTypes:
+      - ui_icon
+      - skill_icon
+      - item_icon
+    requiredModels: []          # model ids that must exist in model-registry.yaml
+    requiredCustomNodes: []
+    # Fill patchPoints from the exported API JSON. Each maps a logical field to a real node input.
+    # nodeId + input are placeholders (null) until the workflow is exported and inspected.
+    patchPoints:
+      positivePrompt: { nodeId: null, input: text }
+      negativePrompt: { nodeId: null, input: text }
+      seed:           { nodeId: null, input: seed }
+      width:          { nodeId: null, input: width }
+      height:         { nodeId: null, input: height }
+      batchSize:      { nodeId: null, input: batch_size }
+      filenamePrefix: { nodeId: null, input: filename_prefix }
+    # To register: export the workflow in ComfyUI, save UI + API JSON to the paths above, then run
+    # scripts/comfyui/patch_workflow.py --inspect <apiFile> to list real node ids/class types and
+    # fill patchPoints + workflowHash + status: registered. See Setup Pack §28.

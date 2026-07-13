@@ -1,0 +1,22 @@
+# ComfyUI approved-model registry (Setup Pack §8).
+# Copy to model-registry.yaml and add ONLY models you have downloaded to the ComfyUI install,
+# whose license permits your use. Claude/agents must never download weights without approval.
+# Every model used by a workflow must appear here with commercialUse + redistribution recorded.
+
+models: []
+
+# Example entry (remove before real use):
+# models:
+#   - id: approved-model-id
+#     displayName: Model Name
+#     sourceUrl: https://official-or-author-page
+#     downloadedAt: 2026-07-12T00:00:00Z
+#     license: license-name
+#     commercialUse: allowed        # allowed | restricted | unknown
+#     redistribution: restricted    # allowed | restricted | unknown
+#     sha256: <file hash>
+#     comfyFolder: checkpoints
+#     purpose:
+#       - ui_icon
+#       - concept
+#     approvedBy: human-name

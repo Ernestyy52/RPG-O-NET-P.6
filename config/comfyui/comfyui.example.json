@@ -1,0 +1,15 @@
+{
+  "baseUrl": "http://127.0.0.1:8188",
+  "timeoutSeconds": 900,
+  "pollIntervalSeconds": 2,
+  "maxConcurrentJobs": 1,
+  "maxRetries": 2,
+  "stagingDirectory": "generated_assets/staging",
+  "jobDirectory": "generated_assets/jobs",
+  "approvedDirectory": "generated_assets/approved",
+  "rejectedDirectory": "generated_assets/rejected",
+  "contactSheetDirectory": "generated_assets/contact_sheets",
+  "manifestDirectory": "generated_assets/manifests",
+  "requireHumanApproval": true,
+  "allowAutoProductionImport": false
+}

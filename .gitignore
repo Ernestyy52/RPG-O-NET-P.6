@@ -22,3 +22,28 @@ logs
 .env
 .env.*
 !.env.example
+
+# Scratch + build artifacts (tracked deliverables live under docs/)
+tmp/
+output/
+
+# ---- ComfyUI asset-generation pipeline (Setup Pack §2.3) ----
+# Local ComfyUI install / runtime state (must live under C:\AI or D:\AI, never in the repo)
+.local/comfyui/
+config/comfyui/comfyui.local.json
+.env.comfyui
+
+# Model weights — never commit (download only to the ComfyUI install, not here)
+models/
+*.ckpt
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.gguf
+
+# Generated-asset working directories — keep generated_assets/approved/ + manifests/ tracked only
+generated_assets/staging/
+generated_assets/rejected/
+generated_assets/jobs/
+generated_assets/contact_sheets/
