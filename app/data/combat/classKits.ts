@@ -20,8 +20,9 @@ import type { HeroClassId } from '~/data/classes'
 import { heroDamage, type WorldCombatModifier, NEUTRAL_WORLD } from './formulas'
 import type { RealtimeKitOverride, RealtimeSlotOverride } from './realtime'
 
-/** Rollback flag (Phase 12). Dormant — kits aren't equipped in the live store until World 1. */
-export const CLASS_KITS_ENABLED = false
+/** Rollback flag (Phase 12 → Phase 14 flip #5). LIVE: World-1 realtime combat runs on class kits
+ *  (per-slot cooldown/MP/damage/mitigation/sustain). Revert to false ⇒ generic Attack/Counter/Support. */
+export const CLASS_KITS_ENABLED = true
 
 export type KitAbilityKind = 'strike' | 'guard' | 'heal' | 'rally' | 'counter'
 
