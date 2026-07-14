@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { usePlayerStore } from '~/stores/player'
+import { WORLD1_MAIN_QUEST } from '~/data/world1/quests'
 
 function freshWarrior() {
   const player = usePlayerStore()
@@ -173,6 +174,30 @@ describe('player store — sigils (flip #6)', () => {
     p.unsocketEquipmentSigil('armor', 'sigil_vigor_t1')
     expect(p.maxHp).toBe(maxBefore)
     expect(p.hp).toBeLessThanOrEqual(p.maxHp) // re-clamped, no overflow
+  })
+})
+
+describe('player store — World-1 main quest (Inc 4 infra)', () => {
+  it('a fresh player starts at the first step (the guildmaster call)', () => {
+    const p = freshWarrior()
+    expect(p.mainQuest.step).toBe(0)
+    expect(p.mainQuestStep?.id).toBe('w1_call_to_adventure')
+  })
+
+  it('dispatching a matching event advances the chain and grants its reward exactly once', () => {
+    const p = freshWarrior()
+    const gold0 = p.gold
+    p.dispatchQuestEvent({ type: 'talk-npc', npcId: 'guildmaster' })
+    expect(p.mainQuest.step).toBe(1)
+    expect(p.gold).toBe(gold0 + WORLD1_MAIN_QUEST[0].reward.gold)
+    expect(p.mainQuestStep?.id).toBe('w1_into_the_forest')
+  })
+
+  it('ignores an event that does not match the active step', () => {
+    const p = freshWarrior()
+    p.dispatchQuestEvent({ type: 'defeat-monster' }) // step 0 is talk-npc, not a defeat
+    expect(p.mainQuest.step).toBe(0)
+    expect(p.gold).toBe(90) // no reward granted
   })
 })
 

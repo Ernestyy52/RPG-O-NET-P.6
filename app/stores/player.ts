@@ -9,6 +9,10 @@ import {
   socketSigil as socketSigilDomain, unsocketSigil as unsocketSigilDomain,
   type SocketedSigils,
 } from '~/data/economy'
+import {
+  INITIAL_MAIN_QUEST_STATE, advanceMainQuest, activeStep, stepProgress,
+  type MainQuestState, type QuestEvent,
+} from '~/data/world1/quests'
 
 export type GenderId = 'male' | 'female'
 
@@ -37,6 +41,8 @@ interface PlayerState {
   equipment: Partial<Record<EquipmentSlot, string>>
   /** sigils socketed per equipment slot (Phase 13 → flip #6). Additive; empty default, inert while SIGILS_ENABLED is off. */
   socketedSigils: SocketedSigils
+  /** World-1 main quest progression (Phase 14 Inc 4). Additive; defaults to the chain start. */
+  mainQuest: MainQuestState
   correctAnswers: number
   adventureLog: string[]
   dailyDate: string
@@ -73,6 +79,7 @@ export const usePlayerStore = defineStore('player', {
     inventory: { potion_s: 2 },
     equipment: {},
     socketedSigils: {},
+    mainQuest: { ...INITIAL_MAIN_QUEST_STATE },
     correctAnswers: 0,
     adventureLog: [],
     dailyDate: '',
@@ -128,6 +135,9 @@ export const usePlayerStore = defineStore('player', {
     speed(): number { return this.stats.speed },
     knowledge(): number { return this.stats.knowledge },
     consumables: (state) => Object.entries(state.inventory).filter(([, qty]) => qty > 0),
+    // World-1 main quest (Inc 4): the active step + its progress, for HUD/quest UI.
+    mainQuestStep: (state) => activeStep(state.mainQuest),
+    mainQuestProgress: (state) => stepProgress(state.mainQuest),
   },
   actions: {
     login(accountName: string) {
@@ -152,6 +162,7 @@ export const usePlayerStore = defineStore('player', {
       this.inventory = { potion_s: 2 }
       this.equipment = {}
       this.socketedSigils = {}
+      this.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
       this.correctAnswers = 0
       this.adventureLog = []
       this.dailyDate = ''
@@ -233,6 +244,18 @@ export const usePlayerStore = defineStore('player', {
     // เรียกตอนล้มมอนสเตอร์ (จาก BattleModal) — นับความคืบหน้าเควส "defeat"
     recordDefeat() {
       this.progressQuest('defeat', 1)
+    },
+    // ---- World-1 main quest (Inc 4): advance the chain on a real event; grant the completed step's
+    // reward EXACTLY once (the reducer only completes each step a single time — idempotent + replay-safe).
+    // Infrastructure is live + tested; the event HOOKS (combat/exploration/NPC/scene) + quest UI activate
+    // together in the next slice so the chain never surfaces half-progressable. ----
+    dispatchQuestEvent(event: QuestEvent) {
+      const res = advanceMainQuest(this.mainQuest, event)
+      this.mainQuest = res.state
+      if (res.completed) {
+        this.gainRewards(res.completed.reward.exp, res.completed.reward.gold, res.completed.reward.gems)
+        this.addLog(`Quest: "${res.completed.title}" complete! (+${res.completed.reward.gold}g${res.completed.reward.gems ? `, +${res.completed.reward.gems} gems` : ''}, +${res.completed.reward.exp} EXP)`)
+      }
     },
     buyItem(itemId: string) {
       const item = findShopItem(this.currentFloor, itemId)
@@ -344,8 +367,9 @@ export const usePlayerStore = defineStore('player', {
   persist: {
     // เซฟเก่าอาจมี mp เกิน maxMp ของคลาส (เช่น ค่า default 30 แต่ maxMp จริง 27) — clamp ตอนโหลด
     afterHydrate: ({ store }) => {
-      // additive migration: an old save has no socketedSigils — default it so the getter never reads undefined
+      // additive migration: old saves lack socketedSigils / mainQuest — default them so getters never read undefined
       if (!store.socketedSigils) store.socketedSigils = {}
+      if (!store.mainQuest) store.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
       store.mp = Math.min(store.mp, store.maxMp)
       store.hp = Math.min(store.hp, store.maxHp)
     },
