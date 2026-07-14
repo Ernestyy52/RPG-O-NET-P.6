@@ -77,10 +77,14 @@ export interface HeroActionContext {
 /**
  * Resolve a hero damaging action (attack / counter) against the monster. Non-damaging skills return a
  * zero result. The plain attack folds in the current combo bonus; counter uses its fixed multiplier.
+ *
+ * `multiplierOverride` lets a caller supply an explicit hero-damage multiplier (e.g. a class-kit strike
+ * multiplier already folded with the combo bonus) instead of the default skill multiplier. Damage still
+ * flows through the single `heroDamage` formula — no duplication. Undefined ⇒ the default behaviour.
  */
-export function resolveHeroSkill(skill: CombatSkillId, ctx: HeroActionContext): DamageResult {
+export function resolveHeroSkill(skill: CombatSkillId, ctx: HeroActionContext, multiplierOverride?: number): DamageResult {
   const world = ctx.world ?? NEUTRAL_WORLD
-  const multiplier = heroActionMultiplier(skill, comboBonus(ctx.combo))
+  const multiplier = multiplierOverride ?? heroActionMultiplier(skill, comboBonus(ctx.combo))
   const raw = multiplier > 0 ? heroDamage(ctx.atk, ctx.knowledge, multiplier, world.knowledge) : 0
   return { raw, applied: raw, targetHpAfter: Math.max(0, ctx.monsterHp - raw) }
 }

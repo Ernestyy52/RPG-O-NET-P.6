@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   RealtimeCombat, REALTIME_SKILL_TIMINGS, RewardLedger,
-  mitigateDamage, heroDamage, comboBonus,
-  type RealtimeCombatSetup,
+  mitigateDamage, heroDamage, comboBonus, realtimeKitOverride, kitSlotMapping,
+  type RealtimeCombatSetup, type RealtimeKitOverride,
 } from '~/data/combat'
 
 // ================================================================================================
@@ -12,7 +12,7 @@ import {
 
 function makeSetup(over: Partial<RealtimeCombatSetup> = {}): RealtimeCombatSetup {
   return {
-    hero: { atk: 12, knowledge: 10, def: 6, hp: 1000, maxMp: 30 },
+    hero: { atk: 12, knowledge: 10, def: 6, hp: 1000, maxHp: 1000, maxMp: 30 },
     monster: { atk: 20, hp: 300 },
     reward: { encounterId: 'rt-1', exp: 40, gold: 12, gems: 0 },
     monsterAttackIntervalMs: 400,
@@ -67,7 +67,7 @@ describe('RealtimeCombat — no invalid attacks', () => {
   })
 
   it('rejects a skill the hero cannot afford', () => {
-    const rt = new RealtimeCombat(makeSetup({ hero: { atk: 12, knowledge: 10, def: 6, hp: 1000, maxMp: 4 } }))
+    const rt = new RealtimeCombat(makeSetup({ hero: { atk: 12, knowledge: 10, def: 6, hp: 1000, maxHp: 1000, maxMp: 4 } }))
     const out = rt.requestAttack('support') // costs 8 MP, only 4 available
     expect(out.accepted).toBe(false)
     expect(out.reason).toBe('insufficient-mp')
@@ -86,7 +86,7 @@ describe('RealtimeCombat — no invalid attacks', () => {
   })
 
   it('rejects hero attacks after the hero is downed', () => {
-    const rt = new RealtimeCombat(makeSetup({ hero: { atk: 12, knowledge: 10, def: 0, hp: 5, maxMp: 30 }, monster: { atk: 999, hp: 300 } }))
+    const rt = new RealtimeCombat(makeSetup({ hero: { atk: 12, knowledge: 10, def: 0, hp: 5, maxHp: 5, maxMp: 30 }, monster: { atk: 999, hp: 300 } }))
     rt.tick(400) // monster hits for a lethal blow
     expect(rt.state.heroHp).toBe(0)
     expect(rt.state.over).toBe(true)
@@ -107,7 +107,7 @@ describe('RealtimeCombat — combo-scaled hero damage (reuses Phase 07 formula)'
   })
 
   it('a wrong answer resets the combo; correct answers regen MP up to max', () => {
-    const rt = new RealtimeCombat(makeSetup({ hero: { atk: 12, knowledge: 10, def: 6, hp: 1000, maxMp: 30 } }))
+    const rt = new RealtimeCombat(makeSetup({ hero: { atk: 12, knowledge: 10, def: 6, hp: 1000, maxHp: 1000, maxMp: 30 } }))
     rt.requestAttack('support') // spend 8 → mp 22
     rt.registerAnswer(true) // +2 → 24
     expect(rt.state.mp).toBe(24)
@@ -133,6 +133,66 @@ describe('RealtimeCombat — rewards are idempotent (no duplicates)', () => {
   it('grants nothing when combat was not won', () => {
     const rt = new RealtimeCombat(makeSetup())
     expect(rt.claimReward(new RewardLedger())).toBeNull()
+  })
+})
+
+describe('RealtimeCombat — class-kit slot override (Phase 14 flip #5)', () => {
+  // a compact hand-built kit exercising all three effect kinds independently of the shipped kit numbers
+  const KIT: RealtimeKitOverride = {
+    attack: { cooldownMs: 900, mpCost: 3, damageMultiplier: 1.5 },
+    counter: { cooldownMs: 3000, mpCost: 6, damageMultiplier: 0.5, incomingMultiplier: 0.4 },
+    support: { cooldownMs: 5000, mpCost: 4, healBase: 40, rallyValue: 5 },
+  }
+
+  it('uses the kit cooldown, MP cost and (combo-folded) strike multiplier for the attack slot', () => {
+    const rt = new RealtimeCombat(makeSetup({ kit: KIT }))
+    rt.registerAnswer(true)
+    rt.registerAnswer(true) // combo 2
+    const before = rt.state.monsterHp
+    const out = rt.requestAttack('attack')
+    expect(out.accepted).toBe(true)
+    expect(before - rt.state.monsterHp).toBe(heroDamage(12, 10, 1.5 * (1 + comboBonus(2)), 1))
+    expect(rt.state.mp).toBe(30 - 3)              // kit MP cost, not the generic 0
+    expect(rt.state.cooldowns.attack).toBe(900)   // kit cooldown, not 500
+    expect(rt.skillCooldownMs('attack')).toBe(900)
+  })
+
+  it('a kit counter softens exactly the next incoming hit, then damage returns to full', () => {
+    const rt = new RealtimeCombat(makeSetup({ kit: KIT, monsterAttackIntervalMs: 400 }))
+    rt.requestAttack('counter')
+    expect(rt.state.pendingIncomingMultiplier).toBe(0.4)
+    const hp0 = rt.state.heroHp
+    rt.tick(400) // first hit mitigated
+    const softened = hp0 - rt.state.heroHp
+    expect(softened).toBe(mitigateDamage(Math.round(20 * 0.4), 6))
+    expect(rt.state.pendingIncomingMultiplier).toBeNull()
+    const hp1 = rt.state.heroHp
+    rt.tick(400) // next hit full
+    expect(hp1 - rt.state.heroHp).toBe(mitigateDamage(20, 6))
+  })
+
+  it('a kit support heal restores HP capped at maxHp, restores MP and empowers the combo', () => {
+    const rt = new RealtimeCombat(makeSetup({ kit: KIT, hero: { atk: 12, knowledge: 10, def: 6, hp: 20, maxHp: 50, maxMp: 30 } }))
+    rt.state.mp = 10 // partially spent so the rally MP restore is observable (not clamped at max)
+    rt.requestAttack('support')
+    expect(rt.state.heroHp).toBe(50) // 20 + 40 healBase, clamped to maxHp 50
+    expect(rt.state.mp).toBe(10 - 4 + 5) // spent 4, rally restored 5
+    expect(rt.state.combo).toBe(1) // rally empowers the combo by one step
+  })
+
+  it('the shipped guardian kit maps Retribution (counter+guard) into the counter slot', () => {
+    const ov = realtimeKitOverride('guardian')
+    const slots = kitSlotMapping('guardian')
+    expect(ov.counter.damageMultiplier).toBe(slots.counter.damageMultiplier)
+    expect(ov.counter.incomingMultiplier).toBe(slots.counter.incomingMultiplier)
+    expect(ov.support.incomingMultiplier).toBeDefined() // Fortress (guard) fills the support slot
+  })
+
+  it('with no kit the loop is unchanged (generic cost/cooldown, no mitigation queued)', () => {
+    const rt = new RealtimeCombat(makeSetup())
+    rt.requestAttack('counter')
+    expect(rt.state.pendingIncomingMultiplier).toBeNull() // guard mitigation is kit-only
+    expect(rt.state.cooldowns.counter).toBe(REALTIME_SKILL_TIMINGS.counter.cooldownMs)
   })
 })
 

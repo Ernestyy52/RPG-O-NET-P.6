@@ -63,9 +63,9 @@
 
         <!-- skills: cooldowns come from the real-time engine (per-action, never per-frame) -->
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('attack')" @click="useSkill('attack')">Attack<span v-if="cd.attack > 0" class="cd-veil" :style="{ height: `${cdPct('attack')}%` }" /></button>
-          <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('counter')" @click="useSkill('counter')">Counter <span class="opacity-70">{{ COUNTER_MP }}</span><span v-if="cd.counter > 0" class="cd-veil" :style="{ height: `${cdPct('counter')}%` }" /></button>
-          <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('support')" @click="useSkill('support')">Support <span class="opacity-70">{{ SUPPORT_MP }}</span><span v-if="cd.support > 0" class="cd-veil" :style="{ height: `${cdPct('support')}%` }" /></button>
+          <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('attack')" @click="useSkill('attack')">{{ slots?.attack.name ?? 'Attack' }}<span v-if="(slots?.attack.mpCost ?? 0) > 0" class="opacity-70"> {{ slots?.attack.mpCost }}</span><span v-if="cd.attack > 0" class="cd-veil" :style="{ height: `${cdPct('attack')}%` }" /></button>
+          <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('counter')" @click="useSkill('counter')">{{ slots?.counter.name ?? 'Counter' }} <span class="opacity-70">{{ slots?.counter.mpCost ?? COUNTER_MP }}</span><span v-if="cd.counter > 0" class="cd-veil" :style="{ height: `${cdPct('counter')}%` }" /></button>
+          <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('support')" @click="useSkill('support')">{{ slots?.support.name ?? 'Support' }} <span class="opacity-70">{{ slots?.support.mpCost ?? SUPPORT_MP }}</span><span v-if="cd.support > 0" class="cd-veil" :style="{ height: `${cdPct('support')}%` }" /></button>
           <button class="btn-primary text-xs" :disabled="!hasPotion" @click="usePotion">Item</button>
           <button class="btn-secondary text-xs" :disabled="isBoss" @click="escape">Flee</button>
         </div>
@@ -87,6 +87,7 @@ import {
   COUNTER_MP, SUPPORT_MP, RewardLedger, buildRewardRequest, comboBonus as domainComboBonus,
   escapeChance, gemsForEncounter, setupEncounter, supportHeal, REALTIME_SKILL_TIMINGS,
   MYCO_COLOSSUS_PHASES, initBossPhaseState, advanceBossPhase, bossPhaseSpec, type BossPhaseState,
+  CLASS_KITS_ENABLED, kitSlotMapping, realtimeKitOverride, type KitSlotMapping,
 } from '~/data/combat'
 import { KNOWLEDGE_BREAK_ENABLED, KnowledgeBreakController } from '~/data/learning/knowledgeBreak'
 import { CURRICULUM_QUESTIONS } from '~/data/curriculum/adapter'
@@ -143,6 +144,12 @@ let masteryBefore: Record<string, import('~/data/learning/mastery').SubskillMast
 let breakRng: (() => number) | null = null
 let breakOpenedAt = 0
 
+// Class kits (Phase 14 flip #5): when enabled, each of the 3 slots is driven by the hero's kit ability
+// (cooldown/MP/damage/mitigation/sustain). Realtime combat only ever runs on World-1, so the kit applies
+// throughout. Flag off ⇒ `slots` is null and the generic Attack/Counter/Support loop is byte-identical.
+const slots = ref<KitSlotMapping | null>(null)
+let usingKit = false
+
 const rewardLedger = new RewardLedger()
 let combat: RealtimeCombat | null = null
 let bossState: BossPhaseState | null = null
@@ -198,13 +205,17 @@ gameEvents.on('battle:start', (payload) => {
   encExp = setup.expReward
   encGold = setup.goldReward
 
+  usingKit = CLASS_KITS_ENABLED && isWorld1Floor(payload.floor)
+  slots.value = usingKit ? kitSlotMapping(player.classId) : null
+
   encounterId = `rt-f${payload.floor}:${Date.now()}:${battleSeq++}`
   combat = new RealtimeCombat({
-    hero: { atk: player.atk, knowledge: player.knowledge, def: player.def, hp: player.hp, maxMp: player.maxMp },
+    hero: { atk: player.atk, knowledge: player.knowledge, def: player.def, hp: player.hp, maxHp: player.maxHp, maxMp: player.maxMp },
     monster: { atk: setup.atk, hp: setup.maxHp },
     reward: { encounterId, exp: setup.expReward, gold: setup.goldReward, gems: 0 },
     world: world.value.combatModifier,
     monsterAttackIntervalMs: isBoss.value ? MYCO_COLOSSUS_PHASES.phases[0].attackIntervalMs : undefined,
+    kit: usingKit ? realtimeKitOverride(player.classId) : undefined,
   })
   // start from the player's CURRENT persistent MP (not a free refill on encounter entry)
   combat.state.mp = Math.min(player.mp, player.maxMp)
@@ -305,14 +316,19 @@ function answer(index: number) {
 }
 
 function canUse(skill: RealtimeSkillId) { return !!combat && !combat.state.over && !breakOpen.value && combat.canAttack(skill) }
-function cdPct(skill: RealtimeSkillId) { return Math.round((cd[skill] / REALTIME_SKILL_TIMINGS[skill].cooldownMs) * 100) }
+function cdPct(skill: RealtimeSkillId) {
+  const full = combat ? combat.skillCooldownMs(skill) : REALTIME_SKILL_TIMINGS[skill].cooldownMs
+  return Math.round((cd[skill] / full) * 100)
+}
 
 function useSkill(skill: RealtimeSkillId) {
   if (!combat) return
   const outcome = combat.requestAttack(skill)
   if (outcome.accepted && skill === 'support') {
-    combat.state.heroHp = Math.min(maxHp.value, combat.state.heroHp + supportHeal(player.knowledge))
-    log.value = 'Support steadies you.'
+    // with a kit the engine already applied the support ability's effect (heal/rally/guard); only the
+    // generic no-kit path heals here, matching the legacy behaviour byte-for-byte.
+    if (!usingKit) combat.state.heroHp = Math.min(maxHp.value, combat.state.heroHp + supportHeal(player.knowledge))
+    log.value = usingKit && slots.value ? `${slots.value.support.name}!` : 'Support steadies you.'
   }
   applyOutcome(outcome)
   syncFromEngine()

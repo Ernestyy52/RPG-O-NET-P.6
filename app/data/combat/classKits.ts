@@ -18,6 +18,7 @@
 // ================================================================================================
 import type { HeroClassId } from '~/data/classes'
 import { heroDamage, type WorldCombatModifier, NEUTRAL_WORLD } from './formulas'
+import type { RealtimeKitOverride, RealtimeSlotOverride } from './realtime'
 
 /** Rollback flag (Phase 12). Dormant — kits aren't equipped in the live store until World 1. */
 export const CLASS_KITS_ENABLED = false
@@ -158,6 +159,28 @@ export function kitSlotMapping(classId: HeroClassId): KitSlotMapping {
     counter
 
   return { attack, counter, support }
+}
+
+/** One kit ability → a real-time engine slot override (cooldown/cost + whichever effect fields it carries). */
+function slotOverride(a: KitAbility): RealtimeSlotOverride {
+  return {
+    cooldownMs: a.cooldownMs,
+    mpCost: a.mpCost,
+    damageMultiplier: a.damageMultiplier,
+    incomingMultiplier: a.incomingMultiplier,
+    healBase: a.healBase,
+    rallyValue: a.rallyValue,
+  }
+}
+
+/**
+ * Build the RealtimeCombat per-slot override for a class from its kit (attack/counter/support). Passed to
+ * `new RealtimeCombat({ ..., kit })` behind CLASS_KITS_ENABLED so the fight runs on the kit's cooldowns,
+ * costs, damage, mitigation and sustain. Pure; deterministic per class.
+ */
+export function realtimeKitOverride(classId: HeroClassId): RealtimeKitOverride {
+  const m = kitSlotMapping(classId)
+  return { attack: slotOverride(m.attack), counter: slotOverride(m.counter), support: slotOverride(m.support) }
 }
 
 /** Mechanical profile of a kit across the three balance axes. Derived purely from ability fields. */

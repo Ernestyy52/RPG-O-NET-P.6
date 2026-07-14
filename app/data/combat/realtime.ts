@@ -22,6 +22,26 @@ import { COMBAT_SKILLS, CORRECT_ANSWER_MP_REGEN, type CombatSkillId } from './sk
 import { buildRewardRequest, type RewardDrop, type RewardLedger, type RewardRequest } from './rewards'
 import type { CombatEvent } from './types'
 
+/**
+ * Optional per-slot combat override for a class kit (Phase 14 flip #5). When a setup carries a `kit`,
+ * each of the three real-time slots uses these numbers instead of the generic COMBAT_SKILLS/timings, so
+ * the kit's cooldowns, costs, damage, mitigation and sustain drive the fight. Built by
+ * `realtimeKitOverride(classId)` in classKits.ts. Absent ⇒ the legacy generic loop, byte-identical.
+ */
+export interface RealtimeSlotOverride {
+  cooldownMs: number
+  mpCost: number
+  /** strike/counter hero-damage multiplier (folded with combo for the attack slot). 0/undefined ⇒ no damage. */
+  damageMultiplier?: number
+  /** guard/counter: multiplier applied to the NEXT incoming monster hit (e.g. 0.4 ⇒ 60% mitigated). */
+  incomingMultiplier?: number
+  /** heal: flat HP restored on use (capped at maxHp). */
+  healBase?: number
+  /** rally: MP restored on use; also empowers the combo by one step. */
+  rallyValue?: number
+}
+export type RealtimeKitOverride = Record<'attack' | 'support' | 'counter', RealtimeSlotOverride>
+
 /** Per-skill real-time timing. mpCost is sourced from COMBAT_SKILLS so costs live in one place. */
 export interface RealtimeSkillTiming {
   cooldownMs: number
@@ -52,6 +72,7 @@ export interface RealtimeHero {
   knowledge: number
   def: number
   hp: number
+  maxHp: number
   maxMp: number
 }
 
@@ -74,6 +95,8 @@ export interface RealtimeCombatSetup {
   reward: RealtimeEncounterReward
   world?: WorldCombatModifier
   monsterAttackIntervalMs?: number
+  /** class-kit per-slot override (flip #5). Absent ⇒ the generic legacy loop, byte-identical. */
+  kit?: RealtimeKitOverride
 }
 
 export interface RealtimeCombatState {
@@ -85,6 +108,8 @@ export interface RealtimeCombatState {
   cooldowns: Record<RealtimeSkillId, number>
   /** ms until the monster's next attack. */
   monsterAttackTimer: number
+  /** kit guard/counter mitigation queued for the NEXT incoming hit (null ⇒ full damage). Kit-only. */
+  pendingIncomingMultiplier: number | null
   elapsedMs: number
   over: boolean
   won: boolean
@@ -95,9 +120,12 @@ export class RealtimeCombat {
   private readonly world: WorldCombatModifier
   private readonly monsterIntervalMs: number
 
+  private readonly kit?: RealtimeKitOverride
+
   constructor(private readonly setup: RealtimeCombatSetup) {
     this.world = setup.world ?? NEUTRAL_WORLD
     this.monsterIntervalMs = Math.max(1, setup.monsterAttackIntervalMs ?? DEFAULT_MONSTER_ATTACK_INTERVAL_MS)
+    this.kit = setup.kit
     this.state = this.initialState()
   }
 
@@ -109,6 +137,7 @@ export class RealtimeCombat {
       combo: 0,
       cooldowns: { attack: 0, support: 0, counter: 0 },
       monsterAttackTimer: this.monsterIntervalMs,
+      pendingIncomingMultiplier: null,
       elapsedMs: 0,
       over: false,
       won: false,
@@ -121,7 +150,12 @@ export class RealtimeCombat {
   }
 
   private mpCost(skill: RealtimeSkillId): number {
-    return COMBAT_SKILLS[skill as CombatSkillId].mpCost
+    return this.kit ? this.kit[skill].mpCost : COMBAT_SKILLS[skill as CombatSkillId].mpCost
+  }
+
+  /** Effective cooldown for a slot — the kit's per-slot value when a kit is equipped, else the generic timing. */
+  skillCooldownMs(skill: RealtimeSkillId): number {
+    return this.kit ? this.kit[skill].cooldownMs : REALTIME_SKILL_TIMINGS[skill].cooldownMs
   }
 
   /** True when the skill is off cooldown, affordable, and both combatants are alive. */
@@ -156,9 +190,12 @@ export class RealtimeCombat {
     this.state.monsterAttackTimer -= dtMs
     while (this.state.monsterAttackTimer <= 0 && !this.state.over) {
       this.state.monsterAttackTimer += this.monsterIntervalMs
-      const res = resolveMonsterAttack({ monsterAtk: this.setup.monster.atk, heroHp: this.state.heroHp, heroDef: this.setup.hero.def })
+      // a queued kit guard/counter softens exactly one incoming hit, then clears (kit-only; null ⇒ 1×)
+      const mitigation = this.state.pendingIncomingMultiplier ?? 1
+      this.state.pendingIncomingMultiplier = null
+      const res = resolveMonsterAttack({ monsterAtk: this.setup.monster.atk, multiplier: mitigation, heroHp: this.state.heroHp, heroDef: this.setup.hero.def })
       this.state.heroHp = res.targetHpAfter
-      events.push({ type: 'monster-attack', damage: res.raw, multiplier: 1 })
+      events.push({ type: 'monster-attack', damage: res.raw, multiplier: mitigation })
       if (this.state.heroHp <= 0) {
         this.state.over = true
         this.state.won = false
@@ -178,20 +215,33 @@ export class RealtimeCombat {
     if (reason) return { accepted: false, reason, events: [] }
 
     this.state.mp -= this.mpCost(skill)
-    this.state.cooldowns[skill] = REALTIME_SKILL_TIMINGS[skill].cooldownMs
+    this.state.cooldowns[skill] = this.skillCooldownMs(skill)
 
     const events: CombatEvent[] = []
+    const ov = this.kit?.[skill]
+    // Kit strike folds the combo bonus into the kit multiplier (so combo stays a % bonus on any base);
+    // a kit counter uses its flat multiplier (0 ⇒ a pure guard). No kit ⇒ the legacy skill multiplier.
+    let multiplierOverride: number | undefined
+    if (ov) multiplierOverride = skill === 'attack' ? (ov.damageMultiplier ?? 0) * (1 + comboBonus(this.state.combo)) : (ov.damageMultiplier ?? 0)
     const res = resolveHeroSkill(skill as CombatSkillId, {
       atk: this.setup.hero.atk,
       knowledge: this.setup.hero.knowledge,
       combo: this.state.combo,
       monsterHp: this.state.monsterHp,
       world: this.world,
-    })
+    }, multiplierOverride)
     this.state.monsterHp = res.targetHpAfter
 
     if (skill === 'attack') events.push({ type: 'hero-attack', damage: res.raw, combo: this.state.combo, comboBonus: comboBonus(this.state.combo) })
     else if (skill === 'counter') events.push({ type: 'hero-counter', damage: res.raw })
+
+    // Kit slot side-effects (engine-owned so they're deterministic + testable): queue mitigation for the
+    // next hit (guard/counter), restore HP (heal, capped at maxHp), or restore MP + empower combo (rally).
+    if (ov) {
+      if (ov.incomingMultiplier !== undefined) this.state.pendingIncomingMultiplier = ov.incomingMultiplier
+      if (ov.healBase) this.state.heroHp = Math.min(this.setup.hero.maxHp, this.state.heroHp + ov.healBase)
+      if (ov.rallyValue) { this.state.mp = Math.min(this.setup.hero.maxMp, this.state.mp + ov.rallyValue); this.state.combo += 1 }
+    }
 
     if (this.state.monsterHp <= 0) {
       this.state.over = true
