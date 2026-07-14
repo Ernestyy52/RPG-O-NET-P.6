@@ -25,6 +25,7 @@ import {
 } from '../systems/textures'
 import { applyAtmosphere, createIdleBreath, addPlaque, addPortalGlow, addGearAura } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
+import { useSettingsStore } from '../../stores/settings'
 
 const TILE = 32
 // ห้องบอสเล็กและปิดล้อม (ลานประลอง) — บอสตัวเดียวอยู่กลาง ผู้เล่นเข้าจากล่าง
@@ -53,6 +54,12 @@ export class BossScene extends Phaser.Scene {
   private bossDown = false
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private gearAura?: Phaser.GameObjects.Image | null
+  // Phase 14 Inc 3 — boss 3-phase telegraph rendering (driven by RealtimeBattle's boss:* events)
+  private arenaRing?: Phaser.GameObjects.Graphics
+  private arenaCx = 0
+  private arenaCy = 0
+  private telegraphFx?: Phaser.GameObjects.Graphics
+  private phaseBanner?: Phaser.GameObjects.Text
 
   constructor() {
     super('BossScene')
@@ -91,10 +98,11 @@ export class BossScene extends Phaser.Scene {
     }
     // เวทีบอส: วงแหวนหินกลางลาน + กดโทนกลางให้ดูเป็นสังเวียน
     const arenaCx = (MAP_W / 2) * TILE, arenaCy = TILE * 4.4
+    this.arenaCx = arenaCx
+    this.arenaCy = arenaCy
     const ring = this.add.graphics().setDepth(0.5)
-    ring.fillStyle(0x000000, 0.14).fillCircle(arenaCx, arenaCy, TILE * 3.3)
-    ring.lineStyle(3, 0x1a120a, 0.5).strokeCircle(arenaCx, arenaCy, TILE * 3.2)
-    ring.lineStyle(1.5, 0xffd977, 0.25).strokeCircle(arenaCx, arenaCy, TILE * 3.0)
+    this.arenaRing = ring
+    this.drawArenaRing(0xffd977)
 
     // กำแพงล้อมรอบ (ห้องปิด ไม่มีทางออกจนกว่าจะปราบบอส)
     const walls = this.physics.add.staticGroup()
@@ -164,7 +172,65 @@ export class BossScene extends Phaser.Scene {
     playBgm(this, bgmKeyForBiome(biome.id))
 
     gameEvents.on('battle:end', this.handleBattleEnd, this)
-    this.events.once('shutdown', () => gameEvents.off('battle:end', this.handleBattleEnd, this))
+    gameEvents.on('boss:phase-change', this.handlePhaseChange, this)
+    gameEvents.on('boss:telegraph', this.handleTelegraph, this)
+    this.events.once('shutdown', () => {
+      gameEvents.off('battle:end', this.handleBattleEnd, this)
+      gameEvents.off('boss:phase-change', this.handlePhaseChange, this)
+      gameEvents.off('boss:telegraph', this.handleTelegraph, this)
+    })
+  }
+
+  /** Arena ring — one of the three readable phase channels (recoloured on each phase change). */
+  private drawArenaRing(tint: number) {
+    const g = this.arenaRing
+    if (!g) return
+    g.clear()
+    g.fillStyle(0x000000, 0.14).fillCircle(this.arenaCx, this.arenaCy, TILE * 3.3)
+    g.lineStyle(3, 0x1a120a, 0.5).strokeCircle(this.arenaCx, this.arenaCy, TILE * 3.2)
+    g.lineStyle(1.5, tint, 0.45).strokeCircle(this.arenaCx, this.arenaCy, TILE * 3.0)
+  }
+
+  // ---- boss telegraph channels (color + banner text + attack-pattern shape) --------------------
+
+  private handlePhaseChange = (p: { phase: 1 | 2 | 3; tint: number; name: string; nameTh: string }) => {
+    const reduced = useSettingsStore().reducedMotion
+    this.drawArenaRing(p.tint)
+    if (this.boss?.active) this.boss.setTint(p.tint)
+    // channel 2: readable phase banner (always shown; the non-motion tell)
+    this.phaseBanner?.destroy()
+    this.phaseBanner = this.add.text(this.arenaCx, this.arenaCy - TILE * 4, `Phase ${p.phase} — ${p.name}`, {
+      fontFamily: 'monospace', fontSize: '15px', color: `#${p.tint.toString(16).padStart(6, '0')}`,
+      stroke: '#000000', strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(100000)
+    if (!reduced) {
+      this.cameras.main.shake(180, 0.006)
+      this.tweens.add({ targets: this.phaseBanner, y: this.phaseBanner.y - 10, alpha: { from: 1, to: 0.85 }, duration: 400, yoyo: true, repeat: 1 })
+    }
+  }
+
+  private handleTelegraph = (t: { phase: 1 | 2 | 3; pattern: 'single' | 'double' | 'aoe-slam'; telegraphMs: number; tint: number }) => {
+    const reduced = useSettingsStore().reducedMotion
+    if (!this.boss?.active) return
+    // channel 1/3: wind-up on the boss sprite (flash/scale) — static tint under reduced motion
+    if (reduced) {
+      this.boss.setTint(t.tint)
+    } else {
+      const baseScale = this.boss.scaleX
+      this.tweens.add({ targets: this.boss, scaleX: baseScale * 1.12, scaleY: baseScale * 1.12, duration: t.telegraphMs * 0.6, yoyo: true, ease: 'Sine.easeInOut' })
+      this.boss.setTint(t.tint)
+      this.time.delayedCall(t.telegraphMs, () => this.boss?.active && this.boss.clearTint())
+    }
+    // aoe-slam: a danger circle strokes/fills the arena floor for the full wind-up before impact
+    if (t.pattern === 'aoe-slam') {
+      this.telegraphFx?.destroy()
+      const fx = this.add.graphics().setDepth(0.6)
+      fx.fillStyle(t.tint, 0.18).fillCircle(this.arenaCx, this.arenaCy, TILE * 2.6)
+      fx.lineStyle(2, t.tint, 0.8).strokeCircle(this.arenaCx, this.arenaCy, TILE * 2.6)
+      this.telegraphFx = fx
+      if (reduced) this.time.delayedCall(t.telegraphMs, () => fx.destroy())
+      else this.tweens.add({ targets: fx, alpha: { from: 0.35, to: 1 }, duration: t.telegraphMs, onComplete: () => fx.destroy() })
+    }
   }
 
   private engageBoss() {

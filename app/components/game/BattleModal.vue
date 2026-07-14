@@ -55,10 +55,10 @@ import { computed, reactive, ref } from 'vue'
 import { gameEvents } from '~/game/systems/eventBus'
 import { getFloorConfig, getQuestionDifficulty } from '~/data/floors'
 import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/questions'
-import { getWorldState } from '~/data/world'
+import { getWorldState, isWorld1Floor } from '~/data/world'
 import { rollLoot } from '~/data/loot'
 import {
-  COMBAT_DOMAIN_ENABLED, COUNTER_MP, SUPPORT_MP, RewardLedger,
+  COMBAT_DOMAIN_ENABLED, REALTIME_COMBAT_ENABLED, COUNTER_MP, SUPPORT_MP, RewardLedger,
   buildRewardRequest, comboBonus as domainComboBonus, escapeChance, gemsForEncounter,
   heroDamage as domainHeroDamage, heroWinsInitiative, monsterDamage,
   resolveHeroSkill, resolveMonsterAttack, setupEncounter, supportHeal,
@@ -126,6 +126,10 @@ function setupMonster(payload: import('~/game/systems/eventBus').EncounterInfo) 
 }
 
 gameEvents.on('battle:start', (payload) => {
+  // Per-zone gate (PHASE_14_PLAN §3): World-1 floors run on the real-time path when
+  // REALTIME_COMBAT_ENABLED — RealtimeBattle owns those encounters. Floors 11+ (and every floor while
+  // the flag is off) stay turn-based here. Flag off ⇒ this guard is inert and BattleModal owns all.
+  if (REALTIME_COMBAT_ENABLED && isWorld1Floor(payload.floor)) return
   floor.value = payload.floor
   active.value = true
   locked.value = false

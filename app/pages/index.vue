@@ -181,6 +181,7 @@
         </div>
 
         <GameBattleModal />
+        <GameRealtimeBattle />
         <GameStatusModal :open="statusOpen" :avatar="assetPath(classIcon(player.classId, player.gender))" @close="statusOpen = false" />
         <GameQuestModal :open="questsOpen" @close="questsOpen = false" />
         <GameMapModal :open="mapOpen" @close="mapOpen = false" />
