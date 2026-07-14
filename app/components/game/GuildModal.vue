@@ -10,26 +10,51 @@
         <button class="g-tab" :class="{ 'g-tab-active': floor === 2 }" @click="floor = 2">📚 2F · Study Room</button>
       </div>
 
-      <!-- ชั้น 1: เควสรายวัน -->
+      <!-- ชั้น 1: เควสรายวัน / Adaptive Expedition -->
       <div v-if="floor === 1" class="pixel-window-body space-y-2 p-4">
-        <p class="text-xs opacity-75">Reception desk — complete daily tasks for gold, gems, and EXP. Resets each day.</p>
-        <div v-for="q in player.dailyQuests" :key="q.id" class="glass-panel flex items-center gap-3 p-3">
-          <div class="flex-1">
-            <div class="text-sm font-bold">{{ q.label }}</div>
-            <div class="mt-1 h-2 overflow-hidden rounded bg-black/40">
-              <div class="h-full bg-emerald-500 transition-all" :style="{ width: `${Math.round((q.progress / q.target) * 100)}%` }" />
-            </div>
-            <div class="mt-1 text-[11px] opacity-80">
-              {{ q.progress }}/{{ q.target }} · Reward:
-              <span class="gold-text">{{ q.reward.gold }}g</span>
-              <span v-if="q.reward.gems"> · <span class="text-cyan-200">{{ q.reward.gems }}💎</span></span>
-              · {{ q.reward.exp }} EXP
-            </div>
+        <!-- Adaptive expedition (flip #7): content-tied daily objectives from the learner's progress -->
+        <template v-if="expeditionActive">
+          <div class="flex items-baseline justify-between">
+            <h3 class="gold-text text-sm font-bold">{{ learning.expedition!.title }}</h3>
+            <span class="text-[11px] opacity-70">Today's Expedition · {{ completedCount }}/{{ objectives.length }}</span>
           </div>
-          <button class="btn-primary btn-sm" :disabled="q.claimed || q.progress < q.target" @click="player.claimQuest(q.id)">
-            {{ q.claimed ? 'Claimed' : q.progress >= q.target ? 'Claim' : 'In progress' }}
-          </button>
-        </div>
+          <p class="text-xs opacity-75">Adaptive objectives drawn from your learning progress — practice as you adventure, then claim here.</p>
+          <div v-for="o in objectives" :key="o.id" class="glass-panel flex items-center gap-3 p-3">
+            <div class="flex-1">
+              <div class="text-sm font-bold">{{ o.description }} <span v-if="o.bonus" class="rounded bg-cyan-900/50 px-1 text-[9px] text-cyan-200">BONUS</span></div>
+              <div class="mt-1 text-[11px] opacity-80">
+                Reward: <span class="gold-text">{{ o.reward.gold }}g</span>
+                <span v-if="o.reward.gems"> · <span class="text-cyan-200">{{ o.reward.gems }}💎</span></span>
+                · {{ o.reward.exp }} EXP
+              </div>
+            </div>
+            <button class="btn-primary btn-sm" :disabled="!o.complete || o.claimed" @click="claimObjective(o.id)">
+              {{ o.claimed ? 'Claimed' : o.complete ? 'Claim' : 'In progress' }}
+            </button>
+          </div>
+        </template>
+
+        <!-- Fallback: legacy daily quests (flag off, or no reviewed content yet) -->
+        <template v-else>
+          <p class="text-xs opacity-75">Reception desk — complete daily tasks for gold, gems, and EXP. Resets each day.</p>
+          <div v-for="q in player.dailyQuests" :key="q.id" class="glass-panel flex items-center gap-3 p-3">
+            <div class="flex-1">
+              <div class="text-sm font-bold">{{ q.label }}</div>
+              <div class="mt-1 h-2 overflow-hidden rounded bg-black/40">
+                <div class="h-full bg-emerald-500 transition-all" :style="{ width: `${Math.round((q.progress / q.target) * 100)}%` }" />
+              </div>
+              <div class="mt-1 text-[11px] opacity-80">
+                {{ q.progress }}/{{ q.target }} · Reward:
+                <span class="gold-text">{{ q.reward.gold }}g</span>
+                <span v-if="q.reward.gems"> · <span class="text-cyan-200">{{ q.reward.gems }}💎</span></span>
+                · {{ q.reward.exp }} EXP
+              </div>
+            </div>
+            <button class="btn-primary btn-sm" :disabled="q.claimed || q.progress < q.target" @click="player.claimQuest(q.id)">
+              {{ q.claimed ? 'Claimed' : q.progress >= q.target ? 'Claim' : 'In progress' }}
+            </button>
+          </div>
+        </template>
       </div>
 
       <!-- ชั้น 2: ห้องเรียน (เนื้อหาจาก knowledge/) -->
@@ -83,12 +108,15 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { STUDY_LESSONS, STUDY_CATEGORIES, type StudyCategory, type StudyLesson } from '~/data/study'
+import { ADAPTIVE_EXPEDITIONS_ENABLED } from '~/data/learning/expedition'
 import { usePlayerStore } from '~/stores/player'
+import { useLearningStore } from '~/stores/learning'
 
 const props = defineProps<{ open: boolean }>()
 defineEmits<{ (e: 'close'): void }>()
 
 const player = usePlayerStore()
+const learning = useLearningStore()
 const floor = ref<1 | 2>(1)
 const cat = ref<StudyCategory | 'all'>('all')
 const openLesson = ref<StudyLesson | null>(null)
@@ -97,8 +125,36 @@ const lessons = computed(() =>
   cat.value === 'all' ? STUDY_LESSONS : STUDY_LESSONS.filter((l) => l.category === cat.value),
 )
 
+// Adaptive expedition (flip #7): serve it in 1F when the flag is on and there's real reviewed content;
+// otherwise fall back to the legacy daily quests (unchanged). expedition.fallback ⇒ no content yet.
+const expeditionActive = computed(() =>
+  ADAPTIVE_EXPEDITIONS_ENABLED && !!learning.expedition && !learning.expedition.fallback,
+)
+const objectives = computed(() => {
+  const exp = learning.expedition
+  const result = learning.expeditionResult
+  if (!exp || !result) return []
+  return exp.objectives.map((o) => ({
+    ...o,
+    complete: !!result.objectives.find((x) => x.id === o.id)?.complete,
+    claimed: learning.claimedObjectives.includes(o.id),
+  }))
+})
+const completedCount = computed(() => objectives.value.filter((o) => o.complete).length)
+function claimObjective(id: string) {
+  const reward = learning.claimExpeditionObjective(id)
+  if (!reward) return
+  player.gainRewards(reward.exp, reward.gold, reward.gems)
+  player.addLog(`Expedition objective complete (+${reward.gold}g${reward.gems ? `, +${reward.gems} gems` : ''}, +${reward.exp} EXP)`)
+}
+
 watch(() => props.open, (isOpen) => {
-  if (isOpen) { player.ensureDailyQuests(); floor.value = 1; openLesson.value = null }
+  if (isOpen) {
+    player.ensureDailyQuests()
+    learning.ensureExpedition(new Date().toISOString().slice(0, 10))
+    floor.value = 1
+    openLesson.value = null
+  }
 }, { immediate: true })
 </script>
 
