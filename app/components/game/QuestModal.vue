@@ -32,6 +32,23 @@
           </details>
         </div>
 
+        <!-- Side quests (Inc 4) -->
+        <div v-if="sideQuests.length" class="glass-panel p-3">
+          <h3 class="gold-text mb-2 text-sm font-bold">Side Quests</h3>
+          <div class="space-y-2">
+            <div v-for="s in sideQuests" :key="s.quest.id" class="flex items-center gap-3" :class="{ 'opacity-55': s.claimed }">
+              <div class="flex-1">
+                <div class="text-xs font-bold">{{ s.quest.title }} <span class="text-[10px] font-normal uppercase tracking-wide text-[#cdb27a]">{{ s.quest.kind }}</span></div>
+                <div class="mt-0.5 h-1.5 overflow-hidden rounded bg-black/40"><div class="h-full bg-emerald-500 transition-all" :style="{ width: `${Math.round((s.progress / s.target) * 100)}%` }" /></div>
+                <div class="mt-0.5 text-[10px] opacity-70">{{ Math.min(s.progress, s.target) }}/{{ s.target }} · <span class="gold-text">{{ s.quest.reward.gold }}g</span> · {{ s.quest.reward.exp }} EXP<span v-if="s.quest.reward.gems" class="text-cyan-200"> · {{ s.quest.reward.gems }}💎</span></div>
+              </div>
+              <button class="btn-primary btn-sm" :disabled="!s.done || s.claimed" @click="player.claimSideQuest(s.quest.id)">
+                {{ s.claimed ? 'Claimed' : s.done ? 'Claim' : 'Active' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="glass-panel p-3">
           <div class="mb-1 flex items-center justify-between">
             <h3 class="gold-text text-sm font-bold">{{ isMilestone ? 'World Boss Gate' : 'Boss Room Gate' }}</h3>
@@ -84,6 +101,7 @@ const mainSteps = computed(() => WORLD1_MAIN_QUEST.map((s, i) => ({
   done: player.mainQuest.step > i,
   active: player.mainQuest.step === i,
 })))
+const sideQuests = computed(() => player.sideQuests)
 const requirement = computed(() => getBossRequirement(player.currentFloor))
 const bossReward = computed(() => getBossStats(player.currentFloor))
 const isMilestone = computed(() => player.currentFloor % 10 === 0)

@@ -199,6 +199,23 @@ describe('player store — World-1 main quest (Inc 4 infra)', () => {
     expect(p.mainQuest.step).toBe(0)
     expect(p.gold).toBe(90) // no reward granted
   })
+
+  it('side quests progress on dispatched events and claim exactly once', () => {
+    const p = freshWarrior()
+    // sq_gather_gel = defeat 3 monsters
+    for (let i = 0; i < 3; i++) p.dispatchQuestEvent({ type: 'defeat-monster' })
+    const gel = p.sideQuests.find((s) => s.quest.id === 'sq_gather_gel')!
+    expect(gel.done).toBe(true)
+    const gold0 = p.gold
+    expect(p.claimSideQuest('sq_gather_gel')).toBe(true)
+    expect(p.gold).toBe(gold0 + gel.quest.reward.gold)
+    expect(p.claimSideQuest('sq_gather_gel')).toBe(false) // idempotent
+  })
+
+  it('will not claim an unfinished side quest', () => {
+    const p = freshWarrior()
+    expect(p.claimSideQuest('sq_deep_hunt')).toBe(false) // needs 10 defeats
+  })
 })
 
 describe('player store — daily quest transitions', () => {

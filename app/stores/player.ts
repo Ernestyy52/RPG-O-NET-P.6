@@ -13,6 +13,9 @@ import {
   INITIAL_MAIN_QUEST_STATE, advanceMainQuest, activeStep, stepProgress,
   type MainQuestState, type QuestEvent,
 } from '~/data/world1/quests'
+import {
+  WORLD1_SIDE_QUESTS, advanceSideQuest, isSideQuestDone, sideQuestTarget, getSideQuest,
+} from '~/data/world1/sideQuests'
 
 export type GenderId = 'male' | 'female'
 
@@ -43,6 +46,9 @@ interface PlayerState {
   socketedSigils: SocketedSigils
   /** World-1 main quest progression (Phase 14 Inc 4). Additive; defaults to the chain start. */
   mainQuest: MainQuestState
+  /** World-1 side-quest progress (id → count) + claimed ids (Phase 14 Inc 4). Additive; empty defaults. */
+  sideQuestProgress: Record<string, number>
+  sideQuestClaimed: string[]
   correctAnswers: number
   adventureLog: string[]
   dailyDate: string
@@ -80,6 +86,8 @@ export const usePlayerStore = defineStore('player', {
     equipment: {},
     socketedSigils: {},
     mainQuest: { ...INITIAL_MAIN_QUEST_STATE },
+    sideQuestProgress: {},
+    sideQuestClaimed: [],
     correctAnswers: 0,
     adventureLog: [],
     dailyDate: '',
@@ -138,6 +146,11 @@ export const usePlayerStore = defineStore('player', {
     // World-1 main quest (Inc 4): the active step + its progress, for HUD/quest UI.
     mainQuestStep: (state) => activeStep(state.mainQuest),
     mainQuestProgress: (state) => stepProgress(state.mainQuest),
+    // World-1 side quests (Inc 4): each quest with its live progress/target/done/claimed, for the quest UI.
+    sideQuests: (state) => WORLD1_SIDE_QUESTS.map((q) => {
+      const progress = state.sideQuestProgress[q.id] ?? 0
+      return { quest: q, progress, target: sideQuestTarget(q), done: isSideQuestDone(q, progress), claimed: state.sideQuestClaimed.includes(q.id) }
+    }),
   },
   actions: {
     login(accountName: string) {
@@ -163,6 +176,8 @@ export const usePlayerStore = defineStore('player', {
       this.equipment = {}
       this.socketedSigils = {}
       this.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
+      this.sideQuestProgress = {}
+      this.sideQuestClaimed = []
       this.correctAnswers = 0
       this.adventureLog = []
       this.dailyDate = ''
@@ -257,6 +272,22 @@ export const usePlayerStore = defineStore('player', {
         this.gainRewards(res.completed.reward.exp, res.completed.reward.gold, res.completed.reward.gems)
         this.addLog(`Quest: "${res.completed.title}" complete! (+${res.completed.reward.gold}g${res.completed.reward.gems ? `, +${res.completed.reward.gems} gems` : ''}, +${res.completed.reward.exp} EXP)`)
       }
+      // side quests progress on the same events (rewards claimed manually — no auto-grant)
+      for (const q of WORLD1_SIDE_QUESTS) {
+        const cur = this.sideQuestProgress[q.id] ?? 0
+        const nxt = advanceSideQuest(q, cur, event)
+        if (nxt !== cur) this.sideQuestProgress[q.id] = nxt
+      }
+    },
+    // Claim a completed side quest exactly once; grants the validated reward. Returns false otherwise.
+    claimSideQuest(id: string) {
+      if (this.sideQuestClaimed.includes(id)) return false
+      const q = getSideQuest(id)
+      if (!q || !isSideQuestDone(q, this.sideQuestProgress[id] ?? 0)) return false
+      this.sideQuestClaimed.push(id)
+      this.gainRewards(q.reward.exp, q.reward.gold, q.reward.gems)
+      this.addLog(`Side quest complete: "${q.title}" (+${q.reward.gold}g${q.reward.gems ? `, +${q.reward.gems} gems` : ''}, +${q.reward.exp} EXP)`)
+      return true
     },
     buyItem(itemId: string) {
       const item = findShopItem(this.currentFloor, itemId)
@@ -371,6 +402,8 @@ export const usePlayerStore = defineStore('player', {
       // additive migration: old saves lack socketedSigils / mainQuest — default them so getters never read undefined
       if (!store.socketedSigils) store.socketedSigils = {}
       if (!store.mainQuest) store.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
+      if (!store.sideQuestProgress) store.sideQuestProgress = {}
+      if (!store.sideQuestClaimed) store.sideQuestClaimed = []
       store.mp = Math.min(store.mp, store.maxMp)
       store.hp = Math.min(store.hp, store.maxHp)
     },
