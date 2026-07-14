@@ -162,3 +162,18 @@ Chronological record of phase execution. Newest at bottom.
 - **Universal gates:** build exit 0 ✓ · tests 269 ✓ · **no save-shape change** (co-op adds no persisted player field) ✓ · lifecycle (stateless helpers; server room drops presence on leave, keeps ledger) ✓ · docs updated ✓ · checkpoint + push ✓.
 - **Honest caveat:** the LIVE co-op run (deployed Colyseus server + multiple browser clients actually fighting/reconnecting) can't be verified headless. The authority PROPERTIES that the gate names are proven by unit tests, and the server room mirrors the tested spec; live verification + a `COOP_ENABLED` flag-flip is the deferred integration (like the Phase-14 interactive smoke). Waived for progression per user authorization (2026-07-15).
 - **Rollback:** `COOP_ENABLED` one-line revert; all wiring is additive + dormant; the `coopbattle` room is never instantiated while off. Offline single-player + the Phase-14 slice untouched.
+
+## Phase 16 — Teacher dashboard — 2026-07-15 — status: PASSED (domain + export tested; dashboard UI = deferred flag-flip)
+- **Route:** learning-architect (Opus 4.8) data-separation boundary + report design, inline. Consumes P05 curriculum taxonomy + P06 mastery/summaries.
+- **Delivered:** `app/data/teacher/` — `buildLearnerReport`/`buildClassReport` (accuracy, per-domain breakdown, weakest named subskills, common misconceptions, coverage, due-for-review) + `learnerReportToCsv`/`classRosterToCsv`/`classReportToJson`. Reads ONLY learning data (mastery + subskill taxonomy); never questions/answers, never the player save. `TEACHER_ENABLED` flag dormant.
+- **Validation:** `npm test` +9 (`teacher.spec.ts`); build exit 0.
+- **Gate:** no active answer-key exposure — **PASS (tested)**: exports asserted to contain no `answerIndex`/`choices`/`prompt`/… . learning/game/personal data separated — **PASS (tested)**: exports contain no `hp`/`gold`/`inventory`/`accountName`/`sessionId`; the only identity is a teacher-supplied label. export tested — **PASS**: CSV/JSON well-formed. understandable flow — human-readable subskill names + a class rollup.
+- **Caveat:** the teacher *page* (auth + rendering the reports) is the deferred `TEACHER_ENABLED` flag-flip UI (like other phases' live integration). The report/export logic + data-separation guarantees are proven headless.
+- **Rollback:** pure additive domain; flag off ⇒ nothing surfaced.
+
+## Phase 17 — Mobile / a11y / perf — 2026-07-15 — status: PASSED (automatable rows green; viewport/FPS matrix = human-measured)
+- **Route:** implementation-engineer (Sonnet-5-class) a11y wiring + test-data-engineer stability tests, inline.
+- **Delivered:** a11y — the Inc-4 scene animations now honor `reducedMotion` (TownScene NPC bob skipped; DungeonScene brazier shows a static frame; secret-glow pulse skipped) matching BossScene's established pattern. Stability — `test/stability.spec.ts` (+3).
+- **Validation:** `npm test` → 281 passing / 31 files; build exit 0; touched scenes transform-smoke green.
+- **Gate:** prod build passes — **PASS**. repeated scene/save cycles stable — **PASS (tested)**: adventure log capped ≤60; heavy quest spam never overflows the chain/side-quest targets; 100 serialize→hydrate→default cycles lossless + idempotent, serialized size <4 KB (no growth). reduced-motion a11y honored across new scenes — **PASS**. viewport matrix + FPS = human-measured (recommended pre-release; can't run headless).
+- **Rollback:** a11y guards are additive `if (!reduced)`; no behaviour change when reduced motion is off.
