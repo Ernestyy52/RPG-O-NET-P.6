@@ -20,7 +20,7 @@ export interface MonsterTheme {
 
 // 10 worlds → floors 1-100
 export const WORLD_THEMES: MonsterTheme[] = [
-  { id: 'verdant', name: 'Verdant Slimes', nameTh: 'อาณาจักรสไลม์', monsters: ['slime', 'big_slime', 'nature_slime', 'mushroom_monster', 'frog_monster'], boss: 'big_slime', bossScale: 150, worldBossName: 'Myco Colossus' },
+  { id: 'verdant', name: 'Verdant Slimes', nameTh: 'อาณาจักรสไลม์', monsters: ['slime', 'big_slime', 'nature_slime', 'mushroom_monster', 'frog_monster', 'forest_lizard'], boss: 'big_slime', bossScale: 150, worldBossName: 'Myco Colossus' },
   { id: 'dunes', name: 'Scorching Dunes', nameTh: 'ทะเลทรายนักล่า', monsters: ['scorpion', 'snake', 'cactus_monster', 'sand_worm', 'cockatrice'], boss: 'sand_worm', bossScale: 150, worldBossName: 'Dune Serpent' },
   { id: 'frostwastes', name: 'Frozen Wastes', nameTh: 'ทุ่งน้ำแข็งเยือกเย็น', monsters: ['frost_sprite', 'snow_worm', 'fluffy_bear', 'ice_robot', 'cumulus'], boss: 'ice_robot', bossScale: 150, worldBossName: 'Frost Giant' },
   { id: 'molten', name: 'Molten Fiends', nameTh: 'เหล่าปีศาจลาวา', monsters: ['fire_slime', 'fire_wisp', 'salamander', 'red_imp', 'thunder_slime'], boss: 'salamander', bossScale: 150, worldBossName: 'Magma Golem' },
