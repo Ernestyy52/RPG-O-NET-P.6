@@ -22,13 +22,13 @@ export interface TownNpc {
 }
 
 export const TOWN_NPCS: TownNpc[] = [
-  // Guildmaster.png (288×32, 9×1) — dedicated guildmaster sprite
+  // Citizen1_Idle.png (384×128, 12 cols × 4 rows @ 32×32) — full-body idle
   { id: 'guildmaster', name: 'Mara', title: 'Guildmaster', sprite: 'npc-sprites/guildmaster.png', frameW: 32, frameH: 32, at: [1150, 250] },
-  // Mage1.png (448×208, 14×4 @ 32×52) — a robed mage guarding the portal (taller frame for the hat)
-  { id: 'portal_guardian', name: 'Kael', title: 'Portal Guardian', sprite: 'npc-sprites/portal_guardian.png', frameW: 32, frameH: 52, at: [737, 250] },
-  // Citizen2_Idle.png (384×128, 12×4 @ 32×32)
+  // Mage1.png (448×208, content on a 48px pitch @ 48×52) — full-body robed mage (taller frame for the hat)
+  { id: 'portal_guardian', name: 'Kael', title: 'Portal Guardian', sprite: 'npc-sprites/portal_guardian.png', frameW: 48, frameH: 52, at: [737, 250] },
+  // Citizen2_Idle.png (384×128, 12 cols × 4 rows @ 32×32)
   { id: 'blacksmith', name: 'Borin', title: 'Blacksmith', sprite: 'npc-sprites/blacksmith.png', frameW: 32, frameH: 32, at: [1255, 505] },
-  // Fighter2_Idle.png (384×128, 12×4 @ 32×32)
+  // Fighter2_Idle.png (384×128, 12 cols × 4 rows @ 32×32)
   { id: 'forest_ranger', name: 'Wren', title: 'Forest Ranger', sprite: 'npc-sprites/forest_ranger.png', frameW: 32, frameH: 32, at: [470, 560] },
 ]
 
