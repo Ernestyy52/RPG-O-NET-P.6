@@ -5,6 +5,7 @@ import { getFloorConfig } from '../../data/floors'
 import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { usePlayerStore } from '../../stores/player'
+import { useSettingsStore } from '../../stores/settings'
 import {
   preloadSharedAssets,
   preloadFloorMonsters,
@@ -132,6 +133,7 @@ export class DungeonScene extends Phaser.Scene {
     }
 
     // ---- torch glow + animated brazier flame (Inc 4: dungeon atmosphere) ----
+    const reducedMotion = useSettingsStore().reducedMotion
     if (this.textures.exists(DUNGEON_FIRE.key) && !this.anims.exists('w1_brazier')) {
       this.anims.create({
         key: 'w1_brazier',
@@ -145,8 +147,10 @@ export class DungeonScene extends Phaser.Scene {
       const cy = t.y * TILE + TILE / 2
       const glow = this.add.circle(cx, cy, TILE * 1.4, 0xffb347, 0.16)
       glow.setBlendMode(Phaser.BlendModes.ADD).setDepth(1)
-      if (this.anims.exists('w1_brazier')) {
-        this.add.sprite(cx, cy, DUNGEON_FIRE.key, DUNGEON_FIRE.frames[0]).play('w1_brazier').setOrigin(0.5, 0.72).setScale((TILE * 1.1) / DUNGEON_FIRE.frameH).setDepth(cy)
+      if (this.textures.exists(DUNGEON_FIRE.key)) {
+        // a11y: reduced motion ⇒ a STATIC flame frame (no looping animation)
+        const flame = this.add.sprite(cx, cy, DUNGEON_FIRE.key, DUNGEON_FIRE.frames[0]).setOrigin(0.5, 0.72).setScale((TILE * 1.1) / DUNGEON_FIRE.frameH).setDepth(cy)
+        if (!reducedMotion && this.anims.exists('w1_brazier')) flame.play('w1_brazier')
       }
     }
 
@@ -221,7 +225,7 @@ export class DungeonScene extends Phaser.Scene {
       const sx = s.at.x * TILE + TILE / 2
       const sy = s.at.y * TILE + TILE / 2
       const marker = this.add.circle(sx, sy, TILE * 0.34, 0xffe08a, 0.45).setDepth(sy)
-      this.tweens.add({ targets: marker, alpha: 0.14, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      if (!reducedMotion) this.tweens.add({ targets: marker, alpha: 0.14, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }) // a11y: static glow under reduced motion
       const zone = this.add.zone(sx, sy, TILE * 1.2, TILE * 1.2)
       this.physics.add.existing(zone, true)
       this.physics.add.overlap(this.player, zone, () => {

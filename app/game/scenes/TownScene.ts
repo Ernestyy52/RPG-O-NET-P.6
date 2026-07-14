@@ -10,6 +10,7 @@ import { buildTownStructures } from '../systems/buildingArt'
 import { joinTown, leaveRoom } from '../systems/net'
 import { RemotePlayers } from '../systems/remotePlayers'
 import { usePlayerStore } from '../../stores/player'
+import { useSettingsStore } from '../../stores/settings'
 import { TOWN_NPCS } from '../../data/world1/npcs'
 
 // ================================================================================================
@@ -147,6 +148,7 @@ export class TownScene extends Phaser.Scene {
     }
 
     // ---- Inc 4: named quest-giver NPCs standing in town (decorative + flavour nameplates) ----
+    const reducedMotion = useSettingsStore().reducedMotion
     for (const npc of TOWN_NPCS) {
       const key = `npc_${npc.id}`
       if (!this.textures.exists(key)) continue // sprite missing ⇒ skip (never crash)
@@ -157,7 +159,7 @@ export class TownScene extends Phaser.Scene {
       const scale = HERO_DISPLAY_H / npc.frameH
       this.add.image(nx, ny + 4, 'shadow_blob').setDepth(ny - 1)
       const spr = this.add.sprite(nx, ny, key, 0).setOrigin(0.5, 0.95).setScale(scale).setDepth(ny)
-      this.tweens.add({ targets: spr, y: ny - 3, duration: 1400 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      if (!reducedMotion) this.tweens.add({ targets: spr, y: ny - 3, duration: 1400 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }) // a11y: no idle bob under reduced motion
       addPlaque(this, nx, ny - HERO_DISPLAY_H * 1.05, npc.name, { fontSize: '10px', depth: ny + 1, color: '#f2d98a' })
     }
 
