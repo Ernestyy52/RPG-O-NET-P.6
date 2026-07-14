@@ -31,6 +31,18 @@ export const WORLD1_DUNGEON_PROPS: BushDecor[] = [
   { key: 'w1prop_vase', sprite: 'world1-props/prop_vase.png', w: 16, h: 25 },
 ]
 
+/**
+ * Animated brazier flame (Craftpix dungeon fire sheet). 44×48 frames, 4 cols × 6 rows; column 3 is a
+ * medium fire in a bowl — its frames (row-major indices) drive a looping brazier at each dungeon torch.
+ */
+export const DUNGEON_FIRE = {
+  key: 'w1_fire',
+  sprite: 'world1-props/dungeon_fire.png',
+  frameW: 44,
+  frameH: 48,
+  frames: [3, 7, 11, 15, 19, 23],
+} as const
+
 export interface DecorTile { x: number; y: number; bush: number }
 
 /**

@@ -20,7 +20,7 @@ import {
 } from '../systems/textures'
 import { createIdleBreath, addPlaque } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
-import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, pickDecorTiles } from '../../data/world1/decor'
+import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, DUNGEON_FIRE, pickDecorTiles } from '../../data/world1/decor'
 import { seedFromString } from '../../data/learning/rng'
 import {
   TILE,
@@ -87,6 +87,9 @@ export class DungeonScene extends Phaser.Scene {
     for (const b of [...WORLD1_BUSHES, ...WORLD1_DUNGEON_PROPS]) {
       if (!this.textures.exists(b.key)) this.load.image(b.key, assetPath(b.sprite))
     }
+    if (!this.textures.exists(DUNGEON_FIRE.key)) {
+      this.load.spritesheet(DUNGEON_FIRE.key, assetPath(DUNGEON_FIRE.sprite), { frameWidth: DUNGEON_FIRE.frameW, frameHeight: DUNGEON_FIRE.frameH })
+    }
     preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
   }
 
@@ -128,10 +131,23 @@ export class DungeonScene extends Phaser.Scene {
       if (!p.blocking) (img.body as Phaser.Physics.Arcade.StaticBody).enable = false
     }
 
-    // ---- torch glow (mood; static, no per-frame redraw) ----
+    // ---- torch glow + animated brazier flame (Inc 4: dungeon atmosphere) ----
+    if (this.textures.exists(DUNGEON_FIRE.key) && !this.anims.exists('w1_brazier')) {
+      this.anims.create({
+        key: 'w1_brazier',
+        frames: DUNGEON_FIRE.frames.map((f) => ({ key: DUNGEON_FIRE.key, frame: f })),
+        frameRate: 8,
+        repeat: -1,
+      })
+    }
     for (const t of this.layout.torches) {
-      const glow = this.add.circle(t.x * TILE + TILE / 2, t.y * TILE + TILE / 2, TILE * 1.4, 0xffb347, 0.16)
+      const cx = t.x * TILE + TILE / 2
+      const cy = t.y * TILE + TILE / 2
+      const glow = this.add.circle(cx, cy, TILE * 1.4, 0xffb347, 0.16)
       glow.setBlendMode(Phaser.BlendModes.ADD).setDepth(1)
+      if (this.anims.exists('w1_brazier')) {
+        this.add.sprite(cx, cy, DUNGEON_FIRE.key, DUNGEON_FIRE.frames[0]).play('w1_brazier').setOrigin(0.5, 0.72).setScale((TILE * 1.1) / DUNGEON_FIRE.frameH).setDepth(cy)
+      }
     }
 
     // ---- player ----

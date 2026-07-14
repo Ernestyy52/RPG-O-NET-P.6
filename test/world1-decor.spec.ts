@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, pickDecorTiles } from '~/data/world1/decor'
+import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, DUNGEON_FIRE, pickDecorTiles } from '~/data/world1/decor'
 import { getDungeonLayout } from '~/game/runtime/dungeonLayouts'
 
 // ================================================================================================
@@ -27,6 +27,17 @@ describe('World-1 decor — bush catalog', () => {
       expect(b.h).toBeGreaterThan(0)
     }
     expect(new Set(all.map((b) => b.key)).size).toBe(all.length) // no key collisions bush↔prop
+  })
+
+  it('brazier fire config is subpath-safe with valid in-sheet frame indices', () => {
+    expect(DUNGEON_FIRE.sprite.startsWith('/')).toBe(false)
+    expect(DUNGEON_FIRE.sprite).toMatch(/^world1-props\/.+\.png$/)
+    const totalFrames = (176 / DUNGEON_FIRE.frameW) * (288 / DUNGEON_FIRE.frameH) // sheet is 176×288
+    for (const f of DUNGEON_FIRE.frames) {
+      expect(f).toBeGreaterThanOrEqual(0)
+      expect(f).toBeLessThan(totalFrames)
+    }
+    expect(DUNGEON_FIRE.frames.length).toBeGreaterThan(1) // an actual animation
   })
 })
 
