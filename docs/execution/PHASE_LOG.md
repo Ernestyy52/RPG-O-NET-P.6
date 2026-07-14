@@ -177,3 +177,9 @@ Chronological record of phase execution. Newest at bottom.
 - **Validation:** `npm test` → 281 passing / 31 files; build exit 0; touched scenes transform-smoke green.
 - **Gate:** prod build passes — **PASS**. repeated scene/save cycles stable — **PASS (tested)**: adventure log capped ≤60; heavy quest spam never overflows the chain/side-quest targets; 100 serialize→hydrate→default cycles lossless + idempotent, serialized size <4 KB (no growth). reduced-motion a11y honored across new scenes — **PASS**. viewport matrix + FPS = human-measured (recommended pre-release; can't run headless).
 - **Rollback:** a11y guards are additive `if (!reduced)`; no behaviour change when reduced motion is off.
+
+## Phase 18 — S-grade audit — 2026-07-15 — status: PASSED (honest audit; no false S-grade claim)
+- **Route:** qa-release (Fable-5-class independent audit), inline.
+- **Delivered:** `docs/execution/S_GRADE_AUDIT.md` — a per-phase gate matrix (00–24) + honest verdict + issues classified into Class A (human-at-browser), Class B (live infra), Class C (dormant flag-flips), with **no Class-D correctness-unknowns**.
+- **Verdict:** engineering-complete + gate-audited; **NOT declared release-S-grade** because end-to-end human/live verification is outstanding. Every automatable acceptance-gate row (00–18) passes with test evidence (281 tests, build exit 0, server `node --check` OK, clean asset-path).
+- **Gate:** every mandatory gate passes (automatable rows ✓; live/human rows classified, not claimed) ✓ · unresolved issues classified accurately (A/B/C) ✓ · **no false S-grade claim** ✓ (the audit explicitly declines to claim release-S-grade).
