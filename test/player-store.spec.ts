@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { usePlayerStore } from '~/stores/player'
+import { usePlayerStore, ensurePlayerDefaults } from '~/stores/player'
 import { WORLD1_MAIN_QUEST } from '~/data/world1/quests'
 
 function freshWarrior() {
@@ -229,6 +229,50 @@ describe('player store — World-1 main quest (Inc 4 infra)', () => {
     expect(tq.done).toBe(true)
     // re-discovering is a no-op (no double reward)
     expect(p.discoverSecret('w1-main-chest')).toBe(false)
+  })
+})
+
+describe('player store — save compatibility (pre-Phase-14 blob loads with zero loss)', () => {
+  it('backfills the additive Phase-14 fields without touching legacy data, and getters stay safe', () => {
+    const p = freshWarrior()
+    // simulate a hydrated PRE-Phase-14 save: real legacy progress, but NONE of the new fields exist
+    p.level = 7
+    p.gold = 350
+    p.exp = 42
+    p.inventory = { potion_s: 3, slime_gel: 5 }
+    p.equipment = { weapon: 'legacy_weapon' }
+    ;(p as unknown as Record<string, unknown>).socketedSigils = undefined
+    ;(p as unknown as Record<string, unknown>).mainQuest = undefined
+    ;(p as unknown as Record<string, unknown>).sideQuestProgress = undefined
+    ;(p as unknown as Record<string, unknown>).sideQuestClaimed = undefined
+    ;(p as unknown as Record<string, unknown>).secretsFound = undefined
+
+    ensurePlayerDefaults(p) // what afterHydrate runs on load
+
+    // legacy data preserved exactly (zero loss)
+    expect(p.level).toBe(7)
+    expect(p.gold).toBe(350)
+    expect(p.inventory.slime_gel).toBe(5)
+    expect(p.equipment.weapon).toBe('legacy_weapon')
+    // new fields defaulted sanely
+    expect(p.socketedSigils).toEqual({})
+    expect(p.mainQuest).toEqual({ step: 0, progress: 0 })
+    expect(p.sideQuestProgress).toEqual({})
+    expect(p.secretsFound).toEqual([])
+    // and every Phase-14 getter is safe (no crash reading a defaulted field)
+    expect(p.mainQuestStep?.id).toBe('w1_call_to_adventure')
+    expect(p.sideQuests.length).toBeGreaterThan(0)
+    expect(typeof p.stats.atk).toBe('number')
+  })
+
+  it('is idempotent — a second load never clobbers existing progress', () => {
+    const p = freshWarrior()
+    p.dispatchQuestEvent({ type: 'talk-npc', npcId: 'guildmaster' }) // advance main quest to step 1
+    p.socketedSigils = { weapon: ['sigil_might_t1'] }
+    ensurePlayerDefaults(p)
+    ensurePlayerDefaults(p)
+    expect(p.mainQuest.step).toBe(1)                       // not reset to 0
+    expect(p.socketedSigils.weapon).toEqual(['sigil_might_t1']) // preserved
   })
 })
 

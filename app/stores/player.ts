@@ -62,6 +62,25 @@ function expToNextLevel(level: number): number {
   return Math.round(30 * Math.pow(level, 1.45))
 }
 
+/**
+ * Backfill Phase-14 additive fields on a hydrated store so a PRE-Phase-14 `player` blob (which lacks
+ * them) loads with zero data loss and every getter/action is safe. Idempotent; only fills what's absent.
+ * Exported so the save-compatibility gate can be tested directly (see test/player-store.spec.ts).
+ */
+export function ensurePlayerDefaults(store: {
+  socketedSigils?: SocketedSigils
+  mainQuest?: MainQuestState
+  sideQuestProgress?: Record<string, number>
+  sideQuestClaimed?: string[]
+  secretsFound?: string[]
+}): void {
+  if (!store.socketedSigils) store.socketedSigils = {}
+  if (!store.mainQuest) store.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
+  if (!store.sideQuestProgress) store.sideQuestProgress = {}
+  if (!store.sideQuestClaimed) store.sideQuestClaimed = []
+  if (!store.secretsFound) store.secretsFound = []
+}
+
 function addStats(base: Record<string, number>, stats?: Record<string, number | undefined>) {
   if (!stats) return
   for (const [key, value] of Object.entries(stats)) base[key] = (base[key] ?? 0) + (value ?? 0)
@@ -417,12 +436,9 @@ export const usePlayerStore = defineStore('player', {
   persist: {
     // เซฟเก่าอาจมี mp เกิน maxMp ของคลาส (เช่น ค่า default 30 แต่ maxMp จริง 27) — clamp ตอนโหลด
     afterHydrate: ({ store }) => {
-      // additive migration: old saves lack socketedSigils / mainQuest — default them so getters never read undefined
-      if (!store.socketedSigils) store.socketedSigils = {}
-      if (!store.mainQuest) store.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
-      if (!store.sideQuestProgress) store.sideQuestProgress = {}
-      if (!store.sideQuestClaimed) store.sideQuestClaimed = []
-      if (!store.secretsFound) store.secretsFound = []
+      // additive migration: a pre-Phase-14 blob lacks the new fields — backfill them so getters never
+      // read undefined, then clamp hp/mp (a save may carry mp above the class's real maxMp).
+      ensurePlayerDefaults(store)
       store.mp = Math.min(store.mp, store.maxMp)
       store.hp = Math.min(store.hp, store.maxHp)
     },
