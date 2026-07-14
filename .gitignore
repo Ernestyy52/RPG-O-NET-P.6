@@ -22,3 +22,12 @@ logs
 .env
 .env.*
 !.env.example
+
+# Raw asset-pack sources (curate needed sprites into public/ proper; never commit the bulk)
+asset-packs/
+public/Asset/
+
+# Build output
+.output
+.nuxt
+dist

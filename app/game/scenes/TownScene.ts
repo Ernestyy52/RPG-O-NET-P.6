@@ -10,6 +10,7 @@ import { buildTownStructures } from '../systems/buildingArt'
 import { joinTown, leaveRoom } from '../systems/net'
 import { RemotePlayers } from '../systems/remotePlayers'
 import { usePlayerStore } from '../../stores/player'
+import { TOWN_NPCS } from '../../data/world1/npcs'
 
 // ================================================================================================
 // เมืองโหมด "ภาพจริง" — ใช้ภาพ mockup (public/town-art/town-night.png, ตัด UI ออกแล้ว) เป็นฉากทั้งเมือง
@@ -106,6 +107,13 @@ export class TownScene extends Phaser.Scene {
     if (!this.textures.exists('town_art')) {
       this.load.image('town_art', assetPath('town-art/town-night.png'))
     }
+    // Inc 4: named quest-giver NPCs (Craftpix guild-hall sheets, curated into public/npc-sprites/)
+    for (const npc of TOWN_NPCS) {
+      const key = `npc_${npc.id}`
+      if (!this.textures.exists(key)) {
+        this.load.spritesheet(key, assetPath(npc.sprite), { frameWidth: npc.frameW, frameHeight: npc.frameH })
+      }
+    }
     preloadBgm(this, 'town', assetPath)
   }
 
@@ -136,6 +144,17 @@ export class TownScene extends Phaser.Scene {
         tex.refresh()
       }
       this.add.image(sx * S, (sy + sh) * S, slice.key).setOrigin(0, 1).setScale(S).setDepth((sy + sh) * S)
+    }
+
+    // ---- Inc 4: named quest-giver NPCs standing in town (decorative + flavour nameplates) ----
+    for (const npc of TOWN_NPCS) {
+      const key = `npc_${npc.id}`
+      if (!this.textures.exists(key)) continue // sprite missing ⇒ skip (never crash)
+      const nx = u(npc.at[0])
+      const ny = u(npc.at[1])
+      const spr = this.add.sprite(nx, ny, key, 0).setOrigin(0.5, 0.9).setScale(S * 1.7).setDepth(ny)
+      this.tweens.add({ targets: spr, y: ny - 3, duration: 1400 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      addPlaque(this, nx, ny - HERO_DISPLAY_H * 0.9, npc.name, { fontSize: '10px', depth: ny + 1, color: '#f2d98a' })
     }
 
     // ---- collision + interact จากตาราง ZONES ----

@@ -14,6 +14,7 @@
           </div>
           <template v-if="mainStep">
             <p class="text-sm font-bold text-[#f2c14e]">{{ mainStep.title }} <span class="text-[11px] font-normal opacity-70">{{ mainStep.titleTh }}</span></p>
+            <p v-if="giverName" class="text-[11px] text-[#cdb27a]">Given by {{ giverName }}</p>
             <p class="mb-2 text-xs opacity-80">{{ mainStep.summary }}</p>
             <div v-if="mainProgress.target > 1" class="mb-2">
               <div class="h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-amber-500 transition-all" :style="{ width: `${Math.round((mainProgress.current / mainProgress.target) * 100)}%` }" /></div>
@@ -85,6 +86,7 @@ import { computed } from 'vue'
 import { getBossRequirement } from '~/data/bossRequirements'
 import { getBossStats } from '~/data/floors'
 import { WORLD1_MAIN_QUEST } from '~/data/world1/quests'
+import { getTownNpc } from '~/data/world1/npcs'
 import { usePlayerStore } from '~/stores/player'
 
 defineProps<{ open: boolean }>()
@@ -102,6 +104,11 @@ const mainSteps = computed(() => WORLD1_MAIN_QUEST.map((s, i) => ({
   active: player.mainQuest.step === i,
 })))
 const sideQuests = computed(() => player.sideQuests)
+const giverName = computed(() => {
+  const g = player.mainQuestStep?.giver
+  const npc = g ? getTownNpc(g) : undefined
+  return npc ? `${npc.name}, the ${npc.title}` : ''
+})
 const requirement = computed(() => getBossRequirement(player.currentFloor))
 const bossReward = computed(() => getBossStats(player.currentFloor))
 const isMilestone = computed(() => player.currentFloor % 10 === 0)
