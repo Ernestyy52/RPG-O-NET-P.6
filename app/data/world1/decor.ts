@@ -20,6 +20,17 @@ export const WORLD1_BUSHES: BushDecor[] = [
   { key: 'w1bush_red', sprite: 'world1-props/bush_red.png', w: 32, h: 32 },
 ]
 
+/**
+ * Dungeon props (Craftpix dungeon pack) — barrels/crates/pottery to dress the World-1 dungeons. Same
+ * placement contract as bushes: non-blocking + depth-sorted on walkable floor, so they never affect the
+ * layout's proven reachability (they are NOT added to wallGrid).
+ */
+export const WORLD1_DUNGEON_PROPS: BushDecor[] = [
+  { key: 'w1prop_barrel', sprite: 'world1-props/prop_barrel.png', w: 17, h: 30 },
+  { key: 'w1prop_crate', sprite: 'world1-props/prop_crate.png', w: 32, h: 31 },
+  { key: 'w1prop_vase', sprite: 'world1-props/prop_vase.png', w: 16, h: 25 },
+]
+
 export interface DecorTile { x: number; y: number; bush: number }
 
 /**

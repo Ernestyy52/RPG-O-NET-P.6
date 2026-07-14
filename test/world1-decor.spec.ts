@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { WORLD1_BUSHES, pickDecorTiles } from '~/data/world1/decor'
+import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, pickDecorTiles } from '~/data/world1/decor'
 import { getDungeonLayout } from '~/game/runtime/dungeonLayouts'
 
 // ================================================================================================
@@ -16,14 +16,17 @@ const grid: (number | null)[][] = [
 ]
 
 describe('World-1 decor — bush catalog', () => {
-  it('has bushes with relative (subpath-safe) sprite paths and positive sizes', () => {
+  it('has bushes + dungeon props with relative (subpath-safe) sprite paths, positive sizes, unique keys', () => {
+    const all = [...WORLD1_BUSHES, ...WORLD1_DUNGEON_PROPS]
     expect(WORLD1_BUSHES.length).toBeGreaterThan(0)
-    for (const b of WORLD1_BUSHES) {
+    expect(WORLD1_DUNGEON_PROPS.length).toBeGreaterThan(0)
+    for (const b of all) {
       expect(b.sprite.startsWith('/')).toBe(false)
       expect(b.sprite).toMatch(/^world1-props\/.+\.png$/)
       expect(b.w).toBeGreaterThan(0)
       expect(b.h).toBeGreaterThan(0)
     }
+    expect(new Set(all.map((b) => b.key)).size).toBe(all.length) // no key collisions bush↔prop
   })
 })
 

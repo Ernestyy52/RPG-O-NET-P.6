@@ -20,7 +20,7 @@ import {
 } from '../systems/textures'
 import { createIdleBreath, addPlaque } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
-import { WORLD1_BUSHES, pickDecorTiles } from '../../data/world1/decor'
+import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, pickDecorTiles } from '../../data/world1/decor'
 import { seedFromString } from '../../data/learning/rng'
 import {
   TILE,
@@ -83,8 +83,8 @@ export class DungeonScene extends Phaser.Scene {
     if (!this.textures.exists(DUNGEON_WALLS)) {
       this.load.spritesheet(DUNGEON_WALLS, assetPath('dungeon-assets/walls_floor.png'), { frameWidth: 16, frameHeight: 16 })
     }
-    // Inc 4: verdant foliage decor (Craftpix bushes, curated into public/world1-props/)
-    for (const b of WORLD1_BUSHES) {
+    // Inc 4: verdant foliage + dungeon props decor (Craftpix, curated into public/world1-props/)
+    for (const b of [...WORLD1_BUSHES, ...WORLD1_DUNGEON_PROPS]) {
       if (!this.textures.exists(b.key)) this.load.image(b.key, assetPath(b.sprite))
     }
     preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
@@ -169,16 +169,19 @@ export class DungeonScene extends Phaser.Scene {
     }
     this.physics.add.overlap(this.player, this.monsters, (_p, m) => this.onEncounterMonster(m as Phaser.Physics.Arcade.Sprite))
 
-    // ---- Inc 4: scatter verdant foliage on walkable floor (non-blocking, depth-sorted, deterministic) ----
+    // ---- Inc 4: dress the dungeon — foliage + props on walkable floor (non-blocking, depth-sorted,
+    // deterministic; NOT added to wallGrid, so the proven reachability is untouched) ----
     const decorReserved = [this.layout.entry, this.layout.exit, ...this.layout.secrets.map((s) => s.at), ...this.layout.elites.map((e) => e.at)]
     if (this.layout.bossGate) decorReserved.push(this.layout.bossGate)
-    for (const d of pickDecorTiles(this.layout.wallGrid, decorReserved, 7, seedFromString(`decor:${this.layoutId}`))) {
-      const bush = WORLD1_BUSHES[d.bush]
-      if (!this.textures.exists(bush.key)) continue
-      const px = d.x * TILE + TILE / 2
-      const py = d.y * TILE + TILE / 2
-      this.add.image(px, py + 4, bush.key).setOrigin(0.5, 0.85).setScale(30 / bush.h).setDepth(py - 1)
+    const placeDecor = (px: number, py: number, d: { key: string; h: number }) => {
+      if (!this.textures.exists(d.key)) return
+      this.add.image(px, py + 4, d.key).setOrigin(0.5, 0.9).setScale(30 / d.h).setDepth(py - 1)
     }
+    const bushTiles = pickDecorTiles(this.layout.wallGrid, decorReserved, 7, seedFromString(`bush:${this.layoutId}`))
+    for (const d of bushTiles) placeDecor(d.x * TILE + TILE / 2, d.y * TILE + TILE / 2, WORLD1_BUSHES[d.bush])
+    // props go on DIFFERENT tiles (bush tiles reserved so they never stack)
+    const propTiles = pickDecorTiles(this.layout.wallGrid, [...decorReserved, ...bushTiles], 4, seedFromString(`prop:${this.layoutId}`))
+    for (const d of propTiles) placeDecor(d.x * TILE + TILE / 2, d.y * TILE + TILE / 2, WORLD1_DUNGEON_PROPS[d.bush % WORLD1_DUNGEON_PROPS.length])
 
     // ---- exit stairs (returns to the owning tower floor) ----
     const exitX = this.layout.exit.x * TILE + TILE / 2
