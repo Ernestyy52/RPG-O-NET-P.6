@@ -18,7 +18,7 @@ export const COMBAT_DOMAIN_ENABLED = true
  * Rollback flag for the real-time action-lite combat loop (Phase 09). Dormant — the turn-based
  * BattleModal remains authoritative until a rendered real-time scene passes the World 1 gate.
  */
-export const REALTIME_COMBAT_ENABLED = false
+export const REALTIME_COMBAT_ENABLED = true
 
 export * from './formulas'
 export * from './skills'
