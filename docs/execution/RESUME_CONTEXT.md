@@ -3,7 +3,15 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 15 — Safe co-op + server authority** (NEXT; depends 07/13/14; flag `coop`; preserve the offline deterministic path). See `docs/foundation/MIGRATION_SEQUENCE.md` row 16.
+- **Phase 16 — Teacher dashboard** (NEXT; depends P05 review queue + P06 summaries; gate: no active answer-key exposure; learning/game/personal data separated; export tested; flow understandable). See `docs/foundation/MIGRATION_SEQUENCE.md` row 17.
+- **Phase 15 (safe co-op + server authority) — PASSED (2026-07-15):** `app/data/coop/` pure authority (server-owned shared HP with a ≤50%/hit clamp, `CoopRewardLedger` one-grant-per-participant, HP-derived synchronized boss phase, reconnect-safe), dormant behind `COOP_ENABLED`; `net.ts` dormant client helpers; `server/index.js` `CoopBattleRoom` mirror. Gate properties proven in `test/coop.spec.ts`; live multi-client run pending (waived for progression). Offline byte-identical.
+- **Next-action pointer below still lists the old Phase-15 plan for reference; the ACTIVE next action is Phase 16 (Teacher).**
+
+## Next exact action (Phase 16 — Teacher)
+1. Route: learning-architect (Opus 4.8) for the review-queue/summary surfacing + data-separation boundary; implementation-engineer (Sonnet 5) for the dashboard UI; qa-release (Fable 5) review.
+2. Read P05 curriculum review queue + P06 `summarizeSession`/mastery + the separate `learning` store; design a teacher view that surfaces class/learner progress from those WITHOUT exposing live answer keys (rule 2 + gate) and keeps learning/game/personal data separated.
+3. Build the teacher data domain (aggregations over mastery/summaries) pure + tested; a dashboard UI behind a flag; an export (CSV/JSON) that's tested and carries no answer keys.
+4. Gate (P16): no active answer-key exposure; learning/game/personal data separated; export tested; flow understandable.
 - **Phases 00–14 PASSED + committed.** Phase 14 (World 1 vertical slice) closed 2026-07-15: all 7 domain flags LIVE on floors 1–10 (zone runtime, engine + real-time combat, Knowledge Break, class kits, sigils, adaptive expeditions), Myco Colossus 3-phase boss, 12-step main quest + 10 side quests + 3 secrets, curated Craftpix assets (NPCs, foliage/props/braziers, Forest Lizard). 261 tests, build exit 0. **Automatable gate rows green; human interactive playthrough waived for progression per user authorization** (still recommended pre-release).
 - **Starting point for P15:** existing Colyseus client `app/game/systems/net.ts` (147 LOC — `joinTown`/dungeon rooms, `sendStatus`, `RemotePlayers`); server lives under `server/` (Colyseus). Real-time combat + rewards are currently **client-resolved** (RealtimeCombat + RewardLedger in the browser). P15 must move online-critical combat/boss/reward authority server-side behind the `coop` flag WITHOUT breaking the offline deterministic single-player path (constitution rule 9).
 
