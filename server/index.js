@@ -243,9 +243,111 @@ class DungeonRoom extends Room {
   }
 }
 
+// ---------------------------------------------------------------- Co-op battle (Phase 15): SERVER AUTHORITY
+// Faithful JS mirror of app/data/coop/authority.ts (the tested spec). The server owns shared-encounter HP,
+// clamps + accumulates validated damage (no lone one-shot), and grants each PARTICIPANT its reward exactly
+// once (no duplication, reconnect-safe). Inert until a client joins 'coopbattle' — dormant behind the
+// client's COOP_ENABLED flag, so offline single-player is untouched. NOTE: pending live-server verification;
+// the authority PROPERTIES are proven headless in test/coop.spec.ts.
+const COOP_MAX_HIT_FRACTION = 0.5
+
+class CoopEncSchema extends Schema {}
+defineTypes(CoopEncSchema, { id: 'string', hp: 'number', maxHp: 'number', alive: 'boolean', phase: 'number' })
+
+class CoopBattleState extends Schema {
+  constructor() {
+    super()
+    this.players = new MapSchema()
+    this.encounters = new MapSchema()
+  }
+}
+defineTypes(CoopBattleState, { players: { map: PlayerState }, encounters: { map: CoopEncSchema } })
+
+class CoopBattleRoom extends Room {
+  onCreate() {
+    this.maxClients = 4
+    this.setState(new CoopBattleState())
+    this.setPatchRate(50)
+    this.seeded = false
+    this.participants = new Map() // encId -> Set(sessionId) who dealt damage
+    this.claimed = new Set()      // `${encId}::${sessionId}` — reward paid (persists across reconnect)
+    this.rewards = new Map()      // encId -> { exp, gold, gems }
+
+    this.onMessage('coop:seed', (client, list) => {
+      if (this.seeded || !Array.isArray(list)) return
+      this.seeded = true
+      for (const e of list.slice(0, 20)) {
+        const s = new CoopEncSchema()
+        s.id = String(e.id)
+        s.maxHp = Math.max(1, Math.round(Number(e.maxHp) || 100))
+        s.hp = s.maxHp
+        s.alive = true
+        s.phase = 1
+        this.state.encounters.set(s.id, s)
+        this.participants.set(s.id, new Set())
+        this.rewards.set(s.id, { exp: Number(e.exp) || 0, gold: Number(e.gold) || 0, gems: Number(e.gems) || 0 })
+      }
+    })
+
+    // authoritative damage: clamp one hit to 50% of maxHp (no lone one-shot), accumulate, derive phase
+    this.onMessage('coop:damage', (client, data) => {
+      const enc = this.state.encounters.get(String(data && data.id))
+      if (!enc || !enc.alive) return
+      const cap = Math.max(1, Math.round(enc.maxHp * COOP_MAX_HIT_FRACTION))
+      const applied = Math.max(0, Math.min(cap, Math.round(Number(data.amount) || 0)))
+      this.participants.get(enc.id)?.add(client.sessionId)
+      enc.hp = Math.max(0, enc.hp - applied)
+      if (enc.hp <= 0) enc.alive = false
+      const frac = enc.hp / Math.max(1, enc.maxHp)
+      enc.phase = frac <= 0.35 ? 3 : frac <= 0.70 ? 2 : 1
+    })
+
+    // authoritative reward: only after server-confirmed death, only participants, exactly once each
+    this.onMessage('coop:claim', (client, data) => {
+      const enc = this.state.encounters.get(String(data && data.id))
+      if (!enc || enc.alive) return // can't claim victory while the server says alive
+      const parts = this.participants.get(enc.id)
+      if (!parts || !parts.has(client.sessionId)) return // non-participant
+      const key = `${enc.id}::${client.sessionId}`
+      if (this.claimed.has(key)) return // already paid — no duplication / reconnect-safe
+      this.claimed.add(key)
+      const r = this.rewards.get(enc.id) || { exp: 0, gold: 0, gems: 0 }
+      client.send('coop:reward', { id: enc.id, ...r })
+    })
+
+    this.onMessage('move', (client, data) => {
+      const p = this.state.players.get(client.sessionId)
+      if (!p || typeof data !== 'object' || !data) return
+      p.x = Number(data.x) || p.x
+      p.y = Number(data.y) || p.y
+      p.facing = FACINGS.includes(data.facing) ? data.facing : p.facing
+      p.moving = !!data.moving
+    })
+  }
+
+  onJoin(client, options = {}) {
+    const p = new PlayerState()
+    p.x = Number(options.x) || 64
+    p.y = Number(options.y) || 64
+    p.facing = 'down'
+    p.moving = false
+    p.status = 'battle'
+    p.name = String(options.name || 'Hero').slice(0, 18)
+    p.classId = ['warrior', 'mage', 'archer', 'guardian'].includes(options.classId) ? options.classId : 'warrior'
+    p.gender = options.gender === 'female' ? 'female' : 'male'
+    this.state.players.set(client.sessionId, p)
+  }
+
+  onLeave(client) {
+    // reconnect-safe: keep participants + claimed so a returning player can't re-claim; drop only presence
+    this.state.players.delete(client.sessionId)
+  }
+}
+
 const gameServer = new Server()
 gameServer.define('town', TownRoom)
 gameServer.define('dungeon', DungeonRoom).filterBy(['floor']) // จับกลุ่มห้องตามชั้นอัตโนมัติ
+gameServer.define('coopbattle', CoopBattleRoom) // Phase 15 (dormant until client COOP_ENABLED)
 gameServer.listen(PORT).then(() => {
   console.log(`SPIRAL'S ECHO server listening on ws://localhost:${PORT}`)
 })
