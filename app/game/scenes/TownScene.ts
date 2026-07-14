@@ -152,9 +152,13 @@ export class TownScene extends Phaser.Scene {
       if (!this.textures.exists(key)) continue // sprite missing ⇒ skip (never crash)
       const nx = u(npc.at[0])
       const ny = u(npc.at[1])
-      const spr = this.add.sprite(nx, ny, key, 0).setOrigin(0.5, 0.9).setScale(S * 1.7).setDepth(ny)
+      // scale each NPC to the shared hero display height (mirrors the player) so different frame heights
+      // (32px citizens vs the 52px mage) all render at a consistent, correct size — no bad crop/stretch
+      const scale = HERO_DISPLAY_H / npc.frameH
+      this.add.image(nx, ny + 4, 'shadow_blob').setDepth(ny - 1)
+      const spr = this.add.sprite(nx, ny, key, 0).setOrigin(0.5, 0.95).setScale(scale).setDepth(ny)
       this.tweens.add({ targets: spr, y: ny - 3, duration: 1400 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-      addPlaque(this, nx, ny - HERO_DISPLAY_H * 0.9, npc.name, { fontSize: '10px', depth: ny + 1, color: '#f2d98a' })
+      addPlaque(this, nx, ny - HERO_DISPLAY_H * 1.05, npc.name, { fontSize: '10px', depth: ny + 1, color: '#f2d98a' })
     }
 
     // ---- collision + interact จากตาราง ZONES ----
