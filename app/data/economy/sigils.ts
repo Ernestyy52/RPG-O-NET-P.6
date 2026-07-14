@@ -11,8 +11,9 @@
 // ================================================================================================
 import type { StatBlock, EquipmentSlot } from '~/data/equipment'
 
-/** Rollback flag (Phase 13). Dormant — sigils aren't socketed in the live store until World 1. */
-export const SIGILS_ENABLED = false
+/** Rollback flag (Phase 13 → Phase 14 flip #6). LIVE: sigils can be crafted + socketed into gear and
+ *  their bounded bonuses stack onto stats. Revert to false ⇒ sockets hidden, bonuses inert, data kept. */
+export const SIGILS_ENABLED = true
 
 /** Max sigils socketable into a single equipment piece. */
 export const SIGIL_SOCKET_CAP = 2

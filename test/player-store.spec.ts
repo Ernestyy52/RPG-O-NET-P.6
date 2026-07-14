@@ -99,6 +99,83 @@ describe('player store — item transactions', () => {
   })
 })
 
+describe('player store — sigils (flip #6)', () => {
+  it('crafts a sigil deterministically: deducts gold + materials, adds the sigil to the bag', () => {
+    const p = freshWarrior()
+    p.gold = 100
+    p.inventory.slime_gel = 5
+    expect(p.craftSigil('sigil_might_t1')).toBe(true) // cost: 20g + 1 slime_gel
+    expect(p.inventory.sigil_might_t1).toBe(1)
+    expect(p.gold).toBe(100 - 20)
+    expect(p.inventory.slime_gel).toBe(4)
+  })
+
+  it('refuses to craft without the materials (no negative inventory)', () => {
+    const p = freshWarrior()
+    p.gold = 100
+    p.inventory.slime_gel = 0
+    expect(p.craftSigil('sigil_might_t1')).toBe(false)
+    expect(p.inventory.sigil_might_t1 ?? 0).toBe(0)
+    expect(p.gold).toBe(100) // untouched
+  })
+
+  it('socketing a Might sigil into equipped gear raises ATK and consumes the bag copy', () => {
+    const p = freshWarrior()
+    p.equipment.weapon = 'test_weapon'
+    p.inventory.sigil_might_t1 = 1
+    const atkBefore = p.atk
+    expect(p.socketEquipmentSigil('weapon', 'sigil_might_t1')).toBe(true)
+    expect(p.socketedSigils.weapon).toEqual(['sigil_might_t1'])
+    expect(p.inventory.sigil_might_t1).toBe(0)
+    expect(p.atk).toBe(atkBefore + 2) // might t1 = +2 atk
+  })
+
+  it('will not socket into an empty slot', () => {
+    const p = freshWarrior()
+    p.inventory.sigil_might_t1 = 1
+    expect(p.socketEquipmentSigil('weapon', 'sigil_might_t1')).toBe(false) // no weapon equipped
+    expect(p.inventory.sigil_might_t1).toBe(1) // not consumed
+  })
+
+  it('enforces the socket cap and rejects duplicates', () => {
+    const p = freshWarrior()
+    p.equipment.weapon = 'test_weapon'
+    p.inventory.sigil_might_t1 = 1
+    p.inventory.sigil_ward_t1 = 1
+    p.inventory.sigil_vigor_t1 = 1
+    expect(p.socketEquipmentSigil('weapon', 'sigil_might_t1')).toBe(true)
+    expect(p.socketEquipmentSigil('weapon', 'sigil_ward_t1')).toBe(true)
+    expect(p.socketEquipmentSigil('weapon', 'sigil_vigor_t1')).toBe(false) // cap 2 reached
+    expect(p.socketedSigils.weapon?.length).toBe(2)
+    expect(p.inventory.sigil_vigor_t1).toBe(1) // rejected copy stays in the bag
+  })
+
+  it('unsocketing returns the sigil to the bag and removes its bonus (reversible)', () => {
+    const p = freshWarrior()
+    p.equipment.weapon = 'test_weapon'
+    p.inventory.sigil_might_t1 = 1
+    const atkBefore = p.atk
+    p.socketEquipmentSigil('weapon', 'sigil_might_t1')
+    expect(p.unsocketEquipmentSigil('weapon', 'sigil_might_t1')).toBe(true)
+    expect(p.inventory.sigil_might_t1).toBe(1)
+    expect(p.socketedSigils.weapon).toEqual([])
+    expect(p.atk).toBe(atkBefore) // bonus gone
+  })
+
+  it('a Vigor sigil raises maxHp and hp stays clamped when it is removed', () => {
+    const p = freshWarrior()
+    p.equipment.armor = 'test_armor'
+    p.inventory.sigil_vigor_t1 = 1
+    const maxBefore = p.maxHp
+    p.socketEquipmentSigil('armor', 'sigil_vigor_t1')
+    expect(p.maxHp).toBe(maxBefore + 4) // vigor t1 = +4 hp
+    p.hp = p.maxHp
+    p.unsocketEquipmentSigil('armor', 'sigil_vigor_t1')
+    expect(p.maxHp).toBe(maxBefore)
+    expect(p.hp).toBeLessThanOrEqual(p.maxHp) // re-clamped, no overflow
+  })
+})
+
 describe('player store — daily quest transitions', () => {
   it('rolls 3 quests, progresses, and claims exactly once', () => {
     const p = freshWarrior()
