@@ -216,6 +216,20 @@ describe('player store — World-1 main quest (Inc 4 infra)', () => {
     const p = freshWarrior()
     expect(p.claimSideQuest('sq_deep_hunt')).toBe(false) // needs 10 defeats
   })
+
+  it('discovering a secret grants its reward once and completes the matching find-secret quest', () => {
+    const p = freshWarrior()
+    const gold0 = p.gold
+    expect(p.discoverSecret('w1-main-chest')).toBe(true)
+    expect(p.secretsFound).toContain('w1-main-chest')
+    expect(p.gold).toBe(gold0 + 80) // w1-main-chest gold reward
+    expect(p.inventory.potion_m).toBe(1) // item reward granted
+    // the find-secret side quest for this secret is now complete
+    const tq = p.sideQuests.find((s) => s.quest.id === 'sq_treasure_hunter')!
+    expect(tq.done).toBe(true)
+    // re-discovering is a no-op (no double reward)
+    expect(p.discoverSecret('w1-main-chest')).toBe(false)
+  })
 })
 
 describe('player store — daily quest transitions', () => {

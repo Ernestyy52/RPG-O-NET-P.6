@@ -16,6 +16,7 @@ import {
 import {
   WORLD1_SIDE_QUESTS, advanceSideQuest, isSideQuestDone, sideQuestTarget, getSideQuest,
 } from '~/data/world1/sideQuests'
+import { getWorld1Secret } from '~/data/world1/secrets'
 
 export type GenderId = 'male' | 'female'
 
@@ -49,6 +50,8 @@ interface PlayerState {
   /** World-1 side-quest progress (id → count) + claimed ids (Phase 14 Inc 4). Additive; empty defaults. */
   sideQuestProgress: Record<string, number>
   sideQuestClaimed: string[]
+  /** World-1 secrets discovered (Phase 14 Inc 4). Additive; empty default. */
+  secretsFound: string[]
   correctAnswers: number
   adventureLog: string[]
   dailyDate: string
@@ -88,6 +91,7 @@ export const usePlayerStore = defineStore('player', {
     mainQuest: { ...INITIAL_MAIN_QUEST_STATE },
     sideQuestProgress: {},
     sideQuestClaimed: [],
+    secretsFound: [],
     correctAnswers: 0,
     adventureLog: [],
     dailyDate: '',
@@ -178,6 +182,7 @@ export const usePlayerStore = defineStore('player', {
       this.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
       this.sideQuestProgress = {}
       this.sideQuestClaimed = []
+      this.secretsFound = []
       this.correctAnswers = 0
       this.adventureLog = []
       this.dailyDate = ''
@@ -287,6 +292,19 @@ export const usePlayerStore = defineStore('player', {
       this.sideQuestClaimed.push(id)
       this.gainRewards(q.reward.exp, q.reward.gold, q.reward.gems)
       this.addLog(`Side quest complete: "${q.title}" (+${q.reward.gold}g${q.reward.gems ? `, +${q.reward.gems} gems` : ''}, +${q.reward.exp} EXP)`)
+      return true
+    },
+    // Discover a World-1 secret (Inc 4): grants its bounded reward ONCE and fires a find-secret quest
+    // event. Double-guarded (scene + store) so overlap re-triggers can't duplicate the reward.
+    discoverSecret(id: string) {
+      if (this.secretsFound.includes(id)) return false
+      const secret = getWorld1Secret(id)
+      if (!secret) return false
+      this.secretsFound.push(id)
+      this.gainRewards(secret.reward.exp, secret.reward.gold, secret.reward.gems)
+      if (secret.reward.itemId) this.addItem(secret.reward.itemId, secret.reward.qty ?? 1)
+      this.dispatchQuestEvent({ type: 'find-secret', secretId: id })
+      this.addLog(`Secret found: "${secret.name}"! (+${secret.reward.gold}g${secret.reward.gems ? `, +${secret.reward.gems} gems` : ''}, +${secret.reward.exp} EXP)`)
       return true
     },
     buyItem(itemId: string) {
@@ -404,6 +422,7 @@ export const usePlayerStore = defineStore('player', {
       if (!store.mainQuest) store.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
       if (!store.sideQuestProgress) store.sideQuestProgress = {}
       if (!store.sideQuestClaimed) store.sideQuestClaimed = []
+      if (!store.secretsFound) store.secretsFound = []
       store.mp = Math.min(store.mp, store.maxMp)
       store.hp = Math.min(store.hp, store.maxHp)
     },

@@ -308,6 +308,7 @@ gameEvents.on('battle:end', ({ won, isBoss }) => {
 })
 gameEvents.on('dungeon:enter', ({ layoutId }) => { player.dispatchQuestEvent({ type: 'enter-dungeon', layoutId }); savePlayer({ ...player.$state }) })
 gameEvents.on('dungeon:clear', ({ layoutId }) => { player.dispatchQuestEvent({ type: 'clear-dungeon', layoutId }); savePlayer({ ...player.$state }) })
+gameEvents.on('secret:found', ({ id }) => { if (player.discoverSecret(id)) { showNotice('✨ Secret discovered!'); savePlayer({ ...player.$state }) } })
 
 function showNotice(text: string) {
   notice.value = text

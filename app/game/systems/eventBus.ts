@@ -25,6 +25,7 @@ type Events = {
   // Phase 14 Inc 4: World-1 dungeon lifecycle → bridged to the main-quest reducer in index.vue
   'dungeon:enter': { layoutId: 'world01-mini' | 'world01-main' }
   'dungeon:clear': { layoutId: 'world01-mini' | 'world01-main' }
+  'secret:found': { id: string }
   'boss:gate': { floor: number }        // เดินชนประตูห้องบอส → เปิดกล่องแสดงเงื่อนไข
   'boss:enter': void                     // เงื่อนไขครบ + กดเข้า → โหลดห้องบอสเดี่ยว
   'notice': { text: string }

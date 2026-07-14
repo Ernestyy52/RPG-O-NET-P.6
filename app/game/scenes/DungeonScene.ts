@@ -57,6 +57,7 @@ export class DungeonScene extends Phaser.Scene {
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private enteredAt = 0
   private exitArmed = false
+  private foundSecrets = new Set<string>()
   private activeMonster?: Phaser.Physics.Arcade.Sprite
 
   constructor() {
@@ -176,6 +177,24 @@ export class DungeonScene extends Phaser.Scene {
       const gate = this.physics.add.staticImage(gx, gy, 'boss_door_locked').setOrigin(0.5, 0.7).setDepth(gy)
       addPlaque(this, gx, gy + 14, 'Boss Gate', { fontSize: '10px', depth: gy + 1 })
       this.physics.add.overlap(this.player, gate, () => this.tryBossGate())
+    }
+
+    // ---- hidden secrets (Inc 4): a faint glow marks each; overlapping it once reveals the reward ----
+    this.foundSecrets = new Set<string>()
+    for (const s of this.layout.secrets) {
+      const sx = s.at.x * TILE + TILE / 2
+      const sy = s.at.y * TILE + TILE / 2
+      const marker = this.add.circle(sx, sy, TILE * 0.34, 0xffe08a, 0.45).setDepth(sy)
+      this.tweens.add({ targets: marker, alpha: 0.14, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      const zone = this.add.zone(sx, sy, TILE * 1.2, TILE * 1.2)
+      this.physics.add.existing(zone, true)
+      this.physics.add.overlap(this.player, zone, () => {
+        if (this.foundSecrets.has(s.id)) return
+        this.foundSecrets.add(s.id)
+        marker.setFillStyle(0x6ee7a0, 0.7)
+        this.tweens.add({ targets: marker, scale: 1.6, alpha: 0, duration: 500 })
+        gameEvents.emit('secret:found', { id: s.id })
+      })
     }
 
     this.cursors = this.input.keyboard!.createCursorKeys()

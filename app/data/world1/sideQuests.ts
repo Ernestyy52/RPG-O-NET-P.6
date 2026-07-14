@@ -77,6 +77,12 @@ export const WORLD1_SIDE_QUESTS: SideQuest[] = [
     summary: 'Reach Floor 7 to prove your steady climb through the Verdant world.',
     trigger: { kind: 'reach-floor', floor: 7 }, reward: { exp: 85, gold: 50, gems: 0 },
   },
+  {
+    id: 'sq_treasure_hunter', npc: 'portal_guardian', kind: 'explore',
+    title: 'Treasure Hunter', titleTh: 'นักล่าสมบัติ',
+    summary: 'Rumor tells of a buried chest in the Colossus approach. Find it.',
+    trigger: { kind: 'find-secret', secretId: 'w1-main-chest' }, reward: { exp: 75, gold: 60, gems: 1 },
+  },
 ]
 
 /** Advance one side quest's progress by an event. Returns the new (capped) progress; unrelated ⇒ unchanged. */
