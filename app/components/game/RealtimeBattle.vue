@@ -3,6 +3,21 @@
        visible ABOVE this panel, unlike the full-screen turn-based BattleModal. Dormant until
        REALTIME_COMBAT_ENABLED — the battle:start handler early-returns while the flag is false, so the
        live path is byte-identical and this component never mounts any combat. -->
+  <!-- Knowledge Break: a centered interrupt that pauses the fight for one reviewed question. Shown
+       only while a break is open (KNOWLEDGE_BREAK_ENABLED gates whether one ever opens). -->
+  <div v-if="active && breakOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
+    <div class="pixel-window w-full max-w-lg">
+      <div class="pixel-titlebar"><h2 class="gold-text text-base font-bold">📖 Knowledge Break</h2><span class="text-xs opacity-75">{{ breakQuestion.cefr }}</span></div>
+      <div class="pixel-window-body p-4">
+        <p class="mb-3 text-sm">The monster's assault pauses — answer to empower your hero. (A wrong answer only costs your combo, never HP.)</p>
+        <p class="mb-3 font-medium">{{ breakQuestion.prompt }}</p>
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button v-for="(choice, i) in breakQuestion.choices" :key="i" class="btn-secondary text-left text-sm" @click="answerBreak(i)">{{ choice }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div v-if="active" class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center p-2 sm:p-3">
     <div class="pointer-events-auto pixel-window w-full max-w-3xl">
       <div class="pixel-titlebar gap-3">
@@ -41,7 +56,7 @@
         <!-- question: answering correct auto-attacks + builds combo/MP; wrong resets combo -->
         <p class="text-sm opacity-80">{{ question.prompt }}</p>
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <button v-for="(choice, i) in question.choices" :key="i" class="btn-secondary text-left text-sm disabled:opacity-50" :disabled="answerLock" @click="answer(i)">
+          <button v-for="(choice, i) in question.choices" :key="i" class="btn-secondary text-left text-sm disabled:opacity-50" :disabled="answerLock || breakOpen" @click="answer(i)">
             {{ choice }}
           </button>
         </div>
@@ -73,10 +88,16 @@ import {
   escapeChance, gemsForEncounter, setupEncounter, supportHeal, REALTIME_SKILL_TIMINGS,
   MYCO_COLOSSUS_PHASES, initBossPhaseState, advanceBossPhase, bossPhaseSpec, type BossPhaseState,
 } from '~/data/combat'
+import { KNOWLEDGE_BREAK_ENABLED, KnowledgeBreakController } from '~/data/learning/knowledgeBreak'
+import { CURRICULUM_QUESTIONS } from '~/data/curriculum/adapter'
+import { mulberry32, seedFromString } from '~/data/learning/rng'
+import type { CurriculumQuestion } from '~/data/curriculum/schema'
 import { usePlayerStore } from '~/stores/player'
+import { useLearningStore } from '~/stores/learning'
 
 const runtimeConfig = useRuntimeConfig()
 const player = usePlayerStore()
+const learning = useLearningStore()
 
 const active = ref(false)
 const floor = ref(1)
@@ -111,6 +132,16 @@ const mpPct = computed(() => clampPct(mp.value, maxMp.value))
 const monsterHpPct = computed(() => clampPct(monsterHp.value, monster.maxHp))
 const hasPotion = computed(() => (player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0)
 const phaseCss = computed(() => `#${phaseTint.value.toString(16).padStart(6, '0')}`)
+
+// ---- Knowledge Break (Phase 10 → flip #4): occasionally interrupts the fight with one reviewed
+// question that pauses the monster assault, feeds mastery, and empowers the hero. All gated by
+// KNOWLEDGE_BREAK_ENABLED — dormant flag ⇒ no controller is created and the realtime path is unchanged.
+const breakOpen = ref(false)
+const breakQuestion = reactive<CurriculumQuestion>({ id: '', category: 'vocabulary', cefr: 'Pre-A1', difficulty: 1, prompt: '', choices: [], answerIndex: 0, status: 'reviewed', provenance: { source: 'legacy-questions.json' }, subskillId: '' })
+let breakCtl: KnowledgeBreakController | null = null
+let masteryBefore: Record<string, import('~/data/learning/mastery').SubskillMastery> = {}
+let breakRng: (() => number) | null = null
+let breakOpenedAt = 0
 
 const rewardLedger = new RewardLedger()
 let combat: RealtimeCombat | null = null
@@ -183,6 +214,16 @@ gameEvents.on('battle:start', (payload) => {
   telegraphFired = false
   prevMonsterTimer = combat.state.monsterAttackTimer
 
+  // Knowledge Break: fresh controller + a mastery snapshot to diff against at fight end
+  breakOpen.value = false
+  if (KNOWLEDGE_BREAK_ENABLED) {
+    breakCtl = new KnowledgeBreakController()
+    masteryBefore = { ...learning.mastery }
+    breakRng = mulberry32(seedFromString(encounterId))
+  } else {
+    breakCtl = null
+  }
+
   syncFromEngine()
   loadQuestion()
   answerLock.value = false
@@ -202,6 +243,11 @@ function frame(ts: number) {
 
 function step(dt: number) {
   if (!combat) return
+  // a Knowledge Break freezes the monster assault while the question is open (a wrong answer can
+  // never be lethal by itself) — skip the combat tick entirely until it resolves.
+  if (breakOpen.value) { syncFromEngine(); return }
+  if (breakCtl && !combat.state.over) maybeOpenBreak()
+  if (breakOpen.value) { syncFromEngine(); return }
   const events = combat.tick(dt)
   for (const ev of events) {
     if (ev.type === 'monster-attack') { pulseMonster(); log.value = `The enemy hits for ${ev.damage}.` }
@@ -258,7 +304,7 @@ function answer(index: number) {
   setTimeout(() => { if (!active.value) return; loadQuestion(); answerLock.value = false }, 450)
 }
 
-function canUse(skill: RealtimeSkillId) { return !!combat && !combat.state.over && combat.canAttack(skill) }
+function canUse(skill: RealtimeSkillId) { return !!combat && !combat.state.over && !breakOpen.value && combat.canAttack(skill) }
 function cdPct(skill: RealtimeSkillId) { return Math.round((cd[skill] / REALTIME_SKILL_TIMINGS[skill].cooldownMs) * 100) }
 
 function useSkill(skill: RealtimeSkillId) {
@@ -275,9 +321,37 @@ function useSkill(skill: RealtimeSkillId) {
 function applyOutcome(outcome: ReturnType<RealtimeCombat['requestAttack']>) {
   if (!combat) return
   for (const ev of outcome.events) {
-    if (ev.type === 'hero-attack' || ev.type === 'hero-counter') pulseMonster()
+    if (ev.type === 'hero-attack' || ev.type === 'hero-counter') {
+      pulseMonster()
+      breakCtl?.registerHeroAttack() // count landed hero attacks toward the next Knowledge Break
+    }
   }
   if (combat.state.over) endBattle(combat.state.won)
+}
+
+/** Open a Knowledge Break when the cadence allows and a reviewed question is selectable. */
+function maybeOpenBreak() {
+  if (!breakCtl || !breakRng) return
+  const now = Date.now()
+  if (!breakCtl.breakReady(now)) return
+  const opened = breakCtl.open({ now, pool: CURRICULUM_QUESTIONS, mastery: masteryBefore, rng: breakRng })
+  if (!opened) return // no-question fallback: combat simply continues
+  Object.assign(breakQuestion, opened.question)
+  breakOpen.value = true
+  breakOpenedAt = now
+  log.value = 'Knowledge Break! Answer to empower your hero.'
+}
+
+/** Resolve the open break: feeds mastery (for the end-of-fight summary) and applies a NON-lethal
+ *  combat effect (empower = combo+MP, combo-lost = combo reset). Never touches HP. */
+function answerBreak(index: number) {
+  if (!breakCtl || !combat || !breakOpen.value) return
+  const res = breakCtl.resolve(index, { now: Date.now(), responseMs: Date.now() - breakOpenedAt })
+  breakOpen.value = false
+  if (!res) return
+  if (res.effect === 'empower') { player.recordCorrectAnswer(); combat.registerAnswer(true); log.value = 'Correct! Your resolve empowers the next strikes.' }
+  else { combat.registerAnswer(false); log.value = 'Not quite — your combo fades, but you stand firm.' }
+  syncFromEngine()
 }
 
 function usePotion() {
@@ -292,10 +366,11 @@ function usePotion() {
 }
 
 function escape() {
-  if (!combat || isBoss.value) return
+  if (!combat || isBoss.value || breakOpen.value) return
   // fleeing keeps the damage already taken this fight (engine → store), then ends with no reward
   player.hp = Math.max(0, Math.round(combat.state.heroHp))
   player.mp = Math.min(player.maxMp, Math.round(combat.state.mp))
+  produceLearningSummary()
   finish(Math.random() < escapeChance(player.speed) ? false : true)
 }
 
@@ -304,9 +379,20 @@ function endBattle(won: boolean) {
   // engine is authoritative for hero HP/MP during the fight → write results back to the store once
   player.hp = Math.max(0, Math.round(combat.state.heroHp))
   player.mp = Math.min(player.maxMp, Math.round(combat.state.mp))
+  produceLearningSummary()
   if (won) grantVictoryRewards()
   else player.addLog(`Knocked out by ${monster.name} on Floor ${floor.value}.`)
   finish(won)
+}
+
+/** Fold this fight's Knowledge-Break answers into mastery + a session summary, persist them, and
+ *  surface a short notice (the "learning summary produced" gate item). No-op when no break answered. */
+function produceLearningSummary() {
+  if (!breakCtl || breakCtl.answeredCount === 0) return
+  const { summary, masteryAfter } = breakCtl.summarize(masteryBefore, Date.now())
+  learning.applySessionResult(masteryAfter, summary)
+  const acc = Math.round(summary.accuracy * 100)
+  gameEvents.emit('notice', { text: `Learning summary: ${summary.totalCorrect}/${summary.totalAnswered} correct (${acc}%). ${summary.recommendations[0] ?? ''}`.trim() })
 }
 
 /** Mirror of BattleModal.winBattle — same idempotent, validated reward path (constitution rule 3). */
@@ -332,6 +418,9 @@ function finish(won: boolean) {
   if (raf) cancelAnimationFrame(raf)
   raf = 0
   active.value = false
+  breakCtl?.cancel(Date.now()) // safe teardown: clear any open break without recording an answer
+  breakOpen.value = false
+  breakCtl = null
   const wasBoss = isBoss.value
   combat = null
   bossState = null
