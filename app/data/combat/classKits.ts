@@ -119,6 +119,47 @@ export interface KitProfile {
   sustain: number
 }
 
+// ------------------------------------------------------------------------------------------------
+// Real-time HUD slot mapping (Phase 14, flip #5 — DORMANT until CLASS_KITS_ENABLED)
+//
+// The action-lite HUD (RealtimeBattle) and the turn-based BattleModal both expose three action slots:
+// attack / counter / support. A kit has three abilities, but they don't line up 1:1 with those slots
+// by KIND (notably guardian is strike+guard+counter with no heal/rally). This resolver maps a kit onto
+// the three slots by ROLE, so every current class fills all three slots from DISTINCT abilities and no
+// generic filler is needed:
+//   • attack  = the class's strike (its damage identity)
+//   • counter = its counter if it has one, else its guard  (the defensive/retaliation role)
+//   • support = its heal or rally if it has one, else its *other* (still-unused) guard  (sustain/utility)
+// Guardian therefore uses Retribution (counter) in the counter slot and Fortress (guard) in the support
+// slot — no ability is dropped. Purely data; nothing consumes this until the engine/component wiring
+// lands behind the flag. See docs/execution/DECISION_LOG.md D-017.
+// ------------------------------------------------------------------------------------------------
+
+export type RealtimeSlotId = 'attack' | 'counter' | 'support'
+
+/** The kit ability bound to each real-time HUD slot for a class. */
+export type KitSlotMapping = Record<RealtimeSlotId, KitAbility>
+
+/**
+ * Map a class kit onto the three HUD slots by role (see block comment). Deterministic; for every kit in
+ * CLASS_KITS the three slots resolve to three distinct abilities.
+ */
+export function kitSlotMapping(classId: HeroClassId): KitSlotMapping {
+  const abilities = getClassKit(classId).abilities
+  const first = (pred: (a: KitAbility) => boolean) => abilities.find(pred)
+
+  const attack = first((a) => a.kind === 'strike') ?? abilities[0]
+  const counter = first((a) => a.kind === 'counter') ?? first((a) => a.kind === 'guard') ?? attack
+  const support =
+    first((a) => a.kind === 'heal') ??
+    first((a) => a.kind === 'rally') ??
+    first((a) => a.kind === 'guard' && a.id !== counter.id) ??
+    first((a) => a.id !== attack.id && a.id !== counter.id) ??
+    counter
+
+  return { attack, counter, support }
+}
+
 /** Mechanical profile of a kit across the three balance axes. Derived purely from ability fields. */
 export function kitProfile(classId: HeroClassId): KitProfile {
   let dps = 0
