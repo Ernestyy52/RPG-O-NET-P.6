@@ -12,7 +12,7 @@
 // ================================================================================================
 
 /** Rollback flag for the engine-driven turn loop in BattleModal. Legacy path stays authoritative until true. */
-export const COMBAT_DOMAIN_ENABLED = false
+export const COMBAT_DOMAIN_ENABLED = true
 
 /**
  * Rollback flag for the real-time action-lite combat loop (Phase 09). Dormant — the turn-based
