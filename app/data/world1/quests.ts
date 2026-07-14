@@ -66,9 +66,9 @@ export const WORLD1_MAIN_QUEST: QuestStep[] = [
     reward: { exp: 55, gold: 35, gems: 0 },
   },
   {
-    id: 'w1_hidden_clearing', title: 'The Hidden Clearing', titleTh: 'ที่โล่งลับ',
-    summary: 'A ranger mentions a secret clearing off the main path. Find it.',
-    giver: 'forest_ranger', trigger: { kind: 'find-secret', secretId: 'w1_field_clearing' },
+    id: 'w1_grotto_path', title: 'The Grotto Path', titleTh: 'เส้นทางสู่ถ้ำ',
+    summary: 'The ranger points you onward. Climb to Floor 5, where a cave waits.',
+    giver: 'forest_ranger', trigger: { kind: 'reach-floor', floor: 5 },
     reward: { exp: 60, gold: 40, gems: 1 },
   },
   {

@@ -287,16 +287,27 @@ function finishCharacter() { player.createCharacter({ ...draft }); savePlayer({ 
 gameEvents.on('floor:advance', () => {
   player.advanceFloor()
   player.addLog(`Advanced to Floor ${player.currentFloor}.`)
+  player.dispatchQuestEvent({ type: 'reach-floor', floor: player.currentFloor })
   savePlayer({ ...player.$state })
 })
 gameEvents.on('town:hospital', () => { player.hospital(); showNotice('Hospital: HP fully restored.') })
 gameEvents.on('town:item-shop', () => { itemShopOpen.value = true })
 gameEvents.on('town:equipment-shop', () => { equipShopOpen.value = true })
-gameEvents.on('town:guild', () => { guildOpen.value = true })
-gameEvents.on('town:portal', (payload) => { portalFloor.value = payload.floor; portalOpen.value = true })
+gameEvents.on('town:guild', () => { guildOpen.value = true; player.dispatchQuestEvent({ type: 'talk-npc', npcId: 'guildmaster' }); savePlayer({ ...player.$state }) })
+gameEvents.on('town:portal', (payload) => { portalFloor.value = payload.floor; portalOpen.value = true; player.dispatchQuestEvent({ type: 'talk-npc', npcId: 'portal_guardian' }); savePlayer({ ...player.$state }) })
 gameEvents.on('boss:gate', (payload) => { bossGateFloor.value = payload.floor; bossGateOpen.value = true })
 gameEvents.on('boss:enter', () => { bossGateOpen.value = false })
 gameEvents.on('notice', (payload) => showNotice(payload.text))
+
+// Inc 4: bridge World-1 combat/dungeon signals into the main-quest reducer (rewards granted once).
+gameEvents.on('battle:end', ({ won, isBoss }) => {
+  if (!won) return
+  if (isBoss && player.currentFloor === 10) player.dispatchQuestEvent({ type: 'defeat-boss', bossId: 'myco_colossus' })
+  else if (!isBoss) player.dispatchQuestEvent({ type: 'defeat-monster' })
+  savePlayer({ ...player.$state })
+})
+gameEvents.on('dungeon:enter', ({ layoutId }) => { player.dispatchQuestEvent({ type: 'enter-dungeon', layoutId }); savePlayer({ ...player.$state }) })
+gameEvents.on('dungeon:clear', ({ layoutId }) => { player.dispatchQuestEvent({ type: 'clear-dungeon', layoutId }); savePlayer({ ...player.$state }) })
 
 function showNotice(text: string) {
   notice.value = text

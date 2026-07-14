@@ -81,7 +81,7 @@ describe('World-1 main quest — full playthrough', () => {
       { type: 'reach-floor', floor: 2 },
       { type: 'defeat-monster' }, { type: 'defeat-monster' }, { type: 'defeat-monster' },
       { type: 'answer-correct' }, { type: 'answer-correct' }, { type: 'answer-correct' }, { type: 'answer-correct' }, { type: 'answer-correct' },
-      { type: 'find-secret', secretId: 'w1_field_clearing' },
+      { type: 'reach-floor', floor: 5 },
       { type: 'enter-dungeon', layoutId: 'world01-mini' },
       { type: 'clear-dungeon', layoutId: 'world01-mini' },
       { type: 'talk-npc', npcId: 'portal_guardian' },

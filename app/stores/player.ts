@@ -240,6 +240,7 @@ export const usePlayerStore = defineStore('player', {
       // ตอบถูก = สมาธิกลับคืน เติม MP เล็กน้อย (ผูกความรู้เข้ากับทรัพยากรต่อสู้)
       this.mp = Math.min(this.maxMp, this.mp + 2)
       this.progressQuest('answer', 1)
+      this.dispatchQuestEvent({ type: 'answer-correct' })
     },
     // เรียกตอนล้มมอนสเตอร์ (จาก BattleModal) — นับความคืบหน้าเควส "defeat"
     recordDefeat() {
@@ -247,8 +248,8 @@ export const usePlayerStore = defineStore('player', {
     },
     // ---- World-1 main quest (Inc 4): advance the chain on a real event; grant the completed step's
     // reward EXACTLY once (the reducer only completes each step a single time — idempotent + replay-safe).
-    // Infrastructure is live + tested; the event HOOKS (combat/exploration/NPC/scene) + quest UI activate
-    // together in the next slice so the chain never surfaces half-progressable. ----
+    // Fed by: recordCorrectAnswer (answer), and index.vue bridges of floor:advance / battle:end /
+    // town:guild|portal / dungeon:enter|clear. QuestModal renders the active step + log. ----
     dispatchQuestEvent(event: QuestEvent) {
       const res = advanceMainQuest(this.mainQuest, event)
       this.mainQuest = res.state

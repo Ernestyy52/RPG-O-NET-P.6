@@ -22,6 +22,9 @@ type Events = {
   'town:guild': void
   'town:portal': { floor: number }
   'town:enter-dungeon': { floor: number }
+  // Phase 14 Inc 4: World-1 dungeon lifecycle → bridged to the main-quest reducer in index.vue
+  'dungeon:enter': { layoutId: 'world01-mini' | 'world01-main' }
+  'dungeon:clear': { layoutId: 'world01-mini' | 'world01-main' }
   'boss:gate': { floor: number }        // เดินชนประตูห้องบอส → เปิดกล่องแสดงเงื่อนไข
   'boss:enter': void                     // เงื่อนไขครบ + กดเข้า → โหลดห้องบอสเดี่ยว
   'notice': { text: string }

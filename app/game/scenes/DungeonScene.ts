@@ -206,6 +206,9 @@ export class DungeonScene extends Phaser.Scene {
 
     // world-state is read once for parity with other scenes (future ambience hooks)
     void getWorldState()
+
+    // Inc 4: main-quest signal — the hero has entered this dungeon (bridged to the quest reducer)
+    gameEvents.emit('dungeon:enter', { layoutId: this.layoutId })
   }
 
   private spawnMonsterSprite(slug: string, x: number, y: number, index: number): Phaser.Physics.Arcade.Sprite {
@@ -223,11 +226,15 @@ export class DungeonScene extends Phaser.Scene {
 
   private tryExit() {
     if (!this.exitArmed || this.inBattle) return
+    // reaching the exit means the hero traversed the dungeon → main-quest "clear" signal
+    gameEvents.emit('dungeon:clear', { layoutId: this.layoutId })
     this.scene.start('TowerScene', { floor: this.floor, classId: this.classId })
   }
 
   private tryBossGate() {
     if (this.inBattle) return
+    // reaching the boss gate clears the approach dungeon → main-quest "clear" signal
+    gameEvents.emit('dungeon:clear', { layoutId: this.layoutId })
     gameEvents.emit('boss:gate', { floor: this.floor })
   }
 
