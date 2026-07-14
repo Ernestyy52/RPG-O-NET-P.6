@@ -24,8 +24,9 @@ import { getSubskill, type OnetDomain } from '~/data/curriculum/taxonomy'
 import { mulberry32, seedFromString } from './rng'
 import { generateDailyPlan, type PlanInput, type DailyPlan } from './planner'
 
-/** Rollback flag (Phase 11). Dormant — no UI drives expeditions until World 1. */
-export const ADAPTIVE_EXPEDITIONS_ENABLED = false
+/** Rollback flag (Phase 11 → Phase 14 flip #7). LIVE: the Guild serves the day's adaptive expedition;
+ *  legacy daily quests remain the explicit fallback (no reviewed content ⇒ fallback:true). */
+export const ADAPTIVE_EXPEDITIONS_ENABLED = true
 
 export type ExpeditionObjectiveKind =
   | 'weak-skill-drill'
