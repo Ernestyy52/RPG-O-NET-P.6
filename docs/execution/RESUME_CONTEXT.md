@@ -3,8 +3,15 @@
 > Read this first when resuming in a new session. Verify repo state matches, then continue from "Next exact action".
 
 ## Exact phase and task
-- **Phase 14 — World 1 vertical slice** (next; depends 08–13; first big integration gate). See `docs/foundation/MIGRATION_SEQUENCE.md`.
-- Phases 00–13 complete and committed. Domains built + tested behind dormant flags: P07 combat (`app/data/combat/`, incl. `classKits.ts`), P08 zone runtime (`app/game/runtime/`), P09 `RealtimeCombat`, P10 `KnowledgeBreakController`, P11 expeditions (`app/data/learning/expedition.ts`), P12 class kits, P13 economy (`app/data/economy/` — currency/sigils/crafting/sim). Flags `COMBAT_DOMAIN_ENABLED` + `NEW_ZONE_RUNTIME_ENABLED` + `REALTIME_COMBAT_ENABLED` + `KNOWLEDGE_BREAK_ENABLED` + `ADAPTIVE_EXPEDITIONS_ENABLED` + `CLASS_KITS_ENABLED` + `SIGILS_ENABLED` all off/dormant. Save version now 4 (envelope still dormant, legacy `player` authoritative). **P14 is the integration gate: wire the dormant domains/runtime into a rendered World 1 scene, likely flip flags, and run a REAL in-browser smoke (walk + battle + boss + learning summary). Heavier + riskier than the pure-domain phases — expect game-page edits and manual verification.**
+- **Phase 15 — Safe co-op + server authority** (NEXT; depends 07/13/14; flag `coop`; preserve the offline deterministic path). See `docs/foundation/MIGRATION_SEQUENCE.md` row 16.
+- **Phases 00–14 PASSED + committed.** Phase 14 (World 1 vertical slice) closed 2026-07-15: all 7 domain flags LIVE on floors 1–10 (zone runtime, engine + real-time combat, Knowledge Break, class kits, sigils, adaptive expeditions), Myco Colossus 3-phase boss, 12-step main quest + 10 side quests + 3 secrets, curated Craftpix assets (NPCs, foliage/props/braziers, Forest Lizard). 261 tests, build exit 0. **Automatable gate rows green; human interactive playthrough waived for progression per user authorization** (still recommended pre-release).
+- **Starting point for P15:** existing Colyseus client `app/game/systems/net.ts` (147 LOC — `joinTown`/dungeon rooms, `sendStatus`, `RemotePlayers`); server lives under `server/` (Colyseus). Real-time combat + rewards are currently **client-resolved** (RealtimeCombat + RewardLedger in the browser). P15 must move online-critical combat/boss/reward authority server-side behind the `coop` flag WITHOUT breaking the offline deterministic single-player path (constitution rule 9).
+
+## Next exact action (Phase 15)
+1. Route: multiplayer-engineer (Opus 4.8) + game-architect (Fable 5) for the authority boundary; qa-release (Fable 5) review.
+2. Read `server/` + `net.ts` + `RealtimeBattle`/`DungeonScene` reward paths; map exactly which writes are online-critical (monster HP, boss phase, victory, reward claim) vs offline-safe.
+3. Design the `coop` flag: co-op session joins a server-authoritative room; the server owns boss phase + victory + reward validation (client can't claim victory alone; no reward duplication on reconnect). Offline (no `coop`) keeps the current deterministic client path byte-identical.
+4. Gate (P15): reconnect safe; boss synchronized across clients; no reward duplication; client can't claim victory alone; **offline still works** (the P14 slice unchanged with `coop` off).
 
 ## Completed work
 - Preflight: backup tag `backup/pre-transformation-20260712-162236`, integration branch `foundation/sgrade-full-transformation` (pushed, tracking origin).
