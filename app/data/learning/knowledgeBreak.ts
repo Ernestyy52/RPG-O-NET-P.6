@@ -25,7 +25,7 @@ import { summarizeSession, type AnswerRecord, type SessionSummary } from './summ
 import type { SubskillMastery } from './mastery'
 
 /** Rollback flag (Phase 10). Dormant — no rendered combat drives Knowledge Break until World 1. */
-export const KNOWLEDGE_BREAK_ENABLED = false
+export const KNOWLEDGE_BREAK_ENABLED = true
 
 export interface KnowledgeBreakConfig {
   /** open a break only after this many hero attacks — so NOT every hit triggers a question. */
