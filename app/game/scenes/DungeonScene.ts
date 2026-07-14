@@ -20,6 +20,8 @@ import {
 } from '../systems/textures'
 import { createIdleBreath, addPlaque } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
+import { WORLD1_BUSHES, pickDecorTiles } from '../../data/world1/decor'
+import { seedFromString } from '../../data/learning/rng'
 import {
   TILE,
   resolveMovement,
@@ -80,6 +82,10 @@ export class DungeonScene extends Phaser.Scene {
     }
     if (!this.textures.exists(DUNGEON_WALLS)) {
       this.load.spritesheet(DUNGEON_WALLS, assetPath('dungeon-assets/walls_floor.png'), { frameWidth: 16, frameHeight: 16 })
+    }
+    // Inc 4: verdant foliage decor (Craftpix bushes, curated into public/world1-props/)
+    for (const b of WORLD1_BUSHES) {
+      if (!this.textures.exists(b.key)) this.load.image(b.key, assetPath(b.sprite))
     }
     preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
   }
@@ -162,6 +168,17 @@ export class DungeonScene extends Phaser.Scene {
       addPlaque(this, m.x, m.y - 34, 'ELITE', { fontSize: '9px', depth: 100000, color: '#e3c9ff' })
     }
     this.physics.add.overlap(this.player, this.monsters, (_p, m) => this.onEncounterMonster(m as Phaser.Physics.Arcade.Sprite))
+
+    // ---- Inc 4: scatter verdant foliage on walkable floor (non-blocking, depth-sorted, deterministic) ----
+    const decorReserved = [this.layout.entry, this.layout.exit, ...this.layout.secrets.map((s) => s.at), ...this.layout.elites.map((e) => e.at)]
+    if (this.layout.bossGate) decorReserved.push(this.layout.bossGate)
+    for (const d of pickDecorTiles(this.layout.wallGrid, decorReserved, 7, seedFromString(`decor:${this.layoutId}`))) {
+      const bush = WORLD1_BUSHES[d.bush]
+      if (!this.textures.exists(bush.key)) continue
+      const px = d.x * TILE + TILE / 2
+      const py = d.y * TILE + TILE / 2
+      this.add.image(px, py + 4, bush.key).setOrigin(0.5, 0.85).setScale(30 / bush.h).setDepth(py - 1)
+    }
 
     // ---- exit stairs (returns to the owning tower floor) ----
     const exitX = this.layout.exit.x * TILE + TILE / 2
