@@ -4,6 +4,11 @@ import { getHeroClass, type HeroClassId } from '~/data/classes'
 import { findShopItem, getItemById, getEquipmentById, getRecipeByOutput, rarityColor, type EquipmentSlot, type Rarity } from '~/data/equipment'
 import { rollDailyQuests, type DailyQuest, type QuestKind } from '~/data/quests'
 import { SKILL_TREE, canLearnSkill } from '~/data/skills'
+import {
+  SIGILS_ENABLED, getSigil, totalSigilBonus,
+  socketSigil as socketSigilDomain, unsocketSigil as unsocketSigilDomain,
+  type SocketedSigils,
+} from '~/data/economy'
 
 export type GenderId = 'male' | 'female'
 
@@ -30,6 +35,8 @@ interface PlayerState {
   learnedSkills: string[]
   inventory: Record<string, number>
   equipment: Partial<Record<EquipmentSlot, string>>
+  /** sigils socketed per equipment slot (Phase 13 → flip #6). Additive; empty default, inert while SIGILS_ENABLED is off. */
+  socketedSigils: SocketedSigils
   correctAnswers: number
   adventureLog: string[]
   dailyDate: string
@@ -65,6 +72,7 @@ export const usePlayerStore = defineStore('player', {
     learnedSkills: [],
     inventory: { potion_s: 2 },
     equipment: {},
+    socketedSigils: {},
     correctAnswers: 0,
     adventureLog: [],
     dailyDate: '',
@@ -87,6 +95,8 @@ export const usePlayerStore = defineStore('player', {
         const item = getItemById(id)
         addStats(stats, item?.kind === 'equipment' ? item.stats : undefined)
       }
+      // Sigils (flip #6): socketed-sigil bonuses stack onto gear stats. Flag off ⇒ no-op (byte-identical).
+      if (SIGILS_ENABLED) addStats(stats, totalSigilBonus(state.socketedSigils))
       return {
         maxHp: Math.round(stats.hp),
         atk: Math.round(stats.atk),
@@ -141,6 +151,7 @@ export const usePlayerStore = defineStore('player', {
       this.learnedSkills = []
       this.inventory = { potion_s: 2 }
       this.equipment = {}
+      this.socketedSigils = {}
       this.correctAnswers = 0
       this.adventureLog = []
       this.dailyDate = ''
@@ -267,6 +278,39 @@ export const usePlayerStore = defineStore('player', {
       this.addLog(`Crafted ${output.name}.`)
       return true
     },
+    // ---- sigils (Phase 13 → flip #6): craft from materials+gold (deterministic, no gambling), socket
+    // into equipped gear for a bounded stat bonus. Guarded by SIGILS_ENABLED so it's inert while off. ----
+    craftSigil(sigilId: string) {
+      if (!SIGILS_ENABLED) return false
+      const sigil = getSigil(sigilId)
+      if (!sigil || this.gold < sigil.craftCost.gold) return false
+      for (const m of sigil.craftCost.materials) if ((this.inventory[m.id] ?? 0) < m.qty) return false
+      for (const m of sigil.craftCost.materials) this.inventory[m.id] -= m.qty
+      this.gold -= sigil.craftCost.gold
+      this.addItem(sigil.id, 1)
+      this.addLog(`Crafted ${sigil.name}.`)
+      return true
+    },
+    // socket a sigil from the inventory into an equipped slot (validated by the domain: cap + no dup).
+    socketEquipmentSigil(slot: EquipmentSlot, sigilId: string) {
+      if (!SIGILS_ENABLED || !this.equipment[slot] || (this.inventory[sigilId] ?? 0) < 1) return false
+      const res = socketSigilDomain(this.socketedSigils[slot] ?? [], sigilId)
+      if (!res.ok) return false
+      this.socketedSigils[slot] = res.socketed
+      this.inventory[sigilId] -= 1
+      if (this.hp > this.maxHp) this.hp = this.maxHp // vigor sigils raise maxHp; keep hp ≤ max
+      return true
+    },
+    // pull a socketed sigil back out — it returns to the inventory (reversible, no loss).
+    unsocketEquipmentSigil(slot: EquipmentSlot, sigilId: string) {
+      if (!SIGILS_ENABLED) return false
+      const current = this.socketedSigils[slot] ?? []
+      if (!current.includes(sigilId)) return false
+      this.socketedSigils[slot] = unsocketSigilDomain(current, sigilId)
+      this.addItem(sigilId, 1)
+      if (this.hp > this.maxHp) this.hp = this.maxHp // maxHp may drop when a vigor sigil leaves
+      return true
+    },
     // ---- daily quests ----
     ensureDailyQuests() {
       const today = todayKey()
@@ -300,6 +344,8 @@ export const usePlayerStore = defineStore('player', {
   persist: {
     // เซฟเก่าอาจมี mp เกิน maxMp ของคลาส (เช่น ค่า default 30 แต่ maxMp จริง 27) — clamp ตอนโหลด
     afterHydrate: ({ store }) => {
+      // additive migration: an old save has no socketedSigils — default it so the getter never reads undefined
+      if (!store.socketedSigils) store.socketedSigils = {}
       store.mp = Math.min(store.mp, store.maxMp)
       store.hp = Math.min(store.hp, store.maxHp)
     },
