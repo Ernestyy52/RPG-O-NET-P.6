@@ -10,8 +10,13 @@
 // consumed by TowerScene as the single source of truth for movement/spawn/encounter rules.
 // ================================================================================================
 
-/** Rollback flag: keep false until a rendered scene runs on ZoneRuntime and passes the World 1 gate. */
-export const NEW_ZONE_RUNTIME_ENABLED = false
+/**
+ * Phase 14 Inc 3b: ENABLED. Its only functional reader is the TowerScene dungeon-entry door, which is
+ * itself gated to World-1 dungeon floors (5, 10) via WORLD1_DUNGEON_FLOORS — so this flip adds the
+ * dungeon entrances on floors 5/10 and changes nothing on any other floor. Rollback = set back to false
+ * (doors vanish, DungeonScene unreachable). Kept as the independent revert lever per the flag-flip plan.
+ */
+export const NEW_ZONE_RUNTIME_ENABLED = true
 
 export * from './lifecycle'
 export * from './movement'
