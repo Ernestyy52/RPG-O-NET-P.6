@@ -32,6 +32,11 @@ import {
   canStartEncounter, isNetMonsterFightable,
   NEW_ZONE_RUNTIME_ENABLED, type DungeonLayoutId,
 } from '../runtime'
+import {
+  FLOOR_VARIETY_ENABLED, floorObstacles, floorModifier, chestSpots, chestReward, floorDecorSpots,
+  BIOME_BUSHES,
+} from '../../data/floorFeatures'
+import { WORLD1_BUSHES } from '../../data/world1/decor'
 
 /** World-1 floors that host a dungeon interior, and which layout each opens (Phase 14). */
 const WORLD1_DUNGEON_FLOORS: Record<number, DungeonLayoutId> = { 5: 'world01-mini', 10: 'world01-main' }
@@ -60,6 +65,7 @@ export class TowerScene extends Phaser.Scene {
   private online = false
   private pendingBattle = false
   private targetMonsters = 25
+  private monsterSpeedMult = 1
   private gearAura?: Phaser.GameObjects.Image | null
 
   constructor() {
@@ -76,6 +82,13 @@ export class TowerScene extends Phaser.Scene {
     preloadSharedAssets(this)
     preloadFloorMonsters(this, this.floor)
     preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
+    if (FLOOR_VARIETY_ENABLED) {
+      // ไบโอมพุ่มไม้ตกแต่ง (non-blocking) + หีบสมบัติของ floor modifier
+      for (const bush of WORLD1_BUSHES) {
+        if (!this.textures.exists(bush.key)) this.load.image(bush.key, assetPath(bush.sprite))
+      }
+      if (!this.textures.exists('floor_chest')) this.load.image('floor_chest', assetPath('interior-props/guild_chest.png'))
+    }
   }
 
   create() {
@@ -105,9 +118,11 @@ export class TowerScene extends Phaser.Scene {
       walls.create((MAP_W - 1) * TILE + TILE / 2, y * TILE + TILE / 2, `${biome.id}_wall`).setDepth(1)
     }
 
-    const treeSpots: [number, number][] = [
-      [4, 6], [10, 5], [6, 9], [3, 12], [18, 7], [20, 12], [15, 14], [8, 14], [21, 15], [13, 10],
-    ]
+    // Flip FLOOR_VARIETY: ทุกชั้นมี layout ของตัวเอง (seeded ตามเลขชั้น — deterministic) แทนห้องซ้ำเดิม
+    // กติกาความปลอดภัย: สิ่งกีดขวางเป็น cell เดี่ยวห่างกัน ≥2 + เว้นเขตหวงห้าม ⇒ เดินอ้อมได้เสมอ ไม่มี soft-lock
+    const treeSpots: [number, number][] = FLOOR_VARIETY_ENABLED
+      ? floorObstacles(this.floor, { w: MAP_W, h: MAP_H }).map((s) => [s.x, s.y] as [number, number])
+      : [[4, 6], [10, 5], [6, 9], [3, 12], [18, 7], [20, 12], [15, 14], [8, 14], [21, 15], [13, 10]]
     for (const [tx, ty] of treeSpots) {
       const tree = walls.create(tx * TILE + TILE / 2, ty * TILE + TILE / 2, `${biome.id}_tree`)
       tree.setDepth(ty * TILE)
@@ -149,10 +164,53 @@ export class TowerScene extends Phaser.Scene {
     doorZone.body.setSize(TILE * 2, TILE)
     this.physics.add.overlap(this.player, doorZone, () => this.tryBossGate())
 
+    // ---- floor modifier (FLOOR_VARIETY): ปรับความหนาแน่น/ความเร็วมอนสเตอร์ + หมอก + หีบสมบัติ ----
+    const modifier = FLOOR_VARIETY_ENABLED ? floorModifier(this.floor) : null
+    if (modifier) this.monsterSpeedMult = modifier.monsterSpeedMult
+    if (modifier?.fog) {
+      // หมอกแบบภาพนิ่ง (ปลอดภัยกับ reduced-motion) — ชั้นบางๆ สองชั้นให้มีมิติ
+      this.add.rectangle(0, 0, MAP_W * TILE, MAP_H * TILE, 0xc8d4e0, 0.16).setOrigin(0).setDepth(640)
+      this.add.rectangle(0, 0, MAP_W * TILE, MAP_H * TILE, biome.bg, 0.22).setOrigin(0).setDepth(641)
+    }
+    if (modifier && modifier.chests > 0) {
+      const spots = chestSpots(this.floor, floorObstacles(this.floor, { w: MAP_W, h: MAP_H }), { w: MAP_W, h: MAP_H })
+      for (const [i, spot] of spots.entries()) {
+        const cx = spot.x * TILE + TILE / 2
+        const cy = spot.y * TILE + TILE / 2
+        const chest = this.physics.add.staticSprite(cx, cy, 'floor_chest')
+        chest.setScale(1.1).setDepth(cy)
+        const glow = this.add.image(cx, cy - 4, 'atmo_dot').setTint(0xffd977)
+          .setBlendMode(Phaser.BlendModes.ADD).setScale(2.2).setAlpha(0.4).setDepth(cy - 1)
+        this.physics.add.overlap(this.player, chest, () => {
+          if (!chest.active) return
+          chest.setActive(false)
+          const reward = chestReward(this.floor, i)
+          const player = usePlayerStore()
+          // รางวัลเล็ก (≈ ทองมอนหนึ่งตัว) — จ่ายครั้งเดียวต่อหีบต่อการเข้าชั้น แล้วหีบหายไป
+          player.gainRewards(0, reward.gold, 0)
+          if (reward.potion) player.addItem('potion_s', 1)
+          player.addLog(`Found a treasure chest on Floor ${this.floor} (+${reward.gold}g${reward.potion ? ', Potion S' : ''}).`)
+          gameEvents.emit('notice', { text: `💰 หีบสมบัติ! +${reward.gold} gold${reward.potion ? ' + Potion S' : ''}` })
+          this.tweens.add({ targets: [chest, glow], alpha: 0, scaleX: 0.2, scaleY: 0.2, duration: 320, onComplete: () => { chest.destroy(); glow.destroy() } })
+        })
+      }
+    }
+    if (FLOOR_VARIETY_ENABLED) {
+      // พุ่มไม้ตกแต่งตามไบโอม (ไม่มี physics — เดินทับ/อ้อมหลังได้, depth ตาม y)
+      for (const decor of floorDecorSpots(this.floor, biome.id, floorObstacles(this.floor, { w: MAP_W, h: MAP_H }), { w: MAP_W, h: MAP_H })) {
+        if (!this.textures.exists(decor.key)) continue
+        const dx = decor.x * TILE + TILE / 2
+        const dy = decor.y * TILE + TILE / 2
+        this.add.image(dx, dy, decor.key).setScale(0.8).setDepth(dy).setAlpha(0.95)
+      }
+    }
+
     // ---- 25+ themed monsters ----
     // ออนไลน์: มอนสเตอร์มาจาก server (ทุกคนในชั้นเห็นตำแหน่งเดียวกัน) / ออฟไลน์: สุ่ม local
     this.monsters = this.physics.add.group()
-    this.targetMonsters = config.monsterCount
+    this.targetMonsters = modifier
+      ? Math.max(6, Math.round(config.monsterCount * modifier.monsterCountMult))
+      : config.monsterCount
     this.physics.add.collider(this.monsters, walls)
     this.physics.add.collider(this.monsters, this.monsters)
     this.setupMultiplayer(config)
@@ -183,7 +241,7 @@ export class TowerScene extends Phaser.Scene {
           if (!m.active || m.getData('isBoss') || m.getData('net')) continue
           if (Math.random() < 0.4) {
             const angle = Math.random() * Math.PI * 2
-            const spd = 22 + Math.random() * 18
+            const spd = (22 + Math.random() * 18) * this.monsterSpeedMult
             m.setVelocity(Math.cos(angle) * spd, Math.sin(angle) * spd)
             m.setFlipX(Math.cos(angle) < -0.2)
           } else {
@@ -222,6 +280,12 @@ export class TowerScene extends Phaser.Scene {
     addPlaque(this, 8, 8, `${this.theme.nameTh}  ·  Floor ${this.floor}${config.isMilestone ? '  · WORLD BOSS' : ''}`, {
       fontSize: '13px', depth: 100, fixed: true, origin: [0, 0],
     })
+    if (modifier && modifier.id !== 'none') {
+      // ป้ายบอก modifier ของชั้น — ให้ผู้เล่นรู้ว่าชั้นนี้ "ต่าง" ยังไงตั้งแต่ก้าวแรก
+      addPlaque(this, 8, 62, `✦ ${modifier.nameTh}`, {
+        fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#9fd8ff',
+      })
+    }
     this.hintPlaque = addPlaque(this, 8, 36, this.bossUnlocked ? 'Boss room is OPEN. Enter the door at the top.' : 'Defeat monsters to meet the boss requirement.', {
       fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#cdb27a',
     })
@@ -291,8 +355,8 @@ export class TowerScene extends Phaser.Scene {
     })
     if (!this.scene.isActive()) { leaveRoom(); return }
     if (!room) {
-      // ออฟไลน์: สุ่มมอนสเตอร์ local เหมือนเดิมทุกประการ
-      for (const [i, s] of this.rollMonsterSpawns(config.monsterCount).entries()) {
+      // ออฟไลน์: สุ่มมอนสเตอร์ local — จำนวนตาม floor modifier (calm/swarm) ของชั้นนี้
+      for (const [i, s] of this.rollMonsterSpawns(this.targetMonsters).entries()) {
         this.spawnMonsterSprite(s.slug, s.x, s.y, i)
       }
       return

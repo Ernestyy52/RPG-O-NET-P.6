@@ -28,6 +28,14 @@
             <img :src="monster.sprite" class="h-20 object-contain pixelated" :class="{ 'battle-flash': monsterHit }" alt="monster">
           </div>
           <div class="mt-2 h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-red-500 transition-all duration-300" :style="{ width: `${monsterHpPct}%` }" /></div>
+          <!-- Intent chip: มอนสเตอร์ประกาศท่าถัดไป — จังหวะตัดสินใจใช้ Counter/Support/Item -->
+          <div
+            v-if="intentSpec" class="mt-2 rounded bg-black/40 px-2 py-1 text-center text-xs"
+            :class="intentSpec.id === 'heavy' ? 'text-red-300 font-bold' : intentSpec.id === 'snarl' ? 'text-emerald-300' : 'text-amber-200'"
+            role="status"
+          >
+            ท่าถัดไป: {{ intentSpec.icon }} {{ intentSpec.labelTh }}
+          </div>
         </div>
 
         <div>
@@ -80,6 +88,7 @@ import {
   buildRewardRequest, comboBonus as domainComboBonus, escapeChance, gemsForEncounter,
   heroDamage as domainHeroDamage, heroWinsInitiative, monsterDamage,
   resolveHeroSkill, resolveMonsterAttack, setupEncounter, supportHeal,
+  MONSTER_INTENTS_ENABLED, MONSTER_INTENTS, rollIntent, type MonsterIntentId,
 } from '~/data/combat'
 import { MASTERY_BATTLE_SELECTION_ENABLED, drawBattleQuestion } from '~/data/learning/battleSelector'
 import { CURRICULUM_QUESTIONS } from '~/data/curriculum/adapter'
@@ -107,6 +116,12 @@ const combo = ref(0)
 const comboBonus = computed(() => domainComboBonus(combo.value))
 // Learning feedback หลังตอบ: โชว์เฉลย+คำอธิบายเสมอ; ตอบผิดหยุดรอปุ่ม "สู้ต่อ" (ไม่มีแรงกดดันเวลา)
 const feedback = reactive<{ visible: boolean; correct: boolean; chosen: number }>({ visible: false, correct: false, chosen: -1 })
+// Flip MONSTER_INTENTS: มอนสเตอร์ประกาศท่าถัดไปล่วงหน้า — Counter/Support มีจังหวะให้ตัดสินใจจริง
+const intent = ref<MonsterIntentId>('attack')
+const intentSpec = computed(() => (MONSTER_INTENTS_ENABLED && active.value ? MONSTER_INTENTS[intent.value] : null))
+function nextIntent() {
+  if (MONSTER_INTENTS_ENABLED) intent.value = rollIntent(Math.random, enc.isBoss)
+}
 const whyWrong = computed(() =>
   feedback.visible && !feedback.correct && feedback.chosen >= 0
     ? question.distractorReasoning?.[String(feedback.chosen)]
@@ -171,6 +186,7 @@ gameEvents.on('battle:start', (payload) => {
   feedback.chosen = -1
   encounterId.value = `f${payload.floor}:${Date.now()}:${battleSeq++}`
   setupMonster(payload)
+  nextIntent()
   loadQuestion()
   log.value = turn.value === 'Hero' ? 'Your speed wins initiative. Answer correctly to attack.' : 'The monster is faster.'
   if (turn.value === 'Monster') setTimeout(monsterAttack, 700)
@@ -266,20 +282,35 @@ function escape() {
 function monsterAttack(multiplier = 1) {
   feedback.visible = false
   feedback.chosen = -1
+  const spec = MONSTER_INTENTS_ENABLED ? MONSTER_INTENTS[intent.value] : null
+  // snarl: ขู่แต่ไม่โจมตี — เทิร์นฟรีของผู้เล่น (ตามที่ประกาศไว้ล่วงหน้า)
+  if (spec && spec.multiplier === 0) {
+    nextIntent()
+    turn.value = 'Hero'
+    locked.value = false
+    loadQuestion()
+    log.value = `${monster.name} snarls menacingly... but holds back. Free turn!`
+    return
+  }
+  const intentMult = spec?.multiplier ?? 1
   // raw damage มาจาก domain (engine resolver เมื่อ flag on / monsterDamage ตรงๆ เมื่อ off); การหัก def อยู่ใน player.takeDamage
   const damage = COMBAT_DOMAIN_ENABLED
-    ? resolveMonsterAttack({ monsterAtk: monster.atk, multiplier, heroHp: player.hp, heroDef: player.def }).raw
-    : monsterDamage(monster.atk, multiplier)
+    ? resolveMonsterAttack({ monsterAtk: monster.atk, multiplier: multiplier * intentMult, heroHp: player.hp, heroDef: player.def }).raw
+    : monsterDamage(monster.atk, multiplier * intentMult)
   player.takeDamage(damage)
   pulse(playerHit)
   if (player.hp <= 0) {
     player.addLog(`Knocked out by ${monster.name} on Floor ${floor.value}.`)
     return finish(false)
   }
+  const wasHeavy = spec?.id === 'heavy'
+  nextIntent()
   turn.value = 'Hero'
   locked.value = false
   loadQuestion()
-  log.value = `Monster hits for ${damage}. Choose the next answer.`
+  log.value = wasHeavy
+    ? `HEAVY BLOW! ${monster.name} smashes for ${damage}. Choose the next answer.`
+    : `Monster hits for ${damage}. Choose the next answer.`
 }
 
 function winBattle() {
