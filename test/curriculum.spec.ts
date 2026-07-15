@@ -15,11 +15,17 @@ const goodRaw: Question = {
 }
 
 describe('curriculum — adapter preserves existing content', () => {
-  it('adapts all 69 questions and grandfathers them as reviewed', () => {
-    expect(CURRICULUM_QUESTIONS.length).toBe(69)
+  it('adapts all 150 questions as reviewed with valid provenance', () => {
+    expect(CURRICULUM_QUESTIONS.length).toBe(150)
     for (const q of CURRICULUM_QUESTIONS) {
       expect(q.status).toBe('reviewed')
-      expect(q.provenance.source).toBe('legacy-questions.json')
+      // Original 69 stay grandfathered; generated items carry knowledge-pattern provenance.
+      if (q.patternId) {
+        expect(q.provenance.source).toBe('knowledge-pattern')
+        expect(q.provenance.patternId).toBe(q.patternId)
+      } else {
+        expect(q.provenance.source).toBe('legacy-questions.json')
+      }
       expect(getSubskill(q.subskillId)).toBeDefined()
     }
   })
@@ -45,8 +51,8 @@ describe('curriculum — the existing content bank is valid & production-ready',
     expect(report.errors).toEqual([])
   })
 
-  it('all 69 are selectable in production (reviewed + valid)', () => {
-    expect(selectableInProduction(CURRICULUM_QUESTIONS).length).toBe(69)
+  it('all 150 are selectable in production (reviewed + valid)', () => {
+    expect(selectableInProduction(CURRICULUM_QUESTIONS).length).toBe(150)
   })
 
   it('has no duplicate prompts', () => {
@@ -55,7 +61,7 @@ describe('curriculum — the existing content bank is valid & production-ready',
 
   it('answer key is not biased toward a single position', () => {
     const report = analyzeAnswerPositions(CURRICULUM_QUESTIONS)
-    expect(report.total).toBe(69)
+    expect(report.total).toBe(150)
     expect(report.balanced).toBe(true)
   })
 })

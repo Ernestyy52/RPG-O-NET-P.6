@@ -26,8 +26,8 @@ export interface CurriculumQuestion extends Question {
   subskillId: string
   /** age-appropriate explanation of the correct answer. */
   explanation?: string
-  /** why each wrong choice is wrong, keyed by choice index. */
-  distractorReasoning?: Record<number, string>
+  /** why each wrong choice is wrong, keyed by choice index (string keys — JSON object keys). */
+  distractorReasoning?: Record<string, string>
   /** misconception tags this item probes. */
   misconceptions?: string[]
 }

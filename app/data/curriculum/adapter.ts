@@ -28,7 +28,13 @@ export function toCurriculumQuestion(
   status: ReviewStatus = 'reviewed',
   provenance: Provenance = { source: 'legacy-questions.json' },
 ): CurriculumQuestion {
-  return { ...q, status, provenance, subskillId: inferSubskill(q) }
+  // Explicit metadata carried on the JSON item wins over the coarse fallbacks:
+  //  - subskillId: reviewed tagging in data/questions.json beats keyword inference
+  //  - patternId: marks a question generated from a knowledge/ pattern (provenance)
+  const explicitProvenance: Provenance = q.patternId
+    ? { source: 'knowledge-pattern', patternId: q.patternId }
+    : provenance
+  return { ...q, status, provenance: explicitProvenance, subskillId: q.subskillId ?? inferSubskill(q) }
 }
 
 /** All existing questions, adapted and grandfathered as reviewed. */
