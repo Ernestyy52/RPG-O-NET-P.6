@@ -55,9 +55,18 @@ multiple clients + reconnect); MMORPG-phase load/security evidence. *Risk:* medi
 *properties* are unit-tested and the server room mirrors the tested spec, but real network/scale behavior
 is unverified. *Action:* deploy the server, flip `COOP_ENABLED`, exercise multi-client.
 
-**Class C — deferred flag-flip integrations (built dormant, un-surfaced).** Teacher dashboard page
-(`TEACHER_ENABLED`), save-envelope cutover (`SAVE_ENVELOPE_ENABLED`), World-1 named-gear icons/SFX
+**Class C — deferred flag-flip integrations (built dormant, un-surfaced).** ~~Teacher dashboard page
+(`TEACHER_ENABLED`)~~ **CLOSED 2026-07-15** — `/teacher` page live on the tested reports domain (D-026).
+Remaining: save-envelope cutover (`SAVE_ENVELOPE_ENABLED`), World-1 named-gear icons/SFX
 (asset backlog). *Risk:* low — additive, reversible, un-surfaced until intentionally enabled.
+
+**Post-audit S-grade learning pass (2026-07-15, D-025/D-026):** question bank 150 reviewed items with
+full pedagogy metadata (explanation / distractor reasoning / subskill / provenance — constitution rule 2
+now holds for EVERY production item, guarded by `test/question-bank.spec.ts`); explanations surfaced
+after every answer in all three question UIs; mastery-weighted weak-recur battle selection
+(`MASTERY_BATTLE_SELECTION_ENABLED`); battle answers feed mastery. Evidence: **309 tests / 34 files**,
+build exit 0, dev smoke green. A teacher spot-check of the 81 generated items is recommended
+(non-blocking; items pass the full validation pipeline).
 
 **No Class-D (correctness-unknown) issues.** Every shipped code path is either unit-tested or a dormant,
 reversible flag.
