@@ -41,7 +41,7 @@ unknown risk, not missing logic.
 | 16 Teacher | no answer-key exposure, data separated, export tested | ✅ PASS (domain) · ⏳ UI | `teacher.spec.ts`; **dashboard page = `TEACHER_ENABLED` flip** |
 | 17 Mobile/a11y/perf | build, cycles stable, reduced-motion, perf | ✅ PASS (automatable) · ⏳ human | `stability.spec.ts` + a11y guards; **viewport/FPS matrix = human-measured** |
 | 18 S-grade audit | all gates pass, issues classified, no false claim | ✅ PASS | this document |
-| 19–24 MMORPG | tested persistence/instance/economy/security ifaces | ⏳ PLANNED | separated interface layers to be built + tested; live load/security evidence gated behind real infra |
+| 19–24 MMORPG | tested persistence/instance/economy/security ifaces | ✅ PASS (interfaces) · ⏳ live | `mmo.spec.ts` — deterministic instance lifecycle, atomic+idempotent server-owned ledger, versioned safe-recovery persistence; **live load/security = real-infra evidence (Class B), not claimed** |
 
 ## Outstanding issues — classified (not hidden)
 

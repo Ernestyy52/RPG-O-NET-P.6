@@ -183,3 +183,22 @@ Chronological record of phase execution. Newest at bottom.
 - **Delivered:** `docs/execution/S_GRADE_AUDIT.md` — a per-phase gate matrix (00–24) + honest verdict + issues classified into Class A (human-at-browser), Class B (live infra), Class C (dormant flag-flips), with **no Class-D correctness-unknowns**.
 - **Verdict:** engineering-complete + gate-audited; **NOT declared release-S-grade** because end-to-end human/live verification is outstanding. Every automatable acceptance-gate row (00–18) passes with test evidence (281 tests, build exit 0, server `node --check` OK, clean asset-path).
 - **Gate:** every mandatory gate passes (automatable rows ✓; live/human rows classified, not claimed) ✓ · unresolved issues classified accurately (A/B/C) ✓ · **no false S-grade claim** ✓ (the audit explicitly declines to claim release-S-grade).
+
+## Phases 19–24 — MMORPG foundation — 2026-07-15 — status: INTERFACES PASSED (tested); live load/security = real-infra gate (not claimed)
+- **Route:** game-architect (Fable-5-class) interface design + multiplayer-engineer (Opus-4.8-class) authority, inline.
+- **Delivered:** `app/data/mmo/` — the four tested server-authority interface layers the 19–24 gate names, pure + unit-tested, dormant behind `MMO_ENABLED`.
+  - `instance.ts` — deterministic instance lifecycle reducer (creating→active→draining→closed; no join while draining; terminal closed; grace-timeout close).
+  - `ledger.ts` — atomic + idempotent server-owned economy/inventory (all-or-nothing, no negative, duplicate tx no-op; clients request server-validated transactions, never write inventory directly).
+  - `persistence.ts` — versioned, checksummed account envelope with a total, safe `loadAccount` (missing/wrong-version/corrupt/tampered ⇒ safe recovery, never throws, never a silent partial load).
+- **Validation:** `npm test` → **293 passing / 32 files** (+12 `mmo.spec.ts`); build exit 0.
+- **Gate (interfaces):** persistence interfaces tested ✅ · no client-authoritative inventory ✅ · deterministic instance lifecycle ✅ · atomic economy ✅ · **measured load/security evidence before any readiness claim — NOT claimed** (requires real infrastructure; classified S_GRADE_AUDIT Class B). This is the correctness foundation, honestly scoped short of a live-scale readiness declaration.
+- **Rollback:** pure additive domain behind `MMO_ENABLED=false`; nothing live.
+
+---
+
+## Roadmap status (2026-07-15)
+**Phases 00–24: all deliverables committed on `foundation/sgrade-full-transformation`.** Every automatable
+acceptance-gate row passes with test evidence (293 tests, build exit 0). Outstanding work is the
+explicitly-classified live/human verification in `S_GRADE_AUDIT.md` (Class A human-at-browser, Class B
+live-infra, Class C dormant flag-flips) — no correctness-unknowns. Engineering-complete + gate-audited;
+release-S-grade is intentionally NOT claimed pending those live/human runs.
