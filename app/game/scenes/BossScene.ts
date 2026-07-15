@@ -23,9 +23,11 @@ import {
   applyStandardHeroBody,
   assetPath,
 } from '../systems/textures'
-import { applyAtmosphere, createIdleBreath, addPlaque, addPortalGlow, addGearAura } from '../systems/atmosphere'
+import { applyAtmosphere, createIdleBreath, addPlaque, addPortalGlow, addGearAura, addTorchFlicker } from '../systems/atmosphere'
 import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
 import { useSettingsStore } from '../../stores/settings'
+import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, DUNGEON_FIRE } from '../../data/world1/decor'
+import { BIOME_BUSHES } from '../../data/floorFeatures'
 
 const TILE = 32
 // ห้องบอสเล็กและปิดล้อม (ลานประลอง) — บอสตัวเดียวอยู่กลาง ผู้เล่นเข้าจากล่าง
@@ -78,6 +80,13 @@ export class BossScene extends Phaser.Scene {
     preloadSharedAssets(this)
     preloadFloorMonsters(this, this.floor)
     preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
+    // พร็อพลานประลอง: กองไฟคู่ + ไห/ถัง + พุ่มไม้ตามไบโอม (พอดีพองาม ไม่รก)
+    for (const p of [...WORLD1_BUSHES, ...WORLD1_DUNGEON_PROPS]) {
+      if (!this.textures.exists(p.key)) this.load.image(p.key, assetPath(p.sprite))
+    }
+    if (!this.textures.exists(DUNGEON_FIRE.key)) {
+      this.load.spritesheet(DUNGEON_FIRE.key, assetPath(DUNGEON_FIRE.sprite), { frameWidth: DUNGEON_FIRE.frameW, frameHeight: DUNGEON_FIRE.frameH })
+    }
   }
 
   create() {
@@ -119,6 +128,43 @@ export class BossScene extends Phaser.Scene {
       const tree = walls.create(tx * TILE + TILE / 2, ty * TILE + TILE / 2, `${biome.id}_tree`)
       tree.setDepth(ty * TILE)
       tree.body.setSize(TILE * 0.5, TILE * 0.3).setOffset(TILE * 0.25, TILE * 0.6)
+    }
+
+    // ---- ตกแต่งลานประลองตามไบโอม: กองไฟคู่ขนาบสังเวียน + ไห/ถังข้างกำแพง + พุ่มไม้ประจำไบโอม ----
+    const reducedFx = useSettingsStore().reducedMotion
+    if (this.textures.exists(DUNGEON_FIRE.key) && !this.anims.exists('w1_brazier')) {
+      this.anims.create({
+        key: 'w1_brazier',
+        frames: DUNGEON_FIRE.frames.map((f) => ({ key: DUNGEON_FIRE.key, frame: f })),
+        frameRate: 8,
+        repeat: -1,
+      })
+    }
+    if (this.textures.exists(DUNGEON_FIRE.key)) {
+      for (const fx of [arenaCx - TILE * 4.2, arenaCx + TILE * 4.2]) {
+        const flame = this.add.sprite(fx, arenaCy, DUNGEON_FIRE.key, DUNGEON_FIRE.frames[0])
+          .setOrigin(0.5, 0.72).setScale((TILE * 1.15) / DUNGEON_FIRE.frameH).setDepth(arenaCy)
+        if (!reducedFx && this.anims.exists('w1_brazier')) flame.play('w1_brazier')
+        addTorchFlicker(this, fx, arenaCy - TILE * 0.6, arenaCy + 1)
+      }
+    }
+    // ไห/ถังชิดกำแพงซ้าย-ขวา (decor เฉย ๆ ไม่ชน — อยู่นอกวงสังเวียน)
+    const sideProps: { key: string; x: number; y: number }[] = [
+      { key: 'w1prop_vase', x: TILE * 1.9, y: TILE * 5 },
+      { key: 'w1prop_barrel', x: TILE * 1.9, y: TILE * 7.5 },
+      { key: 'w1prop_vase', x: (MAP_W - 2) * TILE + TILE * 0.1, y: TILE * 5 },
+      { key: 'w1prop_crate', x: (MAP_W - 2) * TILE + TILE * 0.1, y: TILE * 7.5 },
+    ]
+    for (const p of sideProps) {
+      if (this.textures.exists(p.key)) this.add.image(p.x, p.y, p.key).setOrigin(0.5, 0.85).setDepth(p.y)
+    }
+    // พุ่มไม้สีประจำไบโอมแต่งมุมล่าง (ไม่บังทางเดินเข้า)
+    const bushKeys = BIOME_BUSHES[biome.id] ?? BIOME_BUSHES.forest
+    for (const [i, [bx2, by2]] of ([[2.5, MAP_H - 2.4], [MAP_W - 3.5, MAP_H - 2.4]] as [number, number][]).entries()) {
+      const key = bushKeys[i % bushKeys.length]
+      if (this.textures.exists(key)) {
+        this.add.image(bx2 * TILE, by2 * TILE, key).setScale(0.85).setDepth(by2 * TILE).setAlpha(0.95)
+      }
     }
 
     // ---- player (เข้าจากล่างกลาง) ----

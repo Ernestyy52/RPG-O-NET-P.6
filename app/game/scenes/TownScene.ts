@@ -12,6 +12,7 @@ import { RemotePlayers } from '../systems/remotePlayers'
 import { usePlayerStore } from '../../stores/player'
 import { useSettingsStore } from '../../stores/settings'
 import { TOWN_NPCS } from '../../data/world1/npcs'
+import { TOWN_INTERIORS_ENABLED, interiorForEvent, INTERIOR_NPC_IDS } from '../../data/town/interiors'
 
 // ================================================================================================
 // เมืองโหมด "ภาพจริง" — ใช้ภาพ mockup (public/town-art/town-night.png, ตัด UI ออกแล้ว) เป็นฉากทั้งเมือง
@@ -98,9 +99,12 @@ export class TownScene extends Phaser.Scene {
     super('TownScene')
   }
 
-  init(data: { floor?: number; classId?: HeroClassId }) {
+  private spawnAt?: [number, number]
+
+  init(data: { floor?: number; classId?: HeroClassId; spawnAt?: [number, number] }) {
     this.floor = data.floor ?? 1
     this.classId = data.classId ?? 'warrior'
+    this.spawnAt = data.spawnAt // ART coords — ใช้ตอนเดินออกจาก interior ให้โผล่หน้าอาคารเดิม
   }
 
   preload() {
@@ -150,6 +154,8 @@ export class TownScene extends Phaser.Scene {
     // ---- Inc 4: named quest-giver NPCs standing in town (decorative + flavour nameplates) ----
     const reducedMotion = useSettingsStore().reducedMotion
     for (const npc of TOWN_NPCS) {
+      // NPC ที่ย้ายเข้าไปประจำในอาคารแล้ว ไม่ยืนกลางเมืองซ้ำ (Kael ยังเฝ้าพอร์ทัลข้างนอก)
+      if (TOWN_INTERIORS_ENABLED && INTERIOR_NPC_IDS.has(npc.id)) continue
       const key = `npc_${npc.id}`
       if (!this.textures.exists(key)) continue // sprite missing ⇒ skip (never crash)
       const nx = u(npc.at[0])
@@ -217,8 +223,8 @@ export class TownScene extends Phaser.Scene {
     this.gender = usePlayerStore().gender
     const size = heroSheetSize(this.classId, this.gender)
     const scale = HERO_DISPLAY_H / size.fh // ขนาดมาตรฐานเดียวกันทุกฉาก (จำเป็นต่อ netcode ในอนาคต)
-    const spawnX = u(697)
-    const spawnY = u(430)
+    const spawnX = u(this.spawnAt?.[0] ?? 697)
+    const spawnY = u(this.spawnAt?.[1] ?? 430)
     this.add.image(spawnX, spawnY + 8, 'shadow_blob').setDepth(spawnY - 1)
     this.player = this.physics.add.sprite(spawnX, spawnY, heroKey(this.classId, this.gender), heroIdleFrame(this.classId, this.gender))
     this.player.setOrigin(0.5, 0.92).setScale(scale)
@@ -316,6 +322,13 @@ export class TownScene extends Phaser.Scene {
     if (event === 'portal') {
       // เปิดกล่องสนทนาผู้เฝ้าประตู (ฝั่ง Vue) — ยังไม่เข้าดันเจี้ยนจนกว่าจะยืนยัน
       gameEvents.emit('town:portal', { floor: this.floor + 1 })
+      return
+    }
+    // Flip TOWN_INTERIORS: ประตูอาคาร = เดินเข้าห้องภายในจริง (NPC + บริการอยู่ในนั้น)
+    // flag off ⇒ เปิดบริการตรง ๆ แบบเดิมทุกประการ
+    const interior = TOWN_INTERIORS_ENABLED ? interiorForEvent(event) : undefined
+    if (interior) {
+      this.scene.start('InteriorScene', { building: interior.id, floor: this.floor, classId: this.classId })
       return
     }
     gameEvents.emit(event as 'town:hospital' | 'town:item-shop' | 'town:equipment-shop' | 'town:guild')

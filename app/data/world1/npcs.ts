@@ -30,6 +30,9 @@ export const TOWN_NPCS: TownNpc[] = [
   { id: 'blacksmith', name: 'Borin', title: 'Blacksmith', sprite: 'npc-sprites/blacksmith.png', frameW: 32, frameH: 32, at: [1255, 505] },
   // Fighter2_Idle.png (384×128, 12 cols × 4 rows @ 32×32)
   { id: 'forest_ranger', name: 'Wren', title: 'Forest Ranger', sprite: 'npc-sprites/forest_ranger.png', frameW: 32, frameH: 32, at: [470, 560] },
+  // Mage2_without_shadow.png (448×208, 48px pitch @ 48×52 — same sheet family as Kael) — white-robed
+  // healer for the hospital interior; stands outside the hospital when TOWN_INTERIORS is off.
+  { id: 'healer', name: 'Sena', title: 'Healer', sprite: 'npc-sprites/healer.png', frameW: 48, frameH: 52, at: [300, 250] },
 ]
 
 const NPC_BY_ID = new Map(TOWN_NPCS.map((n) => [n.id, n]))
