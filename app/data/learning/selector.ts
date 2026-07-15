@@ -44,7 +44,7 @@ export function questionWeight(
   return Math.max(0.05, w)
 }
 
-function weightedPick<T>(items: { item: T; weight: number }[], rng: () => number): T | null {
+export function weightedPick<T>(items: { item: T; weight: number }[], rng: () => number): T | null {
   if (items.length === 0) return null
   const total = items.reduce((s, i) => s + i.weight, 0)
   if (total <= 0) return items[Math.floor(rng() * items.length)].item

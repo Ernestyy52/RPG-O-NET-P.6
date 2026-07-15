@@ -34,9 +34,27 @@
           <p class="mb-3 min-h-12 font-medium">{{ log }}</p>
           <p class="mb-3 text-sm opacity-80">{{ question.prompt }}</p>
           <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <button v-for="(choice, i) in question.choices" :key="i" class="btn-secondary text-left disabled:opacity-50" :disabled="locked || turn !== 'Hero'" @click="answer(i)">
+            <button
+              v-for="(choice, i) in question.choices" :key="i"
+              class="btn-secondary text-left disabled:opacity-50"
+              :class="feedback.visible && i === question.answerIndex ? 'ring-2 ring-emerald-400'
+                : feedback.visible && i === feedback.chosen && !feedback.correct ? 'ring-2 ring-red-400' : ''"
+              :disabled="locked || turn !== 'Hero'" @click="answer(i)"
+            >
               {{ choice }}
             </button>
+          </div>
+
+          <!-- Learning feedback: ทุกคำตอบคือโอกาสเรียนรู้ — เฉลย + เหตุผล (กติกาข้อ 2: explanation/distractor
+               reasoning ติดมากับทุกข้อ) ตอบผิด = หยุดรอไม่จำกัดเวลา (readable timing, กติกาข้อ 8) -->
+          <div v-if="feedback.visible" class="glass-panel mt-3 p-3 text-sm" role="status" aria-live="polite">
+            <p class="font-bold" :class="feedback.correct ? 'text-emerald-300' : 'text-red-300'">
+              {{ feedback.correct ? '✓ ถูกต้อง!' : '✗ ยังไม่ถูก' }}
+              <span class="ml-1 font-normal opacity-90">เฉลย: {{ question.choices[question.answerIndex] }}</span>
+            </p>
+            <p v-if="question.explanation" class="mt-1 opacity-90">{{ question.explanation }}</p>
+            <p v-if="whyWrong" class="mt-1 text-amber-200/90">ข้อที่เลือก: {{ whyWrong }}</p>
+            <button v-if="!feedback.correct" class="btn-primary mt-2 text-xs" @click="continueAfterWrong">เข้าใจแล้ว — สู้ต่อ ▶</button>
           </div>
           <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < SUPPORT_MP" @click="support">Support <span class="opacity-70">{{ SUPPORT_MP }}MP</span></button>
@@ -63,11 +81,15 @@ import {
   heroDamage as domainHeroDamage, heroWinsInitiative, monsterDamage,
   resolveHeroSkill, resolveMonsterAttack, setupEncounter, supportHeal,
 } from '~/data/combat'
+import { MASTERY_BATTLE_SELECTION_ENABLED, drawBattleQuestion } from '~/data/learning/battleSelector'
+import { CURRICULUM_QUESTIONS } from '~/data/curriculum/adapter'
 import { usePlayerStore } from '~/stores/player'
+import { useLearningStore } from '~/stores/learning'
 
 const runtimeConfig = useRuntimeConfig()
 
 const player = usePlayerStore()
+const learning = useLearningStore()
 const active = ref(false)
 const floor = ref(1)
 const locked = ref(false)
@@ -83,6 +105,12 @@ const isBossFight = computed(() => enc.isBoss)
 // คอมโบ: ตอบถูกติดกันดาเมจแรงขึ้น +15%/สแตค (สูงสุด +60%) ตอบผิด = รีเซ็ต — สูตรอยู่ใน combat domain
 const combo = ref(0)
 const comboBonus = computed(() => domainComboBonus(combo.value))
+// Learning feedback หลังตอบ: โชว์เฉลย+คำอธิบายเสมอ; ตอบผิดหยุดรอปุ่ม "สู้ต่อ" (ไม่มีแรงกดดันเวลา)
+const feedback = reactive<{ visible: boolean; correct: boolean; chosen: number }>({ visible: false, correct: false, chosen: -1 })
+const whyWrong = computed(() =>
+  feedback.visible && !feedback.correct && feedback.chosen >= 0
+    ? question.distractorReasoning?.[String(feedback.chosen)]
+    : undefined)
 // idempotency guard: ป้องกันจ่ายรางวัลซ้ำถ้า winBattle ยิงมากกว่าหนึ่งครั้งต่อการต่อสู้ (กติกาข้อ 3)
 const rewardLedger = new RewardLedger()
 const encounterId = ref('')
@@ -106,8 +134,13 @@ function assetPath(path?: string) {
   return `${base}${cleanPath}`
 }
 function loadQuestion() {
-  const [q] = getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)
-  Object.assign(question, q)
+  // Flip: เลือกข้อโดยถ่วงน้ำหนักไปทาง subskill ที่ยังอ่อน/ถึงรอบทบทวน (weak-recur) — flag off = bag เดิม
+  const q = MASTERY_BATTLE_SELECTION_ENABLED
+    ? drawBattleQuestion(CURRICULUM_QUESTIONS, floor.value, getQuestionDifficulty(floor.value), learning.mastery)
+    : null
+  const picked = q ?? getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)[0]
+  // เคลียร์ field เสริมก่อน assign กัน explanation/distractorReasoning ข้อเก่าค้างเมื่อข้อใหม่ไม่มี
+  Object.assign(question, { explanation: undefined, distractorReasoning: undefined, subskillId: undefined, patternId: undefined }, picked)
 }
 
 function setupMonster(payload: import('~/game/systems/eventBus').EncounterInfo) {
@@ -134,6 +167,8 @@ gameEvents.on('battle:start', (payload) => {
   active.value = true
   locked.value = false
   combo.value = 0
+  feedback.visible = false
+  feedback.chosen = -1
   encounterId.value = `f${payload.floor}:${Date.now()}:${battleSeq++}`
   setupMonster(payload)
   loadQuestion()
@@ -168,7 +203,12 @@ function heroHit(skill: 'attack' | 'counter'): number {
 
 function answer(index: number) {
   locked.value = true
-  if (index === question.answerIndex) {
+  feedback.visible = true
+  feedback.correct = index === question.answerIndex
+  feedback.chosen = index
+  // ทุกคำตอบในไฟต์คือ learning event — ป้อนเข้า mastery (ไม่เคยอ่านกลับมา scale พลังต่อสู้)
+  learning.recordBattleAnswer(question.subskillId, feedback.correct)
+  if (feedback.correct) {
     player.recordCorrectAnswer()
     combo.value++
     const damage = heroHit('attack')
@@ -177,11 +217,18 @@ function answer(index: number) {
       ? `Correct! Combo x${combo.value} — you attack for ${damage} damage.`
       : `Correct. You attack for ${damage} damage.`
     if (monster.hp <= 0) return winBattle()
+    // เว้นจังหวะให้อ่านคำอธิบายสั้นๆ ก่อนมอนสเตอร์ตอบโต้ (ตอบถูก = อ่านเสริมความเข้าใจ)
+    setTimeout(monsterAttack, 1800)
   } else {
     combo.value = 0
-    log.value = 'Wrong answer. Combo lost — the monster counters.'
+    log.value = 'Wrong answer. Combo lost — read the explanation, then continue.'
+    // ตอบผิด: เกมหยุดรอจนกดปุ่ม "สู้ต่อ" — เวลาอ่านไม่จำกัด นี่คือจังหวะเรียนรู้ที่สำคัญที่สุด
   }
-  setTimeout(monsterAttack, 800)
+}
+
+function continueAfterWrong() {
+  if (!active.value) return
+  monsterAttack()
 }
 
 // ค่าร่าย MP ของสกิลต่อสู้ (SUPPORT_MP/COUNTER_MP) นิยามใน combat domain — ตอบถูกฟื้น MP +2/ข้อ (recordCorrectAnswer)
@@ -217,6 +264,8 @@ function escape() {
 }
 
 function monsterAttack(multiplier = 1) {
+  feedback.visible = false
+  feedback.chosen = -1
   // raw damage มาจาก domain (engine resolver เมื่อ flag on / monsterDamage ตรงๆ เมื่อ off); การหัก def อยู่ใน player.takeDamage
   const damage = COMBAT_DOMAIN_ENABLED
     ? resolveMonsterAttack({ monsterAtk: monster.atk, multiplier, heroHp: player.hp, heroDef: player.def }).raw

@@ -12,7 +12,25 @@
         <p class="mb-3 text-sm">The monster's assault pauses — answer to empower your hero. (A wrong answer only costs your combo, never HP.)</p>
         <p class="mb-3 font-medium">{{ breakQuestion.prompt }}</p>
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <button v-for="(choice, i) in breakQuestion.choices" :key="i" class="btn-secondary text-left text-sm" @click="answerBreak(i)">{{ choice }}</button>
+          <button
+            v-for="(choice, i) in breakQuestion.choices" :key="i"
+            class="btn-secondary text-left text-sm disabled:opacity-60"
+            :class="breakFeedback && i === breakQuestion.answerIndex ? 'ring-2 ring-emerald-400'
+              : breakFeedback && i === breakFeedback.chosen && !breakFeedback.correct ? 'ring-2 ring-red-400' : ''"
+            :disabled="!!breakFeedback" @click="answerBreak(i)"
+          >{{ choice }}</button>
+        </div>
+        <!-- เฉลย+คำอธิบายหลังตอบ — มอนสเตอร์ยังหยุดนิ่งจนกด "สู้ต่อ" (อ่านได้ไม่จำกัดเวลา) -->
+        <div v-if="breakFeedback" class="glass-panel mt-3 p-3 text-sm" role="status" aria-live="polite">
+          <p class="font-bold" :class="breakFeedback.correct ? 'text-emerald-300' : 'text-red-300'">
+            {{ breakFeedback.correct ? '✓ ถูกต้อง!' : '✗ ยังไม่ถูก' }}
+            <span class="ml-1 font-normal opacity-90">เฉลย: {{ breakQuestion.choices[breakQuestion.answerIndex] }}</span>
+          </p>
+          <p v-if="breakQuestion.explanation" class="mt-1 opacity-90">{{ breakQuestion.explanation }}</p>
+          <p v-if="!breakFeedback.correct && breakQuestion.distractorReasoning?.[String(breakFeedback.chosen)]" class="mt-1 text-amber-200/90">
+            ข้อที่เลือก: {{ breakQuestion.distractorReasoning[String(breakFeedback.chosen)] }}
+          </p>
+          <button class="btn-primary mt-2 text-xs" @click="closeBreak">เข้าใจแล้ว — สู้ต่อ ▶</button>
         </div>
       </div>
     </div>
@@ -56,10 +74,21 @@
         <!-- question: answering correct auto-attacks + builds combo/MP; wrong resets combo -->
         <p class="text-sm opacity-80">{{ question.prompt }}</p>
         <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <button v-for="(choice, i) in question.choices" :key="i" class="btn-secondary text-left text-sm disabled:opacity-50" :disabled="answerLock || breakOpen" @click="answer(i)">
+          <button
+            v-for="(choice, i) in question.choices" :key="i"
+            class="btn-secondary text-left text-sm disabled:opacity-50"
+            :class="answerFeedback && i === question.answerIndex ? 'ring-2 ring-emerald-400'
+              : answerFeedback && i === answerFeedback.chosen && !answerFeedback.correct ? 'ring-2 ring-red-400' : ''"
+            :disabled="answerLock || breakOpen" @click="answer(i)"
+          >
             {{ choice }}
           </button>
         </div>
+        <!-- เฉลยสั้นๆ หลังตอบผิด (ไฟต์เดินต่อ — การเรียนรู้เชิงลึกอยู่ใน Knowledge Break ที่หยุดเกม) -->
+        <p v-if="answerFeedback && !answerFeedback.correct" class="text-xs text-amber-200/90" role="status" aria-live="polite">
+          เฉลย: <span class="font-bold">{{ question.choices[question.answerIndex] }}</span>
+          <span v-if="question.explanation"> — {{ question.explanation }}</span>
+        </p>
 
         <!-- skills: cooldowns come from the real-time engine (per-action, never per-frame) -->
         <div class="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -90,6 +119,7 @@ import {
   CLASS_KITS_ENABLED, kitSlotMapping, realtimeKitOverride, type KitSlotMapping,
 } from '~/data/combat'
 import { KNOWLEDGE_BREAK_ENABLED, KnowledgeBreakController } from '~/data/learning/knowledgeBreak'
+import { MASTERY_BATTLE_SELECTION_ENABLED, drawBattleQuestion } from '~/data/learning/battleSelector'
 import { CURRICULUM_QUESTIONS } from '~/data/curriculum/adapter'
 import { mulberry32, seedFromString } from '~/data/learning/rng'
 import type { CurriculumQuestion } from '~/data/curriculum/schema'
@@ -143,6 +173,10 @@ let breakCtl: KnowledgeBreakController | null = null
 let masteryBefore: Record<string, import('~/data/learning/mastery').SubskillMastery> = {}
 let breakRng: (() => number) | null = null
 let breakOpenedAt = 0
+// เฉลยหลังตอบใน Knowledge Break — ค้างไว้ (มอนสเตอร์ยังหยุด) จนผู้เล่นกดสู้ต่อ
+const breakFeedback = ref<{ correct: boolean; chosen: number } | null>(null)
+// เฉลยสั้นหลังตอบผิดในคำถามหลัก (non-blocking — ไฟต์เดินต่อ)
+const answerFeedback = ref<{ correct: boolean; chosen: number } | null>(null)
 
 // Class kits (Phase 14 flip #5): when enabled, each of the 3 slots is driven by the hero's kit ability
 // (cooldown/MP/damage/mitigation/sustain). Realtime combat only ever runs on World-1, so the kit applies
@@ -171,8 +205,13 @@ function assetSprite(path?: string) {
 }
 
 function loadQuestion() {
-  const [q] = getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)
-  Object.assign(question, q)
+  // Flip: เลือกข้อโดยถ่วงน้ำหนักไปทาง subskill ที่ยังอ่อน/ถึงรอบทบทวน (weak-recur) — flag off = bag เดิม
+  const q = MASTERY_BATTLE_SELECTION_ENABLED
+    ? drawBattleQuestion(CURRICULUM_QUESTIONS, floor.value, getQuestionDifficulty(floor.value), learning.mastery)
+    : null
+  const picked = q ?? getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)[0]
+  // เคลียร์ field เสริมก่อน assign กัน explanation/distractorReasoning ข้อเก่าค้างเมื่อข้อใหม่ไม่มี
+  Object.assign(question, { explanation: undefined, distractorReasoning: undefined, subskillId: undefined, patternId: undefined }, picked)
 }
 
 function pulseMonster() {
@@ -227,6 +266,8 @@ gameEvents.on('battle:start', (payload) => {
 
   // Knowledge Break: fresh controller + a mastery snapshot to diff against at fight end
   breakOpen.value = false
+  breakFeedback.value = null
+  answerFeedback.value = null
   if (KNOWLEDGE_BREAK_ENABLED) {
     breakCtl = new KnowledgeBreakController()
     masteryBefore = { ...learning.mastery }
@@ -302,17 +343,23 @@ function applyPhaseSpec(id: 1 | 2 | 3, initial: boolean) {
 function answer(index: number) {
   if (!combat || answerLock.value) return
   answerLock.value = true
-  if (index === question.answerIndex) {
+  const correct = index === question.answerIndex
+  answerFeedback.value = { correct, chosen: index }
+  // ทุกคำตอบในไฟต์คือ learning event — ป้อนเข้า mastery (ไม่เคยอ่านกลับมา scale พลังต่อสู้)
+  learning.recordBattleAnswer(question.subskillId, correct)
+  if (correct) {
     player.recordCorrectAnswer()
     combat.registerAnswer(true)
     if (combat.canAttack('attack')) applyOutcome(combat.requestAttack('attack'))
     log.value = combat.state.combo >= 2 ? `Correct! Combo x${combat.state.combo}.` : 'Correct — you strike.'
   } else {
     combat.registerAnswer(false)
-    log.value = 'Wrong — combo lost.'
+    log.value = 'Wrong — combo lost. Check the answer below.'
   }
   syncFromEngine()
-  setTimeout(() => { if (!active.value) return; loadQuestion(); answerLock.value = false }, 450)
+  // ตอบผิดค้างเฉลยไว้นานกว่าให้พออ่านหนึ่งบรรทัด (ไฟต์เรียลไทม์ยังเดินต่อ — ราคาของการตอบผิด)
+  const readMs = correct ? 450 : 2600
+  setTimeout(() => { if (!active.value) return; answerFeedback.value = null; loadQuestion(); answerLock.value = false }, readMs)
 }
 
 function canUse(skill: RealtimeSkillId) { return !!combat && !combat.state.over && !breakOpen.value && combat.canAttack(skill) }
@@ -361,13 +408,19 @@ function maybeOpenBreak() {
 /** Resolve the open break: feeds mastery (for the end-of-fight summary) and applies a NON-lethal
  *  combat effect (empower = combo+MP, combo-lost = combo reset). Never touches HP. */
 function answerBreak(index: number) {
-  if (!breakCtl || !combat || !breakOpen.value) return
+  if (!breakCtl || !combat || !breakOpen.value || breakFeedback.value) return
   const res = breakCtl.resolve(index, { now: Date.now(), responseMs: Date.now() - breakOpenedAt })
-  breakOpen.value = false
-  if (!res) return
+  if (!res) { breakOpen.value = false; return }
   if (res.effect === 'empower') { player.recordCorrectAnswer(); combat.registerAnswer(true); log.value = 'Correct! Your resolve empowers the next strikes.' }
   else { combat.registerAnswer(false); log.value = 'Not quite — your combo fades, but you stand firm.' }
+  // ค้างหน้าต่างไว้โชว์เฉลย+คำอธิบาย — breakOpen ยัง true ⇒ step() ไม่ tick ⇒ มอนสเตอร์หยุดรอจนอ่านจบ
+  breakFeedback.value = { correct: res.effect === 'empower', chosen: index }
   syncFromEngine()
+}
+
+function closeBreak() {
+  breakFeedback.value = null
+  breakOpen.value = false
 }
 
 function usePotion() {
@@ -436,6 +489,8 @@ function finish(won: boolean) {
   active.value = false
   breakCtl?.cancel(Date.now()) // safe teardown: clear any open break without recording an answer
   breakOpen.value = false
+  breakFeedback.value = null
+  answerFeedback.value = null
   breakCtl = null
   const wasBoss = isBoss.value
   combat = null

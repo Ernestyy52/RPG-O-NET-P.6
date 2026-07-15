@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { SubskillMastery } from '~/data/learning/mastery'
+import { applyAnswer, masteryOf, type SubskillMastery } from '~/data/learning/mastery'
 import type { SessionSummary } from '~/data/learning/summary'
 import {
   ADAPTIVE_EXPEDITIONS_ENABLED, generateExpedition, evaluateExpedition,
@@ -15,7 +15,8 @@ import { getSubskill, type OnetDomain } from '~/data/curriculum/taxonomy'
 // ("learning") — completely SEPARATE from the sacred `player` save blob (constitution rule 5; the
 // player-schema/envelope migration path is untouched by this additive store). This upholds the
 // learning ↔ combat firewall (ADR 0003): mastery is written ONLY by the learning loop (Knowledge
-// Break → summarizeSession) and is NEVER read to scale combat power. Empty default = a fresh learner;
+// Break → summarizeSession, plus per-battle answers via recordBattleAnswer) and is NEVER read to
+// scale combat power — it may only bias which QUESTION is served (weak-recur). Empty default = a fresh learner;
 // an old profile with no learning key simply starts empty.
 // ================================================================================================
 export const useLearningStore = defineStore('learning', {
@@ -78,6 +79,14 @@ export const useLearningStore = defineStore('learning', {
       this.mastery = masteryAfter
       this.lastSummary = summary
       this.sessionsCompleted += 1
+    },
+    /** Record ONE battle answer into mastery (S-grade learning pass). Battle answers are learning
+     *  events too — feeding them here makes weak-recur selection & teacher reports reflect real play.
+     *  Still learning-only state: it is never read back to scale combat power (ADR 0003). */
+    recordBattleAnswer(subskillId: string | undefined, correct: boolean, responseMs?: number, now: number = Date.now()) {
+      if (!subskillId) return
+      const current = masteryOf(this.mastery, subskillId, now)
+      this.mastery = { ...this.mastery, [subskillId]: applyAnswer(current, { correct, responseMs, now }) }
     },
     /** Generate (once per day) today's adaptive expedition and snapshot the progress baseline. Flag-gated. */
     ensureExpedition(date: string) {
