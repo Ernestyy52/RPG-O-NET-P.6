@@ -25,9 +25,9 @@ function sampleMastery(): Record<string, SubskillMastery> {
   return m
 }
 
-describe('teacher reports — dormant flag', () => {
-  it('TEACHER_ENABLED is false (no surfaced UI until wired + reviewed)', () => {
-    expect(TEACHER_ENABLED).toBe(false)
+describe('teacher reports — flag', () => {
+  it('TEACHER_ENABLED is true (the /teacher dashboard page is wired to this domain)', () => {
+    expect(TEACHER_ENABLED).toBe(true)
   })
 })
 

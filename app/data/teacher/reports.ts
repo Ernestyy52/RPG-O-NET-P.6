@@ -11,8 +11,9 @@
 import type { SubskillMastery } from '~/data/learning/mastery'
 import { SUBSKILLS, getSubskill, type OnetDomain } from '~/data/curriculum/taxonomy'
 
-/** Rollback flag (Phase 16). Dormant — no teacher UI is surfaced until wired + reviewed. */
-export const TEACHER_ENABLED = false
+/** Rollback flag (Phase 16). ON — the /teacher dashboard page reads reports through this domain.
+ *  Flip back to false to fully de-surface the teacher UI (the page renders a disabled notice). */
+export const TEACHER_ENABLED = true
 
 export interface DomainBreakdown {
   domain: OnetDomain
