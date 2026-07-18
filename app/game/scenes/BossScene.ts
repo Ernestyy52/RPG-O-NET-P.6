@@ -6,6 +6,7 @@ import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { themeForFloor, type MonsterTheme } from '../../data/monsterThemes'
 import { usePlayerStore } from '../../stores/player'
+import { WeaponOverlay } from '../systems/paperdoll'
 import {
   preloadSharedAssets,
   preloadFloorMonsters,
@@ -28,6 +29,9 @@ import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
 import { useSettingsStore } from '../../stores/settings'
 import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, DUNGEON_FIRE } from '../../data/world1/decor'
 import { BIOME_BUSHES } from '../../data/floorFeatures'
+import { MinimapTicker, borderRects, tileRect, publishMinimapLayout, clearMinimap } from '../systems/minimap'
+import { resolveMovement } from '../runtime/movement'
+import { FIELD_SPEED, centeredCameraBounds } from '../scaleContract'
 
 const TILE = 32
 // ห้องบอสเล็กและปิดล้อม (ลานประลอง) — บอสตัวเดียวอยู่กลาง ผู้เล่นเข้าจากล่าง
@@ -56,12 +60,14 @@ export class BossScene extends Phaser.Scene {
   private bossDown = false
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private gearAura?: Phaser.GameObjects.Image | null
+  private weaponOverlay!: WeaponOverlay
   // Phase 14 Inc 3 — boss 3-phase telegraph rendering (driven by RealtimeBattle's boss:* events)
   private arenaRing?: Phaser.GameObjects.Graphics
   private arenaCx = 0
   private arenaCy = 0
   private telegraphFx?: Phaser.GameObjects.Graphics
   private phaseBanner?: Phaser.GameObjects.Text
+  private minimapTicker = new MinimapTicker()
 
   constructor() {
     super('BossScene')
@@ -183,9 +189,12 @@ export class BossScene extends Phaser.Scene {
     this.idleBreath = createIdleBreath(this, this.player, pScale)
     this.gearAura = addGearAura(this, store.gearAuraColor, store.gearRarity)
     this.gearAura?.setDepth(startY - 2)
+    this.weaponOverlay = new WeaponOverlay(this)
 
     this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
-    this.cameras.main.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
+    // S4: ลานเล็กกว่าจอ → กล้องกึ่งกลาง (scale contract)
+    const camB = centeredCameraBounds(MAP_W * TILE, MAP_H * TILE, this.scale.width, this.scale.height)
+    this.cameras.main.setBounds(camB.x, camB.y, camB.width, camB.height)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
 
     // ---- boss (กลางห้อง) ----
@@ -217,6 +226,18 @@ export class BossScene extends Phaser.Scene {
     applyAtmosphere(this, biome, getWorldState())
     playBgm(this, bgmKeyForBiome(biome.id))
 
+    // ---- minimap: ลานปิดสี่เหลี่ยม + เสามุม + ตำแหน่งบอส ----
+    publishMinimapLayout({
+      worldW: MAP_W * TILE,
+      worldH: MAP_H * TILE,
+      blocks: [
+        ...borderRects(MAP_W, MAP_H, TILE),
+        ...([[3, 3], [MAP_W - 4, 3], [3, MAP_H - 4], [MAP_W - 4, MAP_H - 4]] as [number, number][])
+          .map(([tx, ty]) => tileRect(tx, ty, TILE)),
+      ],
+      markers: [{ kind: 'boss', x: bx, y: by }],
+    })
+
     gameEvents.on('battle:end', this.handleBattleEnd, this)
     gameEvents.on('boss:phase-change', this.handlePhaseChange, this)
     gameEvents.on('boss:telegraph', this.handleTelegraph, this)
@@ -224,6 +245,7 @@ export class BossScene extends Phaser.Scene {
       gameEvents.off('battle:end', this.handleBattleEnd, this)
       gameEvents.off('boss:phase-change', this.handlePhaseChange, this)
       gameEvents.off('boss:telegraph', this.handleTelegraph, this)
+      clearMinimap()
     })
   }
 
@@ -294,8 +316,9 @@ export class BossScene extends Phaser.Scene {
     })
   }
 
-  private handleBattleEnd = (payload: { won: boolean; isBoss?: boolean }) => {
+  private handleBattleEnd = (payload: { outcome: import('../systems/eventBus').BattleOutcome; won: boolean; isBoss?: boolean }) => {
     this.inBattle = false
+    // ห้องบอสหนีไม่ได้ (ปุ่ม Flee ถูกปิด) — ผลลัพธ์มีแค่ victory/defeat
     if (!payload.won) {
       // แพ้บอส → กลับห้องมอนสเตอร์ชั้นเดิม (ฟาร์มต่อ/เตรียมตัวใหม่)
       this.cameras.main.fade(260, 0, 0, 0)
@@ -344,18 +367,27 @@ export class BossScene extends Phaser.Scene {
 
   update() {
     if (this.inBattle) { this.player.setVelocity(0); return }
-    const speed = 120
-    this.player.setVelocity(0)
-    let moving = false
-    if (this.cursors.left?.isDown) { this.player.setVelocityX(-speed); this.facing = 'left'; moving = true }
-    else if (this.cursors.right?.isDown) { this.player.setVelocityX(speed); this.facing = 'right'; moving = true }
-    if (this.cursors.up?.isDown) { this.player.setVelocityY(-speed); this.facing = 'up'; moving = true }
-    else if (this.cursors.down?.isDown) { this.player.setVelocityY(speed); this.facing = 'down'; moving = true }
+    // S4: กติกาเดินรวมที่ resolveMovement (diagonal normalize) — สปีดจาก scale contract
+    const move = resolveMovement({
+      left: !!this.cursors.left?.isDown,
+      right: !!this.cursors.right?.isDown,
+      up: !!this.cursors.up?.isDown,
+      down: !!this.cursors.down?.isDown,
+    }, this.facing, FIELD_SPEED)
+    this.player.setVelocity(move.vx, move.vy)
+    this.facing = move.facing
+    const moving = move.moving
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
     this.gearAura?.setPosition(this.player.x, this.player.y + 4)
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
     this.idleBreath.setMoving(moving)
     if (this.boss?.active) this.boss.setDepth(this.boss.y + 200)
+
+    this.minimapTicker.tick(this.time.now, {
+      player: { x: this.player.x, y: this.player.y },
+      monsters: this.boss?.active ? [{ x: this.boss.x, y: this.boss.y }] : [],
+    })
   }
 }

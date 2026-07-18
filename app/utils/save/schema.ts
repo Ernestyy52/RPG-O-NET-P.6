@@ -11,14 +11,19 @@ import type { EquipmentSlot } from '~/data/equipment'
 import type { DailyQuest } from '~/data/quests'
 import type { SubskillMastery } from '~/data/learning/mastery'
 import { defaultLoadout } from '~/data/combat/classKits'
+import { defaultSkillLoadout } from '~/data/combat/builds'
 
 export type GenderId = 'male' | 'female'
 
 /** Bump when the persisted shape changes; add a matching migration in migrations.ts.
  *  v1: initial envelope. v2: learning slice gains `mastery` + `lastSessionDate` (Phase 06).
  *  v3: character slice gains `kitLoadout` — the equipped class-kit ability ids (Phase 12).
- *  v4: inventory slice gains `sigils` + `socketedSigils` — sigil progression (Phase 13). */
-export const CURRENT_SAVE_VERSION = 4
+ *  v4: inventory slice gains `sigils` + `socketedSigils` — sigil progression (Phase 13).
+ *  v5: character slice gains `jobId` + `skillLoadout` — data-driven skills (Master Plan Phase 4).
+ *  v6: session slice gains `restedExpPool` + `lastSeenAt` — rested bonus (Master Plan Phase 8).
+ *  v7: character slice gains `statAlloc` — RO-inspired manual stat points (data/statAllocation.ts);
+ *      zone-first PlayerLocation migration ที่จองไว้เดิมเลื่อนไปเป็น v8. */
+export const CURRENT_SAVE_VERSION = 7
 
 /** localStorage keys owned by the save system. */
 export const SAVE_KEY = 'save:onet'
@@ -44,6 +49,12 @@ export interface CharacterSlice {
   learnedSkills: string[]
   /** equipped class-kit ability ids (Phase 12); defaults to the class's starter loadout. */
   kitLoadout: string[]
+  /** advanced job ('' = none yet) — Master Plan Phase 4. */
+  jobId: string
+  /** equipped skill loadout (Master Plan Phase 4); defaults to the class's first preset build. */
+  skillLoadout: { skills: string[]; ultimate: string; passives: string[] }
+  /** manual stat points per attribute (v7 — RO-inspired allocation); empty = none spent yet. */
+  statAlloc: Record<string, number>
 }
 
 /** Learning state is deliberately separate from combat power (ADR 0003). */
@@ -59,6 +70,10 @@ export interface SessionSlice {
   currentFloor: number
   hp: number
   mp: number
+  /** bonus combat EXP pool granted for time away — rested bonus, never a penalty (v6). */
+  restedExpPool: number
+  /** ms epoch of the last rewarded play moment — measures absence for rested accrual (v6). */
+  lastSeenAt: number
 }
 
 export interface InventorySlice {
@@ -112,9 +127,9 @@ export function defaultSlices(): SaveSlices {
       classId: 'warrior',
       appearance: { face: 'calm', hair: 'short', color: 'amber' },
     },
-    character: { level: 1, exp: 0, skillPoints: 0, learnedSkills: [], kitLoadout: defaultLoadout('warrior') },
+    character: { level: 1, exp: 0, skillPoints: 0, learnedSkills: [], kitLoadout: defaultLoadout('warrior'), jobId: '', skillLoadout: defaultSkillLoadout('warrior'), statAlloc: {} },
     learning: { correctAnswers: 0, mastery: {}, lastSessionDate: '' },
-    session: { currentFloor: 1, hp: 72, mp: 30 },
+    session: { currentFloor: 1, hp: 72, mp: 30, restedExpPool: 0, lastSeenAt: 0 },
     inventory: { gold: 90, gems: 0, inventory: { potion_s: 2 }, equipment: {}, sigils: {}, socketedSigils: {} },
     quest: { dailyDate: '', dailyQuests: [], adventureLog: [] },
     settings: { sound: true, reducedMotion: false, language: 'en' },

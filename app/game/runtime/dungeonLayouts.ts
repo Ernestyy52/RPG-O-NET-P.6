@@ -16,6 +16,7 @@
 // ================================================================================================
 
 import type { TileXY, SpawnBounds } from './zone'
+import { gridFromCollision, reachableFrom, validateZoneReachability } from './zoneValidate'
 
 export type DungeonLayoutId = 'world01-mini' | 'world01-main'
 
@@ -234,26 +235,9 @@ export function isBlocked(config: DungeonLayoutConfig, x: number, y: number, col
   return collision[y][x]
 }
 
-/** Set of "x,y" tiles reachable on foot from `start` (4-neighbour BFS over the collision map). */
+/** Set of "x,y" tiles reachable on foot from `start` (delegates to the generic zone validator). */
 export function reachableTiles(config: DungeonLayoutConfig, start: TileXY, collision = buildCollisionMap(config)): Set<string> {
-  const seen = new Set<string>()
-  if (isBlocked(config, start.x, start.y, collision)) return seen
-  const queue: TileXY[] = [start]
-  seen.add(`${start.x},${start.y}`)
-  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]]
-  while (queue.length) {
-    const cur = queue.shift()!
-    for (const [dx, dy] of dirs) {
-      const nx = cur.x + dx
-      const ny = cur.y + dy
-      const key = `${nx},${ny}`
-      if (seen.has(key)) continue
-      if (isBlocked(config, nx, ny, collision)) continue
-      seen.add(key)
-      queue.push({ x: nx, y: ny })
-    }
-  }
-  return seen
+  return reachableFrom(gridFromCollision(collision), start)
 }
 
 export interface ReachabilityReport {
@@ -262,17 +246,15 @@ export interface ReachabilityReport {
   unreachable: { label: string; at: TileXY }[]
 }
 
-/** Proves every objective tile is reachable from the entry. Drives the no-soft-lock unit test. */
+/** Proves every objective tile is reachable from the entry. Drives the no-soft-lock unit test.
+ *  Since Map Build Phase 0 this is a thin adapter over validateZoneReachability (zoneValidate.ts) —
+ *  the SAME validator campaign maps and Tower rooms use, so all map kinds share one proof. */
 export function layoutReachability(config: DungeonLayoutConfig): ReachabilityReport {
-  const collision = buildCollisionMap(config)
-  const entryWalkable = !isBlocked(config, config.entry.x, config.entry.y, collision)
-  const seen = reachableTiles(config, config.entry, collision)
   const targets: { label: string; at: TileXY }[] = [
     { label: 'exit', at: config.exit },
     ...(config.bossGate ? [{ label: 'bossGate', at: config.bossGate }] : []),
     ...config.elites.map((e, i) => ({ label: `elite:${e.slug}#${i}`, at: e.at })),
     ...config.secrets.map((s) => ({ label: `secret:${s.id}`, at: s.at })),
   ]
-  const unreachable = targets.filter((t) => !seen.has(`${t.at.x},${t.at.y}`))
-  return { ok: entryWalkable && unreachable.length === 0, entryWalkable, unreachable }
+  return validateZoneReachability(gridFromCollision(buildCollisionMap(config)), config.entry, targets)
 }

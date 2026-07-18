@@ -49,6 +49,8 @@ describe('RealtimeCombat — frame-rate independent monster damage', () => {
 describe('RealtimeCombat — no invalid attacks', () => {
   it('rejects a second attack while on cooldown without mutating state', () => {
     const rt = new RealtimeCombat(makeSetup())
+    rt.registerAnswer(true)
+    rt.registerAnswer(true) // insight 2 — enough for two attacks; cooldown is what blocks the second
     const first = rt.requestAttack('attack')
     expect(first.accepted).toBe(true)
     const hpAfterFirst = rt.state.monsterHp
@@ -60,6 +62,8 @@ describe('RealtimeCombat — no invalid attacks', () => {
 
   it('allows the attack again once the cooldown elapses', () => {
     const rt = new RealtimeCombat(makeSetup())
+    rt.registerAnswer(true)
+    rt.registerAnswer(true)
     rt.requestAttack('attack')
     rt.tick(REALTIME_SKILL_TIMINGS.attack.cooldownMs)
     expect(rt.canAttack('attack')).toBe(true)
@@ -76,6 +80,7 @@ describe('RealtimeCombat — no invalid attacks', () => {
 
   it('rejects attacks once the target is dead and marks victory', () => {
     const rt = new RealtimeCombat(makeSetup({ monster: { atk: 20, hp: 1 } }))
+    rt.registerAnswer(true)
     const kill = rt.requestAttack('attack')
     expect(kill.accepted).toBe(true)
     expect(rt.state.over).toBe(true)
@@ -122,6 +127,7 @@ describe('RealtimeCombat — combo-scaled hero damage (reuses Phase 07 formula)'
 describe('RealtimeCombat — rewards are idempotent (no duplicates)', () => {
   it('claims the victory reward exactly once through the ledger', () => {
     const rt = new RealtimeCombat(makeSetup({ monster: { atk: 20, hp: 1 }, reward: { encounterId: 'win-1', exp: 40, gold: 12, gems: 1 } }))
+    rt.registerAnswer(true)
     rt.requestAttack('attack')
     const ledger = new RewardLedger()
     const first = rt.claimReward(ledger)
@@ -199,16 +205,52 @@ describe('RealtimeCombat — class-kit slot override (Phase 14 flip #5)', () => 
 describe('RealtimeCombat — safe reset', () => {
   it('restores the exact initial state', () => {
     const rt = new RealtimeCombat(makeSetup())
-    rt.requestAttack('attack')
     rt.registerAnswer(true)
+    rt.requestAttack('attack')
     rt.tick(800)
     rt.reset()
     expect(rt.state).toMatchObject({
-      heroHp: 1000, monsterHp: 300, mp: 30, combo: 0,
+      heroHp: 1000, monsterHp: 300, mp: 30, combo: 0, insight: 0,
       cooldowns: { attack: 0, support: 0, counter: 0 },
       monsterAttackTimer: 400, elapsedMs: 0, over: false, won: false,
     })
-    // fully playable again after reset
+    // fully playable again after reset (a correct answer re-earns the insight to strike)
+    rt.registerAnswer(true)
     expect(rt.requestAttack('attack').accepted).toBe(true)
+  })
+})
+
+describe('RealtimeCombat — Insight economy (P0.5/P0.6: knowledge gates damage)', () => {
+  it('rejects the main attack with no insight — combat cannot bypass learning', () => {
+    const rt = new RealtimeCombat(makeSetup())
+    const out = rt.requestAttack('attack')
+    expect(out.accepted).toBe(false)
+    expect(out.reason).toBe('no-insight')
+    expect(rt.state.monsterHp).toBe(300)
+  })
+
+  it('each correct answer grants insight, capped; wrong answers never take earned insight away', () => {
+    const rt = new RealtimeCombat(makeSetup())
+    for (let i = 0; i < 8; i++) rt.registerAnswer(true)
+    expect(rt.state.insight).toBe(5) // INSIGHT_CAP
+    rt.registerAnswer(false)
+    expect(rt.state.insight).toBe(5) // combo resets, insight stays
+    expect(rt.state.combo).toBe(0)
+  })
+
+  it('an attack spends exactly one insight', () => {
+    const rt = new RealtimeCombat(makeSetup())
+    rt.registerAnswer(true)
+    rt.registerAnswer(true)
+    rt.requestAttack('attack')
+    expect(rt.state.insight).toBe(1)
+  })
+
+  it('a damaging secondary skill without insight degrades to pure utility (0 damage)', () => {
+    const rt = new RealtimeCombat(makeSetup())
+    const before = rt.state.monsterHp
+    const out = rt.requestAttack('counter') // generic counter deals damage normally
+    expect(out.accepted).toBe(true)
+    expect(rt.state.monsterHp).toBe(before) // no insight ⇒ no damage dealt
   })
 })

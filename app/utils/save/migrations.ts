@@ -13,6 +13,7 @@ import {
   CURRENT_SAVE_VERSION, defaultSlices, type SaveEnvelope, type SaveSlices,
 } from './schema'
 import { defaultLoadout } from '~/data/combat/classKits'
+import { defaultSkillLoadout } from '~/data/combat/builds'
 import type { HeroClassId } from '~/data/classes'
 
 export interface Migration {
@@ -76,6 +77,44 @@ export const MIGRATIONS: Migration[] = [
     to: 4,
     migrate: (env) => ({
       version: 4,
+      savedAt: env.savedAt ?? 0,
+      slices: mergeSliceDefaults(env.slices),
+    }),
+  },
+  // v4 → v5 (Master Plan Phase 4): character slice gains `jobId` ('' = ยังไม่เลือก) + `skillLoadout`.
+  // เมื่อไม่มี loadout ให้ default เป็น preset build แรก "ของคลาสในเซฟ" (คงอัตลักษณ์ mage/archer เดิม)
+  {
+    from: 4,
+    to: 5,
+    migrate: (env) => {
+      const had = env.slices?.character?.skillLoadout && Array.isArray(env.slices.character.skillLoadout.skills)
+        && env.slices.character.skillLoadout.skills.length > 0
+      const slices = mergeSliceDefaults(env.slices)
+      if (!had) {
+        slices.character.skillLoadout = defaultSkillLoadout((slices.profile.classId ?? 'warrior') as HeroClassId)
+      }
+      if (typeof slices.character.jobId !== 'string') slices.character.jobId = ''
+      return { version: 5, savedAt: env.savedAt ?? 0, slices }
+    },
+  },
+  // v5 → v6 (Master Plan Phase 8): session slice gains `restedExpPool` + `lastSeenAt` (rested bonus).
+  // Both default 0 via mergeSliceDefaults; a fresh pool grants nothing until real absence accrues.
+  {
+    from: 5,
+    to: 6,
+    migrate: (env) => ({
+      version: 6,
+      savedAt: env.savedAt ?? 0,
+      slices: mergeSliceDefaults(env.slices),
+    }),
+  },
+  // v6 → v7 (RO-feel): character slice gains `statAlloc` (manual stat points). Default {} via
+  // mergeSliceDefaults — old saves keep identical stats until the player spends points themselves.
+  {
+    from: 6,
+    to: 7,
+    migrate: (env) => ({
+      version: 7,
       savedAt: env.savedAt ?? 0,
       slices: mergeSliceDefaults(env.slices),
     }),

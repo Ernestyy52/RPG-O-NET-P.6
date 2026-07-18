@@ -6,7 +6,7 @@
           <h2 class="gold-text text-lg font-bold">Floor {{ floor }} {{ isBossFight ? 'Boss' : 'Battle' }}</h2>
           <p class="text-xs opacity-75">{{ cefr }} / {{ world.description }} / Turn: {{ turn }}</p>
         </div>
-        <span class="text-sm">HP {{ player.hp }}/{{ player.maxHp }} <span class="mx-1 opacity-40">|</span> <span class="text-[#9db8ff]">MP {{ player.mp }}/{{ player.maxMp }}</span></span>
+        <span class="text-sm">HP {{ player.hp }}/{{ player.maxHp }} <span class="mx-1 opacity-40">|</span> <span class="text-[#9db8ff]">MP {{ player.mp }}/{{ player.maxMp }}</span> <span class="mx-1 opacity-40">|</span> <span class="text-amber-300" title="Insight — ได้จากการตอบถูก ใช้กับ Counter">✦ {{ insight }}</span></span>
       </div>
 
       <div class="pixel-window-body grid gap-4 p-4 md:grid-cols-[220px_1fr]">
@@ -67,7 +67,7 @@
           <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < SUPPORT_MP" @click="support">Support <span class="opacity-70">{{ SUPPORT_MP }}MP</span></button>
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || !hasPotion" @click="usePotion">Item</button>
-            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < COUNTER_MP" @click="counter">Counter <span class="opacity-70">{{ COUNTER_MP }}MP</span></button>
+            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < COUNTER_MP || insight < 1" @click="counter">Counter <span class="opacity-70">{{ COUNTER_MP }}MP ✦1</span></button>
             <button class="btn-secondary text-xs" :disabled="locked || isBossFight" @click="escape">Escape</button>
           </div>
         </div>
@@ -77,8 +77,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
-import { gameEvents } from '~/game/systems/eventBus'
+import { computed, onUnmounted, reactive, ref } from 'vue'
+import { gameEvents, type BattleOutcome } from '~/game/systems/eventBus'
 import { getFloorConfig, getQuestionDifficulty } from '~/data/floors'
 import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/questions'
 import { getWorldState, isWorld1Floor } from '~/data/world'
@@ -116,6 +116,9 @@ const combo = ref(0)
 const comboBonus = computed(() => domainComboBonus(combo.value))
 // Learning feedback หลังตอบ: โชว์เฉลย+คำอธิบายเสมอ; ตอบผิดหยุดรอปุ่ม "สู้ต่อ" (ไม่มีแรงกดดันเวลา)
 const feedback = reactive<{ visible: boolean; correct: boolean; chosen: number }>({ visible: false, correct: false, chosen: -1 })
+// Insight (P0.5): ทรัพยากรความรู้ฝั่ง turn-based — ตอบถูก +1 (cap 5), Counter ต้องจ่าย 1
+// ปิดทางใช้ Counter รัวๆ ฆ่าศัตรูโดยไม่ตอบคำถามเลย
+const insight = ref(0)
 // Flip MONSTER_INTENTS: มอนสเตอร์ประกาศท่าถัดไปล่วงหน้า — Counter/Support มีจังหวะให้ตัดสินใจจริง
 const intent = ref<MonsterIntentId>('attack')
 const intentSpec = computed(() => (MONSTER_INTENTS_ENABLED && active.value ? MONSTER_INTENTS[intent.value] : null))
@@ -173,7 +176,7 @@ function setupMonster(payload: import('~/game/systems/eventBus').EncounterInfo) 
   turn.value = heroWinsInitiative(player.speed, monster.speed, world.value.combatModifier.playerSpeed) ? 'Hero' : 'Monster'
 }
 
-gameEvents.on('battle:start', (payload) => {
+const onBattleStart = (payload: import('~/game/systems/eventBus').EncounterInfo) => {
   // Per-zone gate (PHASE_14_PLAN §3): World-1 floors run on the real-time path when
   // REALTIME_COMBAT_ENABLED — RealtimeBattle owns those encounters. Floors 11+ (and every floor while
   // the flag is off) stay turn-based here. Flag off ⇒ this guard is inert and BattleModal owns all.
@@ -182,6 +185,7 @@ gameEvents.on('battle:start', (payload) => {
   active.value = true
   locked.value = false
   combo.value = 0
+  insight.value = 0
   feedback.visible = false
   feedback.chosen = -1
   encounterId.value = `f${payload.floor}:${Date.now()}:${battleSeq++}`
@@ -190,11 +194,14 @@ gameEvents.on('battle:start', (payload) => {
   loadQuestion()
   log.value = turn.value === 'Hero' ? 'Your speed wins initiative. Answer correctly to attack.' : 'The monster is faster.'
   if (turn.value === 'Monster') setTimeout(monsterAttack, 700)
-})
+}
+gameEvents.on('battle:start', onBattleStart)
+// P0.9: ปลด listener เมื่อ component ถูกถอด
+onUnmounted(() => gameEvents.off('battle:start', onBattleStart))
 
-function finish(won: boolean) {
+function finish(outcome: BattleOutcome) {
   active.value = false
-  gameEvents.emit('battle:end', { won, isBoss: enc.isBoss })
+  gameEvents.emit('battle:end', { outcome, won: outcome === 'victory', isBoss: enc.isBoss })
 }
 
 // ดาเมจฮีโร่มาจาก combat domain (single source). flag COMBAT_DOMAIN_ENABLED สลับไปใช้ engine resolver
@@ -227,6 +234,7 @@ function answer(index: number) {
   if (feedback.correct) {
     player.recordCorrectAnswer()
     combo.value++
+    insight.value = Math.min(5, insight.value + 1) // ตอบถูก = ได้ Insight (ใช้จ่ายกับ Counter)
     const damage = heroHit('attack')
     pulse(monsterHit)
     log.value = combo.value >= 2
@@ -266,17 +274,28 @@ function usePotion() {
 }
 
 function counter() {
-  if (!player.spendMp(COUNTER_MP)) return
+  // P0.5: ดาเมจต้องมีความรู้หนุน — Counter ใช้ Insight 1 หน่วย (ได้จากการตอบถูกเท่านั้น)
+  if (insight.value < 1 || !player.spendMp(COUNTER_MP)) return
+  insight.value -= 1
   locked.value = true
   const damage = heroHit('counter')
-  log.value = `Counter stance deals ${damage} damage and reduces the next hit. (-${COUNTER_MP} MP)`
+  log.value = `Counter stance deals ${damage} damage and reduces the next hit. (-${COUNTER_MP} MP, -1 ✦)`
   if (monster.hp <= 0) return winBattle()
   setTimeout(() => monsterAttack(0.45), 700)
 }
 
 function escape() {
-  const chance = escapeChance(player.speed)
-  finish(Math.random() < chance ? false : true)
+  // P0.3/P0.4 — หนีสำเร็จ = 'escaped' (ออกจากไฟต์ กลับไปเดินต่อ ไม่ใช่ KO);
+  // หนีพลาด = ไฟต์ดำเนินต่อ + มอนสเตอร์ได้จังหวะตีฟรีหนึ่งครั้ง (เดิม logic กลับด้านทั้งคู่)
+  if (locked.value) return
+  if (Math.random() < escapeChance(player.speed)) {
+    player.addLog(`Fled from ${monster.name} on Floor ${floor.value}.`)
+    finish('escaped')
+  } else {
+    locked.value = true
+    log.value = 'Escape failed! The monster gets a free hit.'
+    setTimeout(monsterAttack, 700)
+  }
 }
 
 function monsterAttack(multiplier = 1) {
@@ -301,7 +320,7 @@ function monsterAttack(multiplier = 1) {
   pulse(playerHit)
   if (player.hp <= 0) {
     player.addLog(`Knocked out by ${monster.name} on Floor ${floor.value}.`)
-    return finish(false)
+    return finish('defeat')
   }
   const wasHeavy = spec?.id === 'heavy'
   nextIntent()
@@ -326,7 +345,7 @@ function winBattle() {
   })
   // จ่ายรางวัลครั้งเดียวต่อ encounter — winBattle ที่ยิงซ้ำจะไม่จ่ายซ้ำ (validated + idempotent, กติกาข้อ 3)
   if (rewardLedger.claim(reward)) {
-    player.gainRewards(reward.exp, reward.gold, reward.gems)
+    player.gainCombatRewards(reward.exp, reward.gold, reward.gems)
     player.recordDefeat()
     for (const drop of reward.loot) player.addItem(drop.itemId, drop.qty)
   }
@@ -334,7 +353,7 @@ function winBattle() {
   const gemText = reward.gems ? ` +${reward.gems} Gems.` : ''
   log.value = `Victory. +${reward.exp} EXP, +${reward.gold} gold.${gemText}${dropText}`
   player.addLog(`Defeated ${monster.name} on Floor ${floor.value} (+${reward.exp} EXP, +${reward.gold}g${reward.gems ? `, +${reward.gems} Gems` : ''})`)
-  setTimeout(() => finish(true), 1100)
+  setTimeout(() => finish('victory'), 1100)
 }
 </script>
 

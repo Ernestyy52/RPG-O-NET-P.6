@@ -7,6 +7,7 @@ import { getWorldState } from '../../data/world'
 import { getBossRequirement, describeMissingRequirements } from '../../data/bossRequirements'
 import { themeForFloor, type MonsterTheme } from '../../data/monsterThemes'
 import { usePlayerStore } from '../../stores/player'
+import { WeaponOverlay } from '../systems/paperdoll'
 import {
   preloadSharedAssets,
   preloadFloorMonsters,
@@ -32,11 +33,14 @@ import {
   canStartEncounter, isNetMonsterFightable,
   NEW_ZONE_RUNTIME_ENABLED, type DungeonLayoutId,
 } from '../runtime'
+import { centeredCameraBounds } from '../scaleContract'
 import {
   FLOOR_VARIETY_ENABLED, floorObstacles, floorModifier, chestSpots, chestReward, floorDecorSpots,
   BIOME_BUSHES,
 } from '../../data/floorFeatures'
 import { WORLD1_BUSHES } from '../../data/world1/decor'
+import { MinimapTicker, borderRects, tileRect, publishMinimapLayout, clearMinimap } from '../systems/minimap'
+import type { MinimapLayout } from '../systems/eventBus'
 
 /** World-1 floors that host a dungeon interior, and which layout each opens (Phase 14). */
 const WORLD1_DUNGEON_FLOORS: Record<number, DungeonLayoutId> = { 5: 'world01-mini', 10: 'world01-main' }
@@ -67,6 +71,9 @@ export class TowerScene extends Phaser.Scene {
   private targetMonsters = 25
   private monsterSpeedMult = 1
   private gearAura?: Phaser.GameObjects.Image | null
+  private weaponOverlay!: WeaponOverlay
+  private minimapTicker = new MinimapTicker()
+  private minimapLayout!: MinimapLayout
 
   constructor() {
     super('TowerScene')
@@ -147,9 +154,12 @@ export class TowerScene extends Phaser.Scene {
     // ออร่าตามเครื่องแต่งกาย (paper-doll) — เห็นชัดว่าใส่ของหายาก
     this.gearAura = addGearAura(this, player.gearAuraColor, player.gearRarity)
     this.gearAura?.setDepth(startY - 2)
+    this.weaponOverlay = new WeaponOverlay(this)
 
     this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
-    this.cameras.main.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
+    // S4: ชั้น 768×576 เล็กกว่าจอ desktop 800×600 → กล้องกึ่งกลาง (scale contract)
+    const camB = centeredCameraBounds(MAP_W * TILE, MAP_H * TILE, this.scale.width, this.scale.height)
+    this.cameras.main.setBounds(camB.x, camB.y, camB.width, camB.height)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
 
     // ---- boss door (top center) — เดินชนแล้วเปิดกล่องแสดงเงื่อนไข (ไม่มีบอสในห้องนี้แล้ว) ----
@@ -172,6 +182,18 @@ export class TowerScene extends Phaser.Scene {
       this.add.rectangle(0, 0, MAP_W * TILE, MAP_H * TILE, 0xc8d4e0, 0.16).setOrigin(0).setDepth(640)
       this.add.rectangle(0, 0, MAP_W * TILE, MAP_H * TILE, biome.bg, 0.22).setOrigin(0).setDepth(641)
     }
+    // ---- minimap layout (Phase 2): กำแพงขอบ + ต้นไม้ + ประตูบอส — publish ก่อน แล้วเติม marker
+    // ระหว่าง create ต่อได้ (chest/dungeon entry) ผ่าน object เดียวกันแล้ว publish ซ้ำ
+    this.minimapLayout = {
+      worldW: MAP_W * TILE,
+      worldH: MAP_H * TILE,
+      blocks: [
+        ...borderRects(MAP_W, MAP_H, TILE),
+        ...treeSpots.map(([tx, ty]) => tileRect(tx, ty, TILE)),
+      ],
+      markers: [{ kind: 'boss', x: doorX, y: doorY }],
+    }
+
     if (modifier && modifier.chests > 0) {
       const spots = chestSpots(this.floor, floorObstacles(this.floor, { w: MAP_W, h: MAP_H }), { w: MAP_W, h: MAP_H })
       for (const [i, spot] of spots.entries()) {
@@ -179,11 +201,15 @@ export class TowerScene extends Phaser.Scene {
         const cy = spot.y * TILE + TILE / 2
         const chest = this.physics.add.staticSprite(cx, cy, 'floor_chest')
         chest.setScale(1.1).setDepth(cy)
+        this.minimapLayout.markers.push({ kind: 'chest', x: cx, y: cy })
         const glow = this.add.image(cx, cy - 4, 'atmo_dot').setTint(0xffd977)
           .setBlendMode(Phaser.BlendModes.ADD).setScale(2.2).setAlpha(0.4).setDepth(cy - 1)
         this.physics.add.overlap(this.player, chest, () => {
           if (!chest.active) return
           chest.setActive(false)
+          // เก็บหีบแล้ว — เอา marker ออกจาก minimap ทันที (ไม่ทิ้งเป้าหมายผี)
+          this.minimapLayout.markers = this.minimapLayout.markers.filter((m) => !(m.kind === 'chest' && m.x === cx && m.y === cy))
+          publishMinimapLayout(this.minimapLayout)
           const reward = chestReward(this.floor, i)
           const player = usePlayerStore()
           // รางวัลเล็ก (≈ ทองมอนหนึ่งตัว) — จ่ายครั้งเดียวต่อหีบต่อการเข้าชั้น แล้วหีบหายไป
@@ -269,6 +295,7 @@ export class TowerScene extends Phaser.Scene {
       const entry = this.physics.add.staticSprite(dx, dy, 'boss_door_open')
       entry.setOrigin(0.5, 0.7).setDepth(dy).setTint(0x9a7bd0)
       addPlaque(this, dx, dy + 12, 'Dungeon', { fontSize: '10px', depth: dy + 1, color: '#cdb27a' })
+      this.minimapLayout.markers.push({ kind: 'dungeon', x: dx, y: dy })
       let lastDungeonEnter = 0
       this.physics.add.overlap(this.player, entry, () => {
         if (this.inBattle || this.time.now - lastDungeonEnter < 1500) return
@@ -294,6 +321,8 @@ export class TowerScene extends Phaser.Scene {
     applyAtmosphere(this, biome, getWorldState())
     playBgm(this, bgmKeyForBiome(biome.id))
 
+    publishMinimapLayout(this.minimapLayout)
+
     gameEvents.on('battle:end', this.handleBattleEnd, this)
     // เงื่อนไขครบ + กด "เข้าห้องบอส" ในกล่อง → โหลดห้องบอสเดี่ยว
     const enterBoss = () => this.scene.start('BossScene', { floor: this.floor, classId: this.classId })
@@ -303,6 +332,8 @@ export class TowerScene extends Phaser.Scene {
       gameEvents.off('boss:enter', enterBoss)
       leaveRoom()
       this.netPlayers.destroy()
+      this.weaponOverlay.destroy()
+      clearMinimap()
     })
   }
 
@@ -425,6 +456,7 @@ export class TowerScene extends Phaser.Scene {
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
     this.gearAura?.setPosition(this.player.x, this.player.y + 4)
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
     this.idleBreath.setMoving(moving)
     this.netPlayers.update(time, this.player, this.facing, moving)
 
@@ -440,6 +472,13 @@ export class TowerScene extends Phaser.Scene {
       }
       if (!m.getData('isBoss')) m.setDepth(m.y)
     }
+
+    this.minimapTicker.tick(this.time.now, {
+      player: { x: this.player.x, y: this.player.y },
+      monsters: this.monsters.getChildren()
+        .filter((c) => (c as Phaser.Physics.Arcade.Sprite).active)
+        .map((c) => ({ x: (c as Phaser.Physics.Arcade.Sprite).x, y: (c as Phaser.Physics.Arcade.Sprite).y })),
+    })
   }
 
   private onEncounterMonster(monster: Phaser.Physics.Arcade.Sprite) {
@@ -499,7 +538,7 @@ export class TowerScene extends Phaser.Scene {
 
   private activeMonster?: Phaser.Physics.Arcade.Sprite
 
-  private handleBattleEnd = (payload: { won: boolean; isBoss?: boolean }) => {
+  private handleBattleEnd = (payload: { outcome: import('../systems/eventBus').BattleOutcome; won: boolean; isBoss?: boolean }) => {
     this.inBattle = false
     const monster = this.activeMonster
     this.activeMonster = undefined
@@ -509,7 +548,18 @@ export class TowerScene extends Phaser.Scene {
       sendBattleResult(monster.getData('netId') as string, payload.won && !payload.isBoss)
     }
 
-    if (!payload.won) {
+    // P0.3: หนีสำเร็จ = ถอยออกมาเดินต่อในชั้นเดิม — มอนสเตอร์ยังอยู่ (ไม่ใช่ KO ไม่ restart)
+    if (payload.outcome === 'escaped') {
+      if (monster?.active) {
+        // เว้นช่วงกันชนซ้ำทันที แล้วค่อยเปิด body ให้สู้ใหม่ได้
+        this.time.delayedCall(1200, () => {
+          if (monster.active) (monster.body as Phaser.Physics.Arcade.Body).enable = true
+        })
+      }
+      return
+    }
+
+    if (payload.outcome === 'defeat') {
       // แพ้ = หมดสติ ฟื้นชั้นเดิม (มอนสเตอร์รีเซ็ต)
       this.scene.restart({ floor: this.floor, classId: this.classId })
       return

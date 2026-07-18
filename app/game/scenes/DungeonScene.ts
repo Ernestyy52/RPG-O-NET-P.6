@@ -5,6 +5,7 @@ import { getFloorConfig } from '../../data/floors'
 import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { usePlayerStore } from '../../stores/player'
+import { WeaponOverlay } from '../systems/paperdoll'
 import { useSettingsStore } from '../../stores/settings'
 import {
   preloadSharedAssets,
@@ -32,6 +33,8 @@ import {
   type DungeonLayoutId,
   type DungeonLayoutConfig,
 } from '../runtime'
+import { centeredCameraBounds } from '../scaleContract'
+import { MinimapTicker, rectsFromWallGrid, publishMinimapLayout, clearMinimap } from '../systems/minimap'
 
 const DUNGEON_TILES = 'dungeon_tiles'
 const DUNGEON_WALLS = 'dungeon_walls'
@@ -52,6 +55,7 @@ export class DungeonScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private monsters!: Phaser.Physics.Arcade.Group
   private facing: 'down' | 'left' | 'right' | 'up' = 'down'
+  private weaponOverlay!: WeaponOverlay
   private classId: HeroClassId = 'warrior'
   private floor = 5
   private layoutId: DungeonLayoutId = 'world01-mini'
@@ -60,8 +64,12 @@ export class DungeonScene extends Phaser.Scene {
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private enteredAt = 0
   private exitArmed = false
+  // P0.8: objective ของดันเจี้ยน — ต้องล้ม elite ครบก่อน exit/boss gate จึงเปิด
+  private elitesRemaining = 0
+  private lastObjectiveNotice = 0
   private foundSecrets = new Set<string>()
   private activeMonster?: Phaser.Physics.Arcade.Sprite
+  private minimapTicker = new MinimapTicker()
 
   constructor() {
     super('DungeonScene')
@@ -167,9 +175,12 @@ export class DungeonScene extends Phaser.Scene {
     applyStandardHeroBody(this.player, pScale)
     this.physics.add.collider(this.player, walls)
     this.idleBreath = createIdleBreath(this, this.player, pScale)
+    this.weaponOverlay = new WeaponOverlay(this)
 
     this.physics.world.setBounds(0, 0, worldW, worldH)
-    this.cameras.main.setBounds(0, 0, worldW, worldH)
+    // S4: ดันเจี้ยนเล็กกว่าจอ → กล้องกึ่งกลาง (scale contract)
+    const camB = centeredCameraBounds(worldW, worldH, this.scale.width, this.scale.height)
+    this.cameras.main.setBounds(camB.x, camB.y, camB.width, camB.height)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
 
     // ---- monsters (offline, from the layout spawn regions) ----
@@ -181,6 +192,7 @@ export class DungeonScene extends Phaser.Scene {
       for (const [i, s] of slots.entries()) this.spawnMonsterSprite(s.slug, s.x, s.y, i)
     }
     // ---- elites: tint + scale + nameplate (the required non-color second threat tell) ----
+    this.elitesRemaining = this.layout.elites.length // P0.8: objective ของดันเจี้ยนนี้
     for (const e of this.layout.elites) {
       const m = this.spawnMonsterSprite(e.slug, e.at.x * TILE + TILE / 2, e.at.y * TILE + TILE / 2, 0)
       m.setData('elite', true)
@@ -242,7 +254,9 @@ export class DungeonScene extends Phaser.Scene {
     addPlaque(this, 8, 8, `${this.layout.nameTh}  ·  ${this.layout.name}`, {
       fontSize: '13px', depth: 100, fixed: true, origin: [0, 0],
     })
-    addPlaque(this, 8, 36, 'Explore the dungeon. Reach the Exit or Boss Gate.', {
+    addPlaque(this, 8, 36, this.elitesRemaining > 0
+      ? `Defeat ${this.elitesRemaining} Elite guardian${this.elitesRemaining > 1 ? 's' : ''} to unlock the Exit.`
+      : 'Explore the dungeon. Reach the Exit or Boss Gate.', {
       fontSize: '10px', depth: 100, fixed: true, origin: [0, 0], color: '#cdb27a',
     })
 
@@ -268,6 +282,24 @@ export class DungeonScene extends Phaser.Scene {
 
     // Inc 4: main-quest signal — the hero has entered this dungeon (bridged to the quest reducer)
     gameEvents.emit('dungeon:enter', { layoutId: this.layoutId })
+
+    // ---- minimap: กำแพงจาก wallGrid (merged rects) + prop ที่ block + exit/boss gate ----
+    // ความลับ (secrets) จงใจไม่ขึ้น minimap — ให้ค้นเจอด้วยตาในฉากเอง
+    publishMinimapLayout({
+      worldW,
+      worldH,
+      blocks: [
+        ...rectsFromWallGrid(this.layout.wallGrid, TILE),
+        ...this.layout.props.filter((p) => p.blocking).map((p) => ({ x: p.x * TILE, y: p.y * TILE, w: TILE, h: TILE })),
+      ],
+      markers: [
+        { kind: 'exit', x: exitX, y: exitY },
+        ...(this.layout.bossGate
+          ? [{ kind: 'boss' as const, x: this.layout.bossGate.x * TILE + TILE / 2, y: this.layout.bossGate.y * TILE + TILE / 2 }]
+          : []),
+      ],
+    })
+    this.events.once('shutdown', () => clearMinimap())
   }
 
   private spawnMonsterSprite(slug: string, x: number, y: number, index: number): Phaser.Physics.Arcade.Sprite {
@@ -283,15 +315,28 @@ export class DungeonScene extends Phaser.Scene {
     return m
   }
 
+  /** P0.8: ดันเจี้ยน "เคลียร์" ได้เมื่อล้มผู้พิทักษ์ elite ครบเท่านั้น — เดินทะลุเฉยๆ ไม่นับ */
+  private objectiveComplete(): boolean {
+    return this.elitesRemaining <= 0
+  }
+
+  private notifyObjective() {
+    if (this.time.now - this.lastObjectiveNotice < 2500) return
+    this.lastObjectiveNotice = this.time.now
+    gameEvents.emit('notice', { text: `⚔ ล้มผู้พิทักษ์ Elite อีก ${this.elitesRemaining} ตัวเพื่อปลดล็อกทางออก!` })
+  }
+
   private tryExit() {
     if (!this.exitArmed || this.inBattle) return
-    // reaching the exit means the hero traversed the dungeon → main-quest "clear" signal
+    if (!this.objectiveComplete()) return this.notifyObjective()
+    // objective ครบ + ถึงทางออก = เคลียร์ดันเจี้ยนจริง → main-quest "clear" signal
     gameEvents.emit('dungeon:clear', { layoutId: this.layoutId })
     this.scene.start('TowerScene', { floor: this.floor, classId: this.classId })
   }
 
   private tryBossGate() {
     if (this.inBattle) return
+    if (!this.objectiveComplete()) return this.notifyObjective()
     // reaching the boss gate clears the approach dungeon → main-quest "clear" signal
     gameEvents.emit('dungeon:clear', { layoutId: this.layoutId })
     gameEvents.emit('boss:gate', { floor: this.floor })
@@ -311,6 +356,7 @@ export class DungeonScene extends Phaser.Scene {
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
     this.idleBreath.setMoving(moving)
 
     // arm the exit only after the hero has stepped off the entry tile (no instant re-exit on spawn)
@@ -324,6 +370,13 @@ export class DungeonScene extends Phaser.Scene {
       const m = child as Phaser.Physics.Arcade.Sprite
       if (m.active) m.setDepth(m.y)
     }
+
+    this.minimapTicker.tick(this.time.now, {
+      player: { x: this.player.x, y: this.player.y },
+      monsters: this.monsters.getChildren()
+        .filter((c) => (c as Phaser.Physics.Arcade.Sprite).active)
+        .map((c) => ({ x: (c as Phaser.Physics.Arcade.Sprite).x, y: (c as Phaser.Physics.Arcade.Sprite).y })),
+    })
   }
 
   private onEncounterMonster(monster: Phaser.Physics.Arcade.Sprite) {
@@ -352,15 +405,33 @@ export class DungeonScene extends Phaser.Scene {
     this.activeMonster = monster
   }
 
-  private handleBattleEnd = (payload: { won: boolean; isBoss?: boolean }) => {
+  private handleBattleEnd = (payload: { outcome: import('../systems/eventBus').BattleOutcome; won: boolean; isBoss?: boolean }) => {
     this.inBattle = false
     const monster = this.activeMonster
     this.activeMonster = undefined
-    if (!payload.won) {
+    // P0.3: หนีสำเร็จ = ถอยมาเดินต่อ — มอนสเตอร์ตัวเดิมยังอยู่ (เปิด body คืนหลังช่วงกันชน)
+    if (payload.outcome === 'escaped') {
+      if (monster?.active) {
+        this.time.delayedCall(1200, () => {
+          if (monster.active) (monster.body as Phaser.Physics.Arcade.Body).enable = true
+        })
+      }
+      return
+    }
+    if (payload.outcome === 'defeat') {
       this.scene.restart({ layoutId: this.layoutId, floor: this.floor, classId: this.classId })
       return
     }
     if (monster) {
+      // P0.8: นับ elite ที่ล้มได้ — ครบเมื่อไรทางออก/ประตูบอสจึงเปิด
+      if (monster.getData('elite')) {
+        this.elitesRemaining = Math.max(0, this.elitesRemaining - 1)
+        gameEvents.emit('notice', {
+          text: this.elitesRemaining > 0
+            ? `⚔ Elite ล้มแล้ว! เหลืออีก ${this.elitesRemaining} ตัว`
+            : '✅ ผู้พิทักษ์หมดแล้ว — ทางออกปลดล็อก!',
+        })
+      }
       monster.setActive(false)
       this.tweens.add({ targets: monster, alpha: 0, scaleX: 0, scaleY: 0, duration: 220, onComplete: () => monster.destroy() })
     }

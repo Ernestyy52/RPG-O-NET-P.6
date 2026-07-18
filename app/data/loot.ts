@@ -29,7 +29,9 @@ export function rollLoot(floor: number, isBoss: boolean): LootDrop[] {
   if (Math.random() < 0.18) {
     drops.push({ itemId: 'potion_s', name: 'Small Potion', qty: 1 })
   }
-  if (world >= 2 && Math.random() < 0.4) {
+  // เศษกุญแจปลดบอสประจำโลก — ดรอปใน "ทุกโลก" รวม World 1 (P0.2: เดิม world>=2 ทำให้
+  // key_fragment_w1 ไม่มีทางได้ → ชั้น 10 ล็อกตาย); บอส/elite การันตีดรอปช่วยกันดวงร้าย
+  if (Math.random() < (isBoss ? 1 : 0.4)) {
     drops.push({ itemId: bossKeyItemId(world), name: bossKeyItemName(world), qty: 1 })
   }
   // บอสมีโอกาสดรอปวัสดุหายากของเทียร์สูงสุด (ไว้คราฟของ epic/legendary)

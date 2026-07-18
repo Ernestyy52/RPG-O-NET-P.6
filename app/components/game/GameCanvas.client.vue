@@ -31,11 +31,22 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* สัดส่วน container ต้องตรงกับ internal viewport ที่ createGame เลือก (scale contract S4):
+   desktop 800×600 (4:3, ปล่อยโตถึง 1000px ให้ hero บนจอ ~57–60px ตามที่ S3 ให้คะแนน),
+   มือถือแนวตั้ง ≤560px = 480×640 (3:4 — hero บนจอ ~39px ≥ เกณฑ์ 28px) — breakpoint
+   เดียวกับ MOBILE_BREAKPOINT_PX เสมอ */
 .game-canvas {
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   aspect-ratio: 4 / 3;
   image-rendering: pixelated;
+}
+
+@media (max-width: 560px) {
+  .game-canvas {
+    aspect-ratio: 3 / 4;
+    max-width: 520px;
+  }
 }
 
 .game-canvas :deep(canvas) {

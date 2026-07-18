@@ -71,8 +71,10 @@ describe('PlayerController — resolveMovement', () => {
   it('left wins over right; a vertical key wins the facing over a horizontal one (legacy order)', () => {
     expect(resolveMovement({ left: true, right: true, up: false, down: false }, 'down').vx).toBe(-PLAYER_SPEED)
     const diag = resolveMovement({ left: true, right: false, up: true, down: false }, 'down')
-    expect(diag.vx).toBe(-PLAYER_SPEED)
-    expect(diag.vy).toBe(-PLAYER_SPEED)
+    // S4 scale contract: diagonal is normalized — total speed stays PLAYER_SPEED in every direction
+    expect(diag.vx).toBeCloseTo(-PLAYER_SPEED * Math.SQRT1_2, 5)
+    expect(diag.vy).toBeCloseTo(-PLAYER_SPEED * Math.SQRT1_2, 5)
+    expect(Math.hypot(diag.vx, diag.vy)).toBeCloseTo(PLAYER_SPEED, 5)
     expect(diag.facing).toBe('up') // vertical overrides horizontal facing
   })
 })

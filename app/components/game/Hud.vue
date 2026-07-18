@@ -1,5 +1,5 @@
 <template>
-  <div class="ornate-hud mb-3">
+  <div class="ornate-hud mb-3 max-[560px]:mb-2">
     <!-- แถวบน: แผงตัวละคร (ซ้าย) / แถบชื่อเกม (กลาง) / แผงระบบ (ขวา) — จัดวางตามภาพ mockup -->
     <div class="hud-top">
       <section class="glass-panel char-panel">
@@ -306,7 +306,22 @@ function onImgError(event: Event) { (event.target as HTMLImageElement).style.vis
   .hud-top { grid-template-columns: 1fr 1fr; }
   .hud-banner { grid-column: 1 / -1; order: -1; }
 }
+/* มือถือแนวตั้ง (MAP_SCALE_DECISION S0 ปัญหา #1): HUD ต้องเหลือแถบบางๆ — จอส่วนใหญ่เป็นของ canvas
+   ชื่อเกมเต็มมีบนหน้า title อยู่แล้ว; ATK/DEF/SPD ดูได้ใน Status modal (ปุ่ม Status ยังอยู่);
+   ปุ่มทุกปุ่ม (ไอคอนระบบ + Recreate/Reset) ยังมองเห็น-กดได้ — ห้ามมี hidden interaction */
 @media (max-width: 560px) {
-  .hud-top { grid-template-columns: 1fr; }
+  .hud-top { grid-template-columns: 1fr; gap: 6px; }
+  .hud-banner { display: none; }
+  .char-panel { flex-direction: row; align-items: center; gap: 8px; padding: 6px 8px; }
+  .char-head { flex-shrink: 0; gap: 8px; }
+  .char-avatar-frame { width: 40px; height: 40px; }
+  .char-avatar { width: 34px; height: 34px; }
+  .char-weapon { width: 18px; height: 18px; }
+  .char-bars { flex: 1; min-width: 0; gap: 2px; }
+  .char-stats { display: none; }
+  .sys-panel { flex-direction: row; align-items: center; gap: 8px; padding: 6px 8px; }
+  .sys-icons { margin-bottom: 0; }
+  .sys-title, .sys-line { display: none; }
+  .sys-actions { margin-top: 0; margin-left: auto; padding-top: 0; }
 }
 </style>

@@ -257,6 +257,38 @@
     color: #f2c14e;
     text-shadow: 0 1px 0 #5c3a10;
   }
+
+  /* กลุ่มเมนูล่าง (Character / Journal / World) — กรอบบาง + ป้ายหมวดเล็กสไตล์ RPG classic */
+  .nav-group {
+    @apply relative flex items-stretch gap-2 border px-2 pb-1.5 pt-3;
+    border-radius: 8px;
+    border-color: rgba(138, 106, 47, 0.5);
+    background: rgba(5, 3, 2, 0.35);
+  }
+  .nav-group-label {
+    position: absolute;
+    top: -7px;
+    left: 8px;
+    padding: 0 5px;
+    border-radius: 4px;
+    background: #17110a;
+    border: 1px solid rgba(138, 106, 47, 0.55);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #cdb27a;
+  }
+
+  /* มือถือแนวตั้ง: แถบเมนูล่าง/แผงเงินย่อลง — จอส่วนใหญ่ต้องเป็นของ game canvas
+     (MAP_SCALE_DECISION S0 ปัญหา #1; ปุ่มยังครบทุกปุ่ม แค่เล็กลง) */
+  @media (max-width: 560px) {
+    .nav-btn { min-width: 52px; padding: 5px 6px 4px; font-size: 10px; }
+    .nav-ico { font-size: 15px; }
+    .nav-group { @apply gap-1 px-1.5 pb-1 pt-2.5; }
+    .currency-panel { @apply px-2 py-1; }
+    .currency-value { font-size: 13px; }
+  }
 }
 
 @layer components {

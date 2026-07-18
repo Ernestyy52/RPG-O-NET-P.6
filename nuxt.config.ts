@@ -18,4 +18,13 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'static',
   },
+  hooks: {
+    // หน้า /dev/* (asset gallery ฯลฯ) มีเฉพาะตอน dev — ห้ามหลุดเข้า production bundle
+    'pages:extend'(pages) {
+      if (process.env.NODE_ENV === 'production') {
+        const kept = pages.filter((p) => !(p.path && p.path.startsWith('/dev')))
+        pages.splice(0, pages.length, ...kept)
+      }
+    },
+  },
 })

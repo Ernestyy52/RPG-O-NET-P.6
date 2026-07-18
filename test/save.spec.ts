@@ -126,6 +126,53 @@ describe('save — v3 → v4 adds sigil inventory (Phase 13)', () => {
   })
 })
 
+describe('save — v5 → v6 adds rested-bonus state (Master Plan Phase 8)', () => {
+  it('adds zeroed restedExpPool + lastSeenAt while preserving session state', () => {
+    const slices = toSlices({ ...sampleLegacy })
+    delete (slices.session as unknown as Record<string, unknown>).restedExpPool
+    delete (slices.session as unknown as Record<string, unknown>).lastSeenAt
+    const v5 = { version: 5, savedAt: 0, slices } as SaveEnvelope
+    const migrated = runMigrations(v5)
+    expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
+    expect(migrated.slices.session.restedExpPool).toBe(0)
+    expect(migrated.slices.session.lastSeenAt).toBe(0)
+    expect(migrated.slices.session.currentFloor).toBe(sampleLegacy.currentFloor) // preserved
+    expect(migrated.slices.session.hp).toBe(sampleLegacy.hp)
+    // idempotent
+    expect(runMigrations(migrated).slices).toEqual(migrated.slices)
+  })
+
+  it('preserves an existing pool through migration and the legacy round-trip', () => {
+    const withPool = toSlices({ ...sampleLegacy, restedExpPool: 44, lastSeenAt: 1_752_700_000_000 })
+    expect(withPool.session.restedExpPool).toBe(44)
+    const back = toLegacyPlayer(withPool)
+    expect(back.restedExpPool).toBe(44)
+    expect(back.lastSeenAt).toBe(1_752_700_000_000)
+  })
+})
+
+describe('save — v6 → v7 adds manual stat allocation (RO-feel)', () => {
+  it('adds empty statAlloc while preserving character state', () => {
+    const slices = toSlices({ ...sampleLegacy })
+    delete (slices.character as unknown as Record<string, unknown>).statAlloc
+    const v6 = { version: 6, savedAt: 0, slices } as SaveEnvelope
+    const migrated = runMigrations(v6)
+    expect(migrated.version).toBe(CURRENT_SAVE_VERSION)
+    expect(migrated.slices.character.statAlloc).toEqual({})
+    expect(migrated.slices.character.level).toBe(sampleLegacy.level) // preserved
+    expect(migrated.slices.character.learnedSkills).toEqual(sampleLegacy.learnedSkills)
+    // idempotent
+    expect(runMigrations(migrated).slices).toEqual(migrated.slices)
+  })
+
+  it('preserves allocated points through migration and the legacy round-trip', () => {
+    const withAlloc = toSlices({ ...sampleLegacy, statAlloc: { vit: 4, atk: 2 } })
+    expect(withAlloc.character.statAlloc).toEqual({ vit: 4, atk: 2 })
+    const back = toLegacyPlayer(withAlloc)
+    expect(back.statAlloc).toEqual({ vit: 4, atk: 2 })
+  })
+})
+
 describe('save — load precedence & corruption recovery', () => {
   it('reads a valid primary envelope', () => {
     const s = new MemoryStorage()

@@ -1,9 +1,20 @@
 import { defineStore } from 'pinia'
+import { assetPath } from '~/game/systems/assetBase'
 import { mitigateDamage } from '~/data/combat'
 import { getHeroClass, type HeroClassId } from '~/data/classes'
 import { findShopItem, getItemById, getEquipmentById, getRecipeByOutput, rarityColor, type EquipmentSlot, type Rarity } from '~/data/equipment'
 import { rollDailyQuests, type DailyQuest, type QuestKind } from '~/data/quests'
 import { SKILL_TREE, canLearnSkill } from '~/data/skills'
+import { defaultSkillLoadout } from '~/data/combat/builds'
+import { validateLoadout } from '~/data/combat/loadoutEngine'
+import { JOB_UNLOCK_LEVEL, jobsForClass, type JobId } from '~/data/combat/skillDefs'
+import { RESTED_BONUS_ENABLED, accrueRested, consumeRested, hoursBetween } from '~/data/rested'
+import {
+  STAT_ALLOC_ENABLED, allocBonus, allocCost, canAllocate, sanitizeAlloc, statPointsAvailable,
+  type AllocKey, type StatAlloc,
+} from '~/data/statAllocation'
+
+export interface SkillLoadout { skills: string[]; ultimate: string; passives: string[] }
 import {
   SIGILS_ENABLED, getSigil, totalSigilBonus,
   socketSigil as socketSigilDomain, unsocketSigil as unsocketSigilDomain,
@@ -52,10 +63,22 @@ interface PlayerState {
   sideQuestClaimed: string[]
   /** World-1 secrets discovered (Phase 14 Inc 4). Additive; empty default. */
   secretsFound: string[]
+  /** Advanced job (Master Plan Phase 4). '' = ยังไม่เลือก; additive default. */
+  jobId: '' | JobId
+  /** Skill loadout 5+1 (Master Plan Phase 4). Additive; default = preset แรกของคลาส. */
+  skillLoadout: SkillLoadout
   correctAnswers: number
   adventureLog: string[]
   dailyDate: string
   dailyQuests: DailyQuest[]
+  /** Rested bonus (Master Plan Phase 8 — ethical retention). Additive; 0 defaults, inert while
+   *  RESTED_BONUS_ENABLED is off. Pool of bonus combat EXP granted for time away — never a penalty. */
+  restedExpPool: number
+  /** ms epoch of the last rewarded play moment — measures absence for rested accrual. 0 = never. */
+  lastSeenAt: number
+  /** RO-inspired manual stat points (data/statAllocation.ts). Additive; empty default = โบนัสศูนย์
+   *  ทุกอย่างเท่าเดิม จนกว่าผู้เล่นจะกดแต้มเองในหน้า Status. */
+  statAlloc: StatAlloc
 }
 
 function expToNextLevel(level: number): number {
@@ -73,12 +96,26 @@ export function ensurePlayerDefaults(store: {
   sideQuestProgress?: Record<string, number>
   sideQuestClaimed?: string[]
   secretsFound?: string[]
+  jobId?: '' | JobId
+  skillLoadout?: SkillLoadout
+  classId?: HeroClassId
+  restedExpPool?: number
+  lastSeenAt?: number
+  statAlloc?: StatAlloc
+  level?: number
 }): void {
   if (!store.socketedSigils) store.socketedSigils = {}
   if (!store.mainQuest) store.mainQuest = { ...INITIAL_MAIN_QUEST_STATE }
   if (!store.sideQuestProgress) store.sideQuestProgress = {}
   if (!store.sideQuestClaimed) store.sideQuestClaimed = []
   if (!store.secretsFound) store.secretsFound = []
+  if (store.jobId === undefined) store.jobId = ''
+  if (!store.skillLoadout || !Array.isArray(store.skillLoadout.skills) || store.skillLoadout.skills.length === 0) {
+    store.skillLoadout = defaultSkillLoadout(store.classId ?? 'warrior')
+  }
+  if (typeof store.restedExpPool !== 'number' || !Number.isFinite(store.restedExpPool)) store.restedExpPool = 0
+  if (typeof store.lastSeenAt !== 'number' || !Number.isFinite(store.lastSeenAt)) store.lastSeenAt = 0
+  store.statAlloc = sanitizeAlloc(store.statAlloc, store.level ?? 1)
 }
 
 function addStats(base: Record<string, number>, stats?: Record<string, number | undefined>) {
@@ -111,16 +148,21 @@ export const usePlayerStore = defineStore('player', {
     sideQuestProgress: {},
     sideQuestClaimed: [],
     secretsFound: [],
+    jobId: '',
+    skillLoadout: defaultSkillLoadout('warrior'),
     correctAnswers: 0,
     adventureLog: [],
     dailyDate: '',
     dailyQuests: [],
+    restedExpPool: 0,
+    lastSeenAt: 0,
+    statAlloc: {},
   }),
   getters: {
     heroClass: (state) => getHeroClass(state.classId),
     expNeeded: (state) => expToNextLevel(state.level),
-    baseSprite: (state) => state.gender === 'female' ? '/character-assets/base_female.png' : '/character-assets/base_male.png',
-    portraitSprite: (state) => state.gender === 'female' ? '/character-assets/base_female.png' : '/character-assets/base_male.png',
+    baseSprite: (state) => assetPath(state.gender === 'female' ? 'character-assets/base_female.png' : 'character-assets/base_male.png'),
+    portraitSprite: (state) => assetPath(state.gender === 'female' ? 'character-assets/base_female.png' : 'character-assets/base_male.png'),
     displayName: (state) => state.name || 'Hero',
     stats: (state) => {
       const heroClass = getHeroClass(state.classId)
@@ -135,6 +177,8 @@ export const usePlayerStore = defineStore('player', {
       }
       // Sigils (flip #6): socketed-sigil bonuses stack onto gear stats. Flag off ⇒ no-op (byte-identical).
       if (SIGILS_ENABLED) addStats(stats, totalSigilBonus(state.socketedSigils))
+      // Stat allocation (RO-feel): แต้มที่ผู้เล่นกดเองบวกทับ growth. ไม่กด = โบนัสศูนย์ (byte-identical).
+      if (STAT_ALLOC_ENABLED) addStats(stats, allocBonus(state.statAlloc))
       return {
         maxHp: Math.round(stats.hp),
         atk: Math.round(stats.atk),
@@ -161,6 +205,8 @@ export const usePlayerStore = defineStore('player', {
       return order[best]
     },
     gearAuraColor(): string { return rarityColor(this.gearRarity) },
+    /** แต้ม stat ที่ยังไม่ได้ใช้ (RO-feel) — คำนวณจากเลเวลเสมอ ไม่มี state ซ้ำซ้อนให้เพี้ยน */
+    statPointsLeft: (state) => (STAT_ALLOC_ENABLED ? statPointsAvailable(state.level, state.statAlloc) : 0),
     atk(): number { return this.stats.atk },
     def(): number { return this.stats.def },
     speed(): number { return this.stats.speed },
@@ -195,6 +241,8 @@ export const usePlayerStore = defineStore('player', {
       this.currentFloor = 1
       this.skillPoints = 0
       this.learnedSkills = []
+      this.jobId = ''
+      this.skillLoadout = defaultSkillLoadout(payload.classId)
       this.inventory = { potion_s: 2 }
       this.equipment = {}
       this.socketedSigils = {}
@@ -206,9 +254,26 @@ export const usePlayerStore = defineStore('player', {
       this.adventureLog = []
       this.dailyDate = ''
       this.dailyQuests = []
+      this.statAlloc = {}
       this.characterCreated = true
       this.hp = this.maxHp
       this.mp = this.maxMp
+    },
+    /** กดแต้มใส่ attribute (RO-feel). คืน false เมื่อแต้มไม่พอ/คีย์ผิด — UI ปิดปุ่มตามนี้ */
+    allocateStat(key: AllocKey): boolean {
+      if (!STAT_ALLOC_ENABLED || !canAllocate(this.level, this.statAlloc, key)) return false
+      this.statAlloc = { ...this.statAlloc, [key]: (this.statAlloc[key] ?? 0) + 1 }
+      return true
+    },
+    /** ล้างแต้มทั้งหมด (ฟรี — นโยบายเดียวกับ Respec ของ skill tree: เด็ก ป.6 ทดลองได้ไม่กลัวพัง) */
+    resetStatAllocation() {
+      this.statAlloc = {}
+      this.hp = Math.min(this.hp, this.maxHp)
+      this.mp = Math.min(this.mp, this.maxMp)
+    },
+    /** ราคาแต้มถัดไปของ attribute นี้ (โชว์บนปุ่ม UI) */
+    nextStatCost(key: AllocKey): number {
+      return allocCost(this.statAlloc[key] ?? 0)
     },
     resetCharacter() {
       this.characterCreated = false
@@ -227,6 +292,7 @@ export const usePlayerStore = defineStore('player', {
       this.exp += exp
       this.gold += gold
       this.gems += gems
+      this.lastSeenAt = Date.now() // earning a reward = actively playing (absence measured from here)
       while (this.exp >= expToNextLevel(this.level)) {
         this.exp -= expToNextLevel(this.level)
         this.level += 1
@@ -235,6 +301,30 @@ export const usePlayerStore = defineStore('player', {
         this.mp = this.maxMp
         this.addLog(`Level up! You reached Lv.${this.level}.`)
       }
+    },
+    /** Combat rewards route through here so the rested pool can boost EXP (Phase 8 — ethical
+     *  retention). Quest/secret rewards stay on plain gainRewards: rested boosts FIGHTING, not
+     *  claiming. Flag off ⇒ identical to gainRewards. */
+    gainCombatRewards(exp: number, gold: number, gems = 0) {
+      if (RESTED_BONUS_ENABLED && this.restedExpPool > 0 && exp > 0) {
+        const { bonus, remaining } = consumeRested(this.restedExpPool, exp)
+        this.restedExpPool = remaining
+        if (bonus > 0) this.addLog(`Rested bonus: +${bonus} EXP (${remaining} left in the pool).`)
+        this.gainRewards(exp + bonus, gold, gems)
+        return
+      }
+      this.gainRewards(exp, gold, gems)
+    },
+    /** Call once when a session starts: converts time away since lastSeenAt into rested pool.
+     *  Grant-only — absence can only ADD (capped); a short gap or first session grants 0. */
+    checkInRested(now = Date.now()) {
+      if (!RESTED_BONUS_ENABLED) return
+      const hoursAway = hoursBetween(this.lastSeenAt, now)
+      const before = this.restedExpPool
+      this.restedExpPool = accrueRested(this.restedExpPool, hoursAway, expToNextLevel(this.level))
+      const gained = this.restedExpPool - before
+      if (gained > 0) this.addLog(`You feel rested! +${gained} bonus EXP waits in your next fights.`)
+      this.lastSeenAt = now
     },
     // ใช้ MP กับสกิลต่อสู้ — คืน false ถ้าไม่พอ (ปุ่มฝั่ง UI ควร disable ไว้ก่อนแล้ว)
     spendMp(amount: number) {
@@ -263,10 +353,20 @@ export const usePlayerStore = defineStore('player', {
       this.heal()
       this.restoreMp()
     },
-    advanceFloor() {
-      this.currentFloor += 1
+    /**
+     * P0.1 — floor authority เดียวของทั้งเกม: scene/HUD/quest/save ต้องเรียกผ่านนี่เท่านั้น
+     * clamp 1..100 และ idempotent (ตั้งซ้ำชั้นเดิมไม่มีผลข้างเคียง)
+     */
+    setFloor(destination: number) {
+      const target = Math.max(1, Math.min(100, Math.round(destination)))
+      if (target === this.currentFloor) return
+      const climbed = target > this.currentFloor
+      this.currentFloor = target
       if (this.hp > this.maxHp) this.hp = this.maxHp
-      this.progressQuest('climb', 1)
+      if (climbed) this.progressQuest('climb', 1)
+    },
+    advanceFloor() {
+      this.setFloor(this.currentFloor + 1)
     },
     addItem(itemId: string, qty = 1) {
       this.inventory[itemId] = (this.inventory[itemId] ?? 0) + qty
@@ -431,6 +531,28 @@ export const usePlayerStore = defineStore('player', {
       this.learnedSkills.push(skillId)
       this.hp = Math.min(this.maxHp, this.hp + (skill.stats.hp ?? 0))
       return true
+    },
+    // ---- Master Plan Phase 4: advanced job + skill loadout (validate ก่อนรับเสมอ — UI ไม่ใช่ authority) ----
+    chooseJob(jobId: JobId): boolean {
+      if (this.level < JOB_UNLOCK_LEVEL) return false
+      if (!jobsForClass(this.classId).some((j) => j.id === jobId)) return false
+      this.jobId = jobId
+      // เปลี่ยน job แล้ว loadout เดิมอาจถือสกิลของ job เก่า — ถอยกลับ preset ของคลาส (เซฟห้ามถือ loadout ผิดกติกา)
+      const lo = this.skillLoadout
+      if (validateLoadout(lo.skills, lo.ultimate, lo.passives, this.classId, this.jobId || undefined).length > 0) {
+        this.skillLoadout = defaultSkillLoadout(this.classId)
+      }
+      return true
+    },
+    setSkillLoadout(loadout: SkillLoadout): boolean {
+      const problems = validateLoadout(loadout.skills, loadout.ultimate, loadout.passives, this.classId, this.jobId || undefined)
+      if (problems.length > 0) return false
+      this.skillLoadout = { skills: [...loadout.skills], ultimate: loadout.ultimate, passives: [...loadout.passives] }
+      return true
+    },
+    /** Respec: กลับ preset แรกของคลาส (job คงไว้ — เปลี่ยน job ได้เสมอผ่าน chooseJob, ไม่มีค่าปรับ) */
+    respecLoadout() {
+      this.skillLoadout = defaultSkillLoadout(this.classId)
     },
   },
   persist: {

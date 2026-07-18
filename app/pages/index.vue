@@ -16,12 +16,11 @@
           <p class="mt-1 text-base font-bold text-[#f5c66b]">{{ GAME_TITLE_TH }}</p>
           <p class="mt-1 text-sm text-[#f7e7c5]/80">O-NET English RPG Adventure</p>
         </div>
+        <!-- P0.10: Local Profile — เกมเล่น offline, เซฟอยู่บนเครื่องนี้; ไม่มี password ปลอมหลอกว่าเป็น authentication -->
         <form class="pixel-window-body space-y-3 p-4 pt-2" @submit.prevent="submitLogin">
-          <input v-model="loginName" class="field" type="text" autocomplete="username" placeholder="Username">
-          <input v-model="loginPassword" class="field" type="password" autocomplete="current-password" placeholder="Password">
-          <button class="btn-primary w-full" type="submit">Login</button>
-          <button class="btn-secondary w-full" type="button" @click="submitRegister">Register</button>
-          <button class="btn-secondary w-full text-xs" type="button" :disabled="!player.characterCreated" @click="continueGame">Continue</button>
+          <input v-model="loginName" class="field" type="text" autocomplete="nickname" maxlength="20" placeholder="Profile name / ชื่อผู้เล่น">
+          <button class="btn-primary w-full" type="submit">{{ player.characterCreated ? 'Continue Adventure' : 'Start Adventure' }}</button>
+          <p class="text-center text-[10px] text-[#f7e7c5]/60">Local profile — progress is saved on this device.<br>โปรไฟล์ท้องถิ่น — บันทึกความคืบหน้าไว้ในเครื่องนี้</p>
           <div class="grid grid-cols-2 gap-2">
             <button class="btn-secondary text-xs" type="button" @click="playGuest">Guest</button>
             <button class="btn-secondary text-xs" type="button" @click="toggleTitlePanel('how')">How to Play</button>
@@ -60,7 +59,7 @@
       </div>
     </section>
 
-    <div v-else class="mx-auto max-w-4xl p-4">
+    <div v-else class="mx-auto max-w-4xl p-4 max-[560px]:pt-2 lg:max-w-5xl">
       <header v-if="!player.characterCreated" class="mb-3 text-center">
         <p class="ornate-kicker text-[10px]">{{ GAME_TAGLINE }}</p>
         <h1 class="ornate-title text-xl font-bold leading-snug sm:text-2xl">{{ GAME_TITLE_EN }}</h1>
@@ -133,29 +132,47 @@
           @reset-save="resetGameData"
           @open-system="openSystem"
         />
-        <div class="pixel-window overflow-hidden"><ClientOnly><GameCanvas /></ClientOnly></div>
+        <!-- มือถือ: canvas กินเต็มกว้างจอ (ลบ padding ข้างด้วย -mx-4) — hero บนจอ 26.8→29.1px;
+             minimap ย้ายมา absolute ในกรอบนี้ จะได้ลอยบน canvas เสมอ ไม่ทับ HUD (S0 ปัญหา #1) -->
+        <div class="pixel-window relative mx-auto w-full max-w-[1002px] overflow-hidden max-[560px]:-mx-4 max-[560px]:w-auto max-[560px]:rounded-none">
+          <ClientOnly><GameCanvas /></ClientOnly>
+          <GameMinimap />
+        </div>
         <p v-if="notice" class="glass-panel gold-text mt-2 p-2 text-center text-xs">{{ notice }}</p>
 
-        <!-- แถบเมนูล่าง (Status/Inventory/Quests/Skills/Map/Log + Town) + แผง Gold/Gems/Floor ตามภาพ mockup -->
+        <!-- แถบเมนูล่างจัดหมวด 3 กลุ่มสไตล์ RPG classic (Character / Journal / World) + แผง
+             Gold/Gems/Floor — ปุ่ม/handler/badge ครบเท่าเดิมทุกปุ่ม แค่จัดกลุ่มให้หาเจอไว -->
         <div class="mt-3 flex flex-wrap items-stretch gap-2">
-          <button class="nav-btn" @click="statusOpen = true"><span class="nav-ico">👤</span>Status</button>
-          <button class="nav-btn" @click="statusOpen = true"><span class="nav-ico">🎒</span>Inventory</button>
-          <button class="nav-btn" @click="questsOpen = true">
-            <span class="nav-ico">📜</span>Quests
-            <span v-if="questReady" class="nav-btn-badge">!</span>
-          </button>
-          <button class="nav-btn" @click="skillsOpen = true">
-            <span class="nav-ico">✨</span>Skills
-            <span v-if="player.skillPoints" class="nav-btn-badge">{{ player.skillPoints }}</span>
-          </button>
-          <button class="nav-btn" @click="guildOpen = true">
-            <span class="nav-ico">📚</span>Guild
-            <span v-if="questClaimable" class="nav-btn-badge">!</span>
-          </button>
-          <button class="nav-btn" @click="craftOpen = true"><span class="nav-ico">⚒</span>Craft</button>
-          <button class="nav-btn" @click="mapOpen = true"><span class="nav-ico">🗺</span>Map</button>
-          <button class="nav-btn" @click="logOpen = true"><span class="nav-ico">📖</span>Log</button>
-          <button class="nav-btn" @click="townOpen = true"><span class="nav-ico">🏰</span>Town</button>
+          <div class="nav-group" data-testid="nav-group-character">
+            <span class="nav-group-label">Character</span>
+            <button class="nav-btn" @click="statusOpen = true">
+              <span class="nav-ico">👤</span>Status
+              <span v-if="player.statPointsLeft" class="nav-btn-badge">{{ player.statPointsLeft }}</span>
+            </button>
+            <button class="nav-btn" @click="statusOpen = true"><span class="nav-ico">🎒</span>Inventory</button>
+            <button class="nav-btn" @click="skillsOpen = true">
+              <span class="nav-ico">✨</span>Skills
+              <span v-if="player.skillPoints" class="nav-btn-badge">{{ player.skillPoints }}</span>
+            </button>
+          </div>
+          <div class="nav-group" data-testid="nav-group-journal">
+            <span class="nav-group-label">Journal</span>
+            <button class="nav-btn" @click="questsOpen = true">
+              <span class="nav-ico">📜</span>Quests
+              <span v-if="questReady" class="nav-btn-badge">!</span>
+            </button>
+            <button class="nav-btn" @click="mapOpen = true"><span class="nav-ico">🗺</span>Map</button>
+            <button class="nav-btn" @click="logOpen = true"><span class="nav-ico">📖</span>Log</button>
+          </div>
+          <div class="nav-group" data-testid="nav-group-world">
+            <span class="nav-group-label">World</span>
+            <button class="nav-btn" @click="townOpen = true"><span class="nav-ico">🏰</span>Town</button>
+            <button class="nav-btn" @click="guildOpen = true">
+              <span class="nav-ico">📚</span>Guild
+              <span v-if="questClaimable" class="nav-btn-badge">!</span>
+            </button>
+            <button class="nav-btn" @click="craftOpen = true"><span class="nav-ico">⚒</span>Craft</button>
+          </div>
           <div class="flex-1" />
           <div class="currency-panel">
             <span class="currency-ico">🪙</span>
@@ -201,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { GAME_NAME_EN, GAME_TAGLINE, GAME_TITLE_EN, GAME_TITLE_TH } from '~/data/branding'
 import { HERO_CLASSES, type HeroClassId } from '~/data/classes'
 import { gameEvents } from '~/game/systems/eventBus'
@@ -231,7 +248,6 @@ const bossGateFloor = ref(2)
 const notice = ref('')
 let noticeTimer: ReturnType<typeof setTimeout> | undefined
 const loginName = ref('')
-const loginPassword = ref('')
 const activeTitlePanel = ref<'how' | 'settings' | 'news' | 'credits' | ''>('')
 const settings = useSettingsStore()
 const player = usePlayerStore()
@@ -263,10 +279,9 @@ function assetPath(path: string) {
 function classIcon(id: HeroClassId, gender: GenderId) { return `character-icons/${id}_${gender}.png` }
 function active(value: boolean) { return value ? 'ring-2 ring-amber-300 brightness-110' : '' }
 function onImageError(event: Event) { (event.target as HTMLImageElement).style.display = 'none' }
-function submitLogin() { player.login(loginName.value) }
-function submitRegister() { player.login(loginName.value || 'New Player') }
+// P0.10: Local Profile เท่านั้น — โปรไฟล์เดิมใช้ชื่อเดิมต่อ, โปรไฟล์ใหม่ใช้ชื่อที่กรอก (ไม่มี auth ปลอม)
+function submitLogin() { player.login(player.characterCreated ? (player.accountName || loginName.value) : loginName.value) }
 function playGuest() { player.login('Guest') }
-function continueGame() { if (player.characterCreated) player.login(player.accountName || loginName.value || 'Player') }
 function toggleTitlePanel(panel: 'how' | 'settings' | 'news' | 'credits') { activeTitlePanel.value = activeTitlePanel.value === panel ? '' : panel }
 function resetDraft() {
   draft.name = ''
@@ -284,8 +299,10 @@ function resetGameData() {
 }
 function finishCharacter() { player.createCharacter({ ...draft }); savePlayer({ ...player.$state }) }
 
-gameEvents.on('floor:advance', () => {
-  player.advanceFloor()
+gameEvents.on('floor:advance', (payload) => {
+  // P0.1: setFloor(destination) คือ floor authority เดียว — ใช้ปลายทางจาก event ตรงๆ
+  // (ห้าม increment สุ่มสี่สุ่มห้า ไม่งั้น scene กับ store แยกทางกันเหมือนบั๊กเดิม)
+  player.setFloor(payload.floor)
   player.addLog(`Advanced to Floor ${player.currentFloor}.`)
   player.dispatchQuestEvent({ type: 'reach-floor', floor: player.currentFloor })
   savePlayer({ ...player.$state })
@@ -300,8 +317,9 @@ gameEvents.on('boss:enter', () => { bossGateOpen.value = false })
 gameEvents.on('notice', (payload) => showNotice(payload.text))
 
 // Inc 4: bridge World-1 combat/dungeon signals into the main-quest reducer (rewards granted once).
-gameEvents.on('battle:end', ({ won, isBoss }) => {
-  if (!won) return
+// P0.3: นับเฉพาะ outcome === 'victory' — หนีสำเร็จ/หนีพลาดไม่ใช่ชัยชนะ
+gameEvents.on('battle:end', ({ outcome, isBoss }) => {
+  if (outcome !== 'victory') return
   if (isBoss && player.currentFloor === 10) player.dispatchQuestEvent({ type: 'defeat-boss', bossId: 'myco_colossus' })
   else if (!isBoss) player.dispatchQuestEvent({ type: 'defeat-monster' })
   savePlayer({ ...player.$state })
@@ -309,6 +327,25 @@ gameEvents.on('battle:end', ({ won, isBoss }) => {
 gameEvents.on('dungeon:enter', ({ layoutId }) => { player.dispatchQuestEvent({ type: 'enter-dungeon', layoutId }); savePlayer({ ...player.$state }) })
 gameEvents.on('dungeon:clear', ({ layoutId }) => { player.dispatchQuestEvent({ type: 'clear-dungeon', layoutId }); savePlayer({ ...player.$state }) })
 gameEvents.on('secret:found', ({ id }) => { if (player.discoverSecret(id)) { showNotice('✨ Secret discovered!'); savePlayer({ ...player.$state }) } })
+
+// Phase 8 (ethical retention): rested check-in — เวลาที่หายไปกลายเป็นโบนัส EXP (ไม่มีการลงโทษ)
+// + break reminder อ่อนโยนทุก 60 นาทีของการเล่นต่อเนื่อง (แค่ชวนพัก ไม่บล็อกเกม ไม่มีบทลงโทษ)
+const BREAK_REMINDER_MINUTES = 60
+let breakReminderTimer: ReturnType<typeof setInterval> | undefined
+let lastBreakReminderAt = Date.now()
+onMounted(() => {
+  const before = player.restedExpPool
+  player.checkInRested()
+  if (player.restedExpPool > before) showNotice(`💤 Rested! +${player.restedExpPool - before} bonus EXP in your next fights.`)
+  breakReminderTimer = setInterval(() => {
+    if (!player.characterCreated) { lastBreakReminderAt = Date.now(); return }
+    if (Date.now() - lastBreakReminderAt >= BREAK_REMINDER_MINUTES * 60_000) {
+      lastBreakReminderAt = Date.now()
+      showNotice('🌿 เล่นมา 1 ชั่วโมงแล้ว — พักสายตา ยืดเส้นยืดสาย ดื่มน้ำสักหน่อยนะ')
+    }
+  }, 60_000)
+})
+onUnmounted(() => { if (breakReminderTimer) clearInterval(breakReminderTimer) })
 
 function showNotice(text: string) {
   notice.value = text

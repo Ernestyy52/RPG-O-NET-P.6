@@ -6,13 +6,18 @@ import { gameEvents } from '../systems/eventBus'
 import { applyAtmosphere, addTorchFlicker, addPortalGlow, addWindowGlow, addPlaque, createIdleBreath, addGearAura } from '../systems/atmosphere'
 import { preloadBgm, playBgm } from '../systems/bgm'
 import { assetPath, preloadSharedAssets, buildSharedTextures, heroKey, heroIdleFrame, heroAnim, heroSheetSize, HERO_DISPLAY_H, applyStandardHeroBody } from '../systems/textures'
+import { resolveMovement } from '../runtime/movement'
+import { TOWN_SPEED, centeredCameraBounds } from '../scaleContract'
 import { buildTownStructures } from '../systems/buildingArt'
 import { joinTown, leaveRoom } from '../systems/net'
 import { RemotePlayers } from '../systems/remotePlayers'
 import { usePlayerStore } from '../../stores/player'
+import { WeaponOverlay } from '../systems/paperdoll'
 import { useSettingsStore } from '../../stores/settings'
 import { TOWN_NPCS } from '../../data/world1/npcs'
 import { TOWN_INTERIORS_ENABLED, interiorForEvent, INTERIOR_NPC_IDS } from '../../data/town/interiors'
+import { MinimapTicker, publishMinimapLayout, clearMinimap } from '../systems/minimap'
+import type { MinimapLayout } from '../systems/eventBus'
 
 // ================================================================================================
 // เมืองโหมด "ภาพจริง" — ใช้ภาพ mockup (public/town-art/town-night.png, ตัด UI ออกแล้ว) เป็นฉากทั้งเมือง
@@ -94,6 +99,8 @@ export class TownScene extends Phaser.Scene {
   private interactHighlights: { x: number; y: number; range: number; glow: Phaser.GameObjects.Image }[] = []
   private netPlayers = new RemotePlayers(this)
   private gearAura?: Phaser.GameObjects.Image | null
+  private weaponOverlay!: WeaponOverlay
+  private minimapTicker = new MinimapTicker()
 
   constructor() {
     super('TownScene')
@@ -237,10 +244,13 @@ export class TownScene extends Phaser.Scene {
     const store = usePlayerStore()
     this.gearAura = addGearAura(this, store.gearAuraColor, store.gearRarity)
     this.gearAura?.setDepth(spawnY - 2)
+    this.weaponOverlay = new WeaponOverlay(this)
 
     // กันเดินทะลุแนวรั้ว/พุ่มไม้ขอบภาพ
     this.physics.world.setBounds(u(20), u(30), worldW - u(40), WORLD_H - u(60))
-    this.cameras.main.setBounds(0, 0, worldW, WORLD_H)
+    // S4: โลกเล็กกว่าจอแกนไหน ให้กล้องกึ่งกลางแกนนั้น (แทน clamp ชิดซ้ายบน)
+    const camB = centeredCameraBounds(worldW, WORLD_H, this.scale.width, this.scale.height)
+    this.cameras.main.setBounds(camB.x, camB.y, camB.width, camB.height)
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12)
 
     this.physics.add.overlap(this.player, interactZones, (_p, z) => {
@@ -249,7 +259,11 @@ export class TownScene extends Phaser.Scene {
     })
 
     // ผู้เฝ้าประตูอนุญาต -> เข้าดันเจี้ยนจริง (สั่งจากกล่องสนทนาฝั่ง UI)
-    const enterDungeon = () => this.scene.start('TowerScene', { floor: this.floor + 1, classId: this.classId })
+    // P0.1: แจ้งปลายทางผ่าน floor:advance ให้ store/HUD/quest sync ก่อนสลับ scene
+    const enterDungeon = () => {
+      gameEvents.emit('floor:advance', { floor: this.floor + 1 })
+      this.scene.start('TowerScene', { floor: this.floor + 1, classId: this.classId })
+    }
     gameEvents.on('town:enter-dungeon', enterDungeon)
     this.events.once('shutdown', () => gameEvents.off('town:enter-dungeon', enterDungeon))
 
@@ -276,20 +290,44 @@ export class TownScene extends Phaser.Scene {
 
     applyAtmosphere(this, biome, getWorldState())
     playBgm(this, 'town')
+
+    // ---- minimap: กล่องชนอาคาร + ประตูบริการ/พอร์ทัล + NPC กลางเมือง (world px หลังคูณ scale S) ----
+    const minimapLayout: MinimapLayout = {
+      worldW,
+      worldH: WORLD_H,
+      blocks: ZONES.map((z) => ({
+        x: u(z.box[0]), y: u(z.box[1]), w: u(z.box[2] - z.box[0]), h: u(z.box[3] - z.box[1]),
+      })),
+      markers: [
+        ...ZONES.filter((z) => z.door && z.event).map((z) => ({
+          kind: (z.event === 'portal' ? 'portal' : 'service') as 'portal' | 'service',
+          x: u(z.door![0]), y: u(z.door![1]),
+        })),
+        ...TOWN_NPCS
+          .filter((npc) => !(TOWN_INTERIORS_ENABLED && INTERIOR_NPC_IDS.has(npc.id)))
+          .map((npc) => ({ kind: 'npc' as const, x: u(npc.at[0]), y: u(npc.at[1]) })),
+      ],
+    }
+    publishMinimapLayout(minimapLayout)
+    this.events.once('shutdown', () => clearMinimap())
   }
 
   update(time: number) {
-    const speed = 130
-    this.player.setVelocity(0)
-    let moving = false
-    if (this.cursors.left?.isDown) { this.player.setVelocityX(-speed); this.facing = 'left'; moving = true }
-    else if (this.cursors.right?.isDown) { this.player.setVelocityX(speed); this.facing = 'right'; moving = true }
-    if (this.cursors.up?.isDown) { this.player.setVelocityY(-speed); this.facing = 'up'; moving = true }
-    else if (this.cursors.down?.isDown) { this.player.setVelocityY(speed); this.facing = 'down'; moving = true }
+    // S4: กติกาเดิน (รวม diagonal normalize) รวมที่ resolveMovement — สปีดเมืองจาก scale contract
+    const move = resolveMovement({
+      left: !!this.cursors.left?.isDown,
+      right: !!this.cursors.right?.isDown,
+      up: !!this.cursors.up?.isDown,
+      down: !!this.cursors.down?.isDown,
+    }, this.facing, TOWN_SPEED)
+    this.player.setVelocity(move.vx, move.vy)
+    this.facing = move.facing
+    const moving = move.moving
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
     this.gearAura?.setPosition(this.player.x, this.player.y + 4)
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
     this.idleBreath.setMoving(moving)
     this.netPlayers.update(time, this.player, this.facing, moving)
 
@@ -299,6 +337,8 @@ export class TownScene extends Phaser.Scene {
       const target = dist < hi.range ? 0.55 : 0
       hi.glow.alpha += (target - hi.glow.alpha) * 0.18
     }
+
+    this.minimapTicker.tick(this.time.now, { player: { x: this.player.x, y: this.player.y } })
   }
 
   /** เข้าห้องเมือง multiplayer แล้วให้ RemotePlayers จัดการเพื่อนในฉากทั้งหมด */

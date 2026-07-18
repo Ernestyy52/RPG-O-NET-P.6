@@ -59,7 +59,15 @@ export const DEFAULT_MONSTER_ATTACK_INTERVAL_MS = 1600
 
 export type RealtimeSkillId = keyof typeof REALTIME_SKILL_TIMINGS
 
-export type AttackRejection = 'combat-over' | 'hero-down' | 'target-down' | 'on-cooldown' | 'insufficient-mp' | 'unknown-skill'
+export type AttackRejection = 'combat-over' | 'hero-down' | 'target-down' | 'on-cooldown' | 'insufficient-mp' | 'unknown-skill' | 'no-insight'
+
+/**
+ * Insight (P0.5/P0.6 → Milestone-2 core resource): ตอบถูก = ได้ Insight 1 หน่วย (สะสมได้ถึง cap —
+ * cooldown ไม่มีวันกลืนคำตอบถูก) และ "ดาเมจทุกครั้งต้องจ่าย Insight 1 หน่วย" — ปิดทางสแปมปุ่มฆ่า
+ * ศัตรูโดยไม่ใช้ความรู้โดยสิ้นเชิง สกิลยูทิลิตี้ (guard/heal/rally) ใช้ได้เสมอแต่ส่วนดาเมจถูกตัดเป็น 0
+ * เมื่อไม่มี Insight
+ */
+export const INSIGHT_CAP = 5
 
 export interface AttackOutcome {
   accepted: boolean
@@ -104,6 +112,8 @@ export interface RealtimeCombatState {
   monsterHp: number
   mp: number
   combo: number
+  /** ทรัพยากรความรู้ — ได้จากการตอบถูก ใช้จ่ายเป็นดาเมจ (ดู INSIGHT_CAP) */
+  insight: number
   /** skillId → remaining cooldown ms. */
   cooldowns: Record<RealtimeSkillId, number>
   /** ms until the monster's next attack. */
@@ -135,6 +145,7 @@ export class RealtimeCombat {
       monsterHp: this.setup.monster.hp,
       mp: this.setup.hero.maxMp,
       combo: 0,
+      insight: 0,
       cooldowns: { attack: 0, support: 0, counter: 0 },
       monsterAttackTimer: this.monsterIntervalMs,
       pendingIncomingMultiplier: null,
@@ -170,6 +181,8 @@ export class RealtimeCombat {
     if (!REALTIME_SKILL_TIMINGS[skill]) return 'unknown-skill'
     if (this.state.cooldowns[skill] > 0) return 'on-cooldown'
     if (this.state.mp < this.mpCost(skill)) return 'insufficient-mp'
+    // การโจมตีหลักต้องมี Insight (ความรู้) หนุนหลังเสมอ — ปิด combat bypass (P0.5)
+    if (skill === 'attack' && this.state.insight < 1) return 'no-insight'
     return undefined
   }
 
@@ -223,6 +236,18 @@ export class RealtimeCombat {
     // a kit counter uses its flat multiplier (0 ⇒ a pure guard). No kit ⇒ the legacy skill multiplier.
     let multiplierOverride: number | undefined
     if (ov) multiplierOverride = skill === 'attack' ? (ov.damageMultiplier ?? 0) * (1 + comboBonus(this.state.combo)) : (ov.damageMultiplier ?? 0)
+
+    // Insight economy (P0.5): ดาเมจทุกหน่วยต้องจ่าย Insight — attack ผ่าน validate มาแล้ว (≥1) จึงหัก;
+    // สกิลรอง (counter ฯลฯ) ถ้ามีส่วนดาเมจแต่ Insight หมด → ยังใช้ได้แบบยูทิลิตี้ล้วน (ดาเมจ = 0)
+    if (skill === 'attack') {
+      this.state.insight -= 1
+    } else {
+      const wouldDealDamage = ov ? (ov.damageMultiplier ?? 0) > 0 : skill === 'counter'
+      if (wouldDealDamage) {
+        if (this.state.insight >= 1) this.state.insight -= 1
+        else multiplierOverride = 0
+      }
+    }
     const res = resolveHeroSkill(skill as CombatSkillId, {
       atk: this.setup.hero.atk,
       knowledge: this.setup.hero.knowledge,
@@ -260,8 +285,10 @@ export class RealtimeCombat {
     if (correct) {
       this.state.combo += 1
       this.state.mp = Math.min(this.setup.hero.maxMp, this.state.mp + CORRECT_ANSWER_MP_REGEN)
+      // ทุกคำตอบถูกกลายเป็น Insight เสมอ (สะสมได้ — cooldown ไม่มีวันกลืนคำตอบ, P0.6)
+      this.state.insight = Math.min(INSIGHT_CAP, this.state.insight + 1)
     } else {
-      this.state.combo = 0
+      this.state.combo = 0 // Insight ที่สะสมไว้ไม่หาย — ความรู้ที่ได้มาแล้วคือของผู้เล่น
     }
   }
 

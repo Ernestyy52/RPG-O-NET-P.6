@@ -8,6 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "test": "vitest run",
+    "verify:pages": "node scripts/verify-pages.cjs",
     "test:watch": "vitest",
     "postinstall": "nuxt prepare"
   },
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "playwright-core": "^1.61.1",
     "sharp": "^0.35.3",
     "vitest": "^3.2.7"
   }

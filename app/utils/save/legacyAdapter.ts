@@ -10,6 +10,7 @@ import {
   CURRENT_SAVE_VERSION, defaultSlices, type SaveEnvelope, type SaveSlices, type SettingsSlice,
 } from './schema'
 import { defaultLoadout } from '~/data/combat/classKits'
+import { defaultSkillLoadout } from '~/data/combat/builds'
 import type { HeroClassId } from '~/data/classes'
 
 /** Shape of the pre-Phase-04 monolithic player store (all optional for partial-save tolerance). */
@@ -36,6 +37,9 @@ export interface LegacyPlayer {
   adventureLog?: string[]
   dailyDate?: string
   dailyQuests?: unknown[]
+  restedExpPool?: number
+  lastSeenAt?: number
+  statAlloc?: Record<string, number>
 }
 
 export interface LegacySettings {
@@ -72,6 +76,11 @@ export function toSlices(legacy: LegacyPlayer = {}, settings: LegacySettings = {
       learnedSkills: pick(legacy.learnedSkills, d.character.learnedSkills),
       // Kits did not exist pre-Phase-12 — start with the class's default loadout.
       kitLoadout: defaultLoadout(pick(legacy.classId, d.profile.classId) as HeroClassId),
+      // Skill loadouts did not exist pre-Phase-4 (Master Plan) — default to the class preset.
+      jobId: '',
+      skillLoadout: defaultSkillLoadout(pick(legacy.classId, d.profile.classId) as HeroClassId),
+      // Manual stat points (v7) — carried over when the legacy blob already has them.
+      statAlloc: pick(legacy.statAlloc, d.character.statAlloc),
     },
     learning: {
       correctAnswers: pick(legacy.correctAnswers, d.learning.correctAnswers),
@@ -83,6 +92,8 @@ export function toSlices(legacy: LegacyPlayer = {}, settings: LegacySettings = {
       currentFloor: pick(legacy.currentFloor, d.session.currentFloor),
       hp: pick(legacy.hp, d.session.hp),
       mp: pick(legacy.mp, d.session.mp),
+      restedExpPool: pick(legacy.restedExpPool, d.session.restedExpPool),
+      lastSeenAt: pick(legacy.lastSeenAt, d.session.lastSeenAt),
     },
     inventory: {
       gold: pick(legacy.gold, d.inventory.gold),
@@ -129,6 +140,9 @@ export function toLegacyPlayer(slices: SaveSlices): Required<Omit<LegacyPlayer, 
     currentFloor: slices.session.currentFloor,
     hp: slices.session.hp,
     mp: slices.session.mp,
+    restedExpPool: slices.session.restedExpPool,
+    lastSeenAt: slices.session.lastSeenAt,
+    statAlloc: { ...slices.character.statAlloc },
     gold: slices.inventory.gold,
     gems: slices.inventory.gems,
     inventory: { ...slices.inventory.inventory },

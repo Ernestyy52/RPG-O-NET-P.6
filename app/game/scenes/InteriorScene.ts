@@ -4,6 +4,7 @@ import { gameEvents } from '../systems/eventBus'
 import { getInterior, INTERIOR_TOWN_DOORS, type InteriorId } from '../../data/town/interiors'
 import { getTownNpc } from '../../data/world1/npcs'
 import { usePlayerStore } from '../../stores/player'
+import { WeaponOverlay } from '../systems/paperdoll'
 import { useSettingsStore } from '../../stores/settings'
 import { addPlaque, addWindowGlow, createIdleBreath, addGearAura } from '../systems/atmosphere'
 import {
@@ -11,6 +12,9 @@ import {
   heroKey, heroIdleFrame, heroAnim, heroSheetSize, HERO_DISPLAY_H, applyStandardHeroBody,
 } from '../systems/textures'
 import { preloadBgm, playBgm } from '../systems/bgm'
+import { MinimapTicker, publishMinimapLayout, clearMinimap } from '../systems/minimap'
+import { resolveMovement } from '../runtime/movement'
+import { FIELD_SPEED, centeredCameraBounds } from '../scaleContract'
 
 const TILE = 32
 
@@ -37,6 +41,8 @@ export class InteriorScene extends Phaser.Scene {
   private npcLatch = false
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private gearAura?: Phaser.GameObjects.Image | null
+  private weaponOverlay!: WeaponOverlay
+  private minimapTicker = new MinimapTicker()
 
   constructor() {
     super('InteriorScene')
@@ -158,9 +164,12 @@ export class InteriorScene extends Phaser.Scene {
     this.idleBreath = createIdleBreath(this, this.player, pScale)
     this.gearAura = addGearAura(this, store.gearAuraColor, store.gearRarity)
     this.gearAura?.setDepth(startY - 2)
+    this.weaponOverlay = new WeaponOverlay(this)
 
     this.physics.world.setBounds(0, 0, worldW, worldH)
-    this.cameras.main.setBounds(0, 0, worldW, worldH)
+    // S4: ห้องเล็กกว่าจอ → กล้องกึ่งกลางห้อง (ปิดหนี้ S0 #2 — เดิมภาพชิดซ้ายบน + แถบดำตาย)
+    const camB = centeredCameraBounds(worldW, worldH, this.scale.width, this.scale.height)
+    this.cameras.main.setBounds(camB.x, camB.y, camB.width, camB.height)
     this.cameras.main.startFollow(this.player, true, 0.15, 0.15)
 
     // ---- NPC ประจำอาคาร (หลังสร้างผู้เล่น เพื่อผูก overlap ได้เลย) ----
@@ -197,6 +206,27 @@ export class InteriorScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys()
     addPlaque(this, 8, 8, `${spec.nameTh} · ${spec.nameEn}`, { fontSize: '13px', depth: 1000, fixed: true, origin: [0, 0] })
     playBgm(this, 'town')
+
+    // ---- minimap: ผนังห้อง + พร็อพ solid + NPC + ประตูออก ----
+    publishMinimapLayout({
+      worldW,
+      worldH,
+      blocks: [
+        { x: 0, y: 0, w: worldW, h: TILE * 2 },
+        { x: 0, y: 0, w: TILE * 0.5, h: worldH },
+        { x: worldW - TILE * 0.5, y: 0, w: TILE * 0.5, h: worldH },
+        { x: 0, y: worldH - TILE * 0.5, w: worldW / 2 - TILE, h: TILE * 0.5 },
+        { x: worldW / 2 + TILE, y: worldH - TILE * 0.5, w: worldW / 2 - TILE, h: TILE * 0.5 },
+        ...spec.props.filter((p) => p.solid).map((p) => ({
+          x: p.at[0] * TILE - TILE / 2, y: p.at[1] * TILE - TILE / 2, w: TILE, h: TILE,
+        })),
+      ],
+      markers: [
+        { kind: 'exit', x: doorX, y: doorY },
+        ...(npcData ? [{ kind: 'npc' as const, x: spec.npc.at[0] * TILE, y: spec.npc.at[1] * TILE }] : []),
+      ],
+    })
+    this.events.once('shutdown', () => clearMinimap())
   }
 
   /** เตียงพยาบาลแบบ pixel — วาดสดเพราะ pack ที่มีไม่มีเตียง (ออกแบบเองตามที่ตกลง) */
@@ -236,21 +266,27 @@ export class InteriorScene extends Phaser.Scene {
 
   update() {
     if (this.leaving || !this.player) return
-    const speed = 120
-    this.player.setVelocity(0)
-    let moving = false
-    if (this.cursors.left?.isDown) { this.player.setVelocityX(-speed); this.facing = 'left'; moving = true }
-    else if (this.cursors.right?.isDown) { this.player.setVelocityX(speed); this.facing = 'right'; moving = true }
-    if (this.cursors.up?.isDown) { this.player.setVelocityY(-speed); this.facing = 'up'; moving = true }
-    else if (this.cursors.down?.isDown) { this.player.setVelocityY(speed); this.facing = 'down'; moving = true }
+    // S4: กติกาเดินรวมที่ resolveMovement (diagonal normalize) — สปีดจาก scale contract
+    const move = resolveMovement({
+      left: !!this.cursors.left?.isDown,
+      right: !!this.cursors.right?.isDown,
+      up: !!this.cursors.up?.isDown,
+      down: !!this.cursors.down?.isDown,
+    }, this.facing, FIELD_SPEED)
+    this.player.setVelocity(move.vx, move.vy)
+    this.facing = move.facing
+    const moving = move.moving
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
     this.player.setDepth(this.player.y)
     this.gearAura?.setPosition(this.player.x, this.player.y + 4)
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
     this.idleBreath.setMoving(moving)
     // ปลด latch เมื่อผู้เล่นเดินพ้นโซน NPC แล้ว — เข้าใหม่ค่อยคุยรอบถัดไป
     if (this.npcLatch && this.npcZone && !this.physics.overlap(this.player, this.npcZone)) {
       this.npcLatch = false
     }
+
+    this.minimapTicker.tick(this.time.now, { player: { x: this.player.x, y: this.player.y } })
   }
 }

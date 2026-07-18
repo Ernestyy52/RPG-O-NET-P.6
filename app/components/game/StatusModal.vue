@@ -13,6 +13,21 @@
           </div>
           <div class="gold-text mt-2 font-bold">{{ player.displayName }}</div>
           <div class="text-xs uppercase tracking-wide opacity-75">Lv. {{ player.level }} · {{ player.heroClass.name }}</div>
+
+          <!-- Paper-doll preview: ตัวละครจริงจาก hero-atlas + อาวุธที่ถือ หมุนดู 4 ทิศ -->
+          <div v-if="heroFrame" class="mt-3">
+            <div class="preview-stage mx-auto" :style="{ width: heroFrame.w + 'px', height: heroFrame.h + 'px' }">
+              <div class="preview-hero pixelated" :style="heroFrameStyle" />
+              <img v-if="weaponPreview" :src="weaponPreview.src" class="preview-weapon pixelated"
+                :style="weaponPreview.style" alt="weapon" @error="onImageError">
+            </div>
+            <div class="mt-1 flex justify-center gap-1">
+              <button v-for="d in dirs" :key="d"
+                class="rounded border border-[#8a6a2f] px-1.5 py-0.5 text-[10px] uppercase"
+                :class="previewDir === d ? 'bg-[#8a6a2f] text-black font-bold' : 'opacity-60'"
+                @click="previewDir = d">{{ d }}</button>
+            </div>
+          </div>
           <div class="mt-3 space-y-1 text-left">
             <GameStatBar variant="hp" label="HP" :value="player.hp" :max="player.maxHp" />
             <GameStatBar variant="mp" label="MP" :value="player.mp" :max="player.maxMp" />
@@ -27,6 +42,30 @@
         </div>
 
         <div class="space-y-3">
+          <!-- RO-feel: กดแต้ม stat เองทุกเลเวล (data/statAllocation.ts) — โบนัสบวกทับ growth ของคลาส -->
+          <div v-if="STAT_ALLOC_ENABLED" class="glass-panel p-3">
+            <div class="mb-2 flex items-center justify-between">
+              <h3 class="gold-text text-sm font-bold">Attributes</h3>
+              <span class="text-xs">Points: <span class="font-bold text-[#f2c14e]" data-testid="stat-points">{{ player.statPointsLeft }}</span></span>
+            </div>
+            <div class="grid grid-cols-1 gap-1 text-xs sm:grid-cols-2">
+              <div v-for="def in allocDefs" :key="def.key" class="flex items-center justify-between gap-2 rounded border border-[#8a6a2f]/50 bg-black/30 px-2 py-1" :title="def.desc">
+                <span class="w-9 font-bold tracking-wide">{{ def.label }}</span>
+                <span class="flex-1 text-right font-bold text-[#f2c14e]" :data-testid="`alloc-count-${def.key}`">{{ player.statAlloc[def.key] ?? 0 }}</span>
+                <button
+                  class="btn-secondary px-2 py-0.5 text-xs disabled:opacity-40" :data-testid="`alloc-${def.key}`"
+                  :disabled="player.statPointsLeft < player.nextStatCost(def.key)"
+                  :aria-label="`Add ${def.label}`"
+                  @click="player.allocateStat(def.key)"
+                >+{{ player.nextStatCost(def.key) > 1 ? ` (${player.nextStatCost(def.key)}pt)` : '' }}</button>
+              </div>
+            </div>
+            <div class="mt-2 flex items-center justify-between">
+              <p class="text-[10px] opacity-60">+{{ STAT_POINTS_PER_LEVEL }} แต้มทุกเลเวล · แพงขึ้นทุกๆ 10 แต้มในค่าเดียวกัน</p>
+              <button class="btn-secondary px-2 py-0.5 text-[10px]" data-testid="stat-reset" @click="player.resetStatAllocation()">Reset (free)</button>
+            </div>
+          </div>
+
           <div class="glass-panel p-3">
             <h3 class="gold-text mb-2 text-sm font-bold">Equipment</h3>
             <div class="space-y-1 text-xs">
@@ -56,8 +95,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { getItemById, getMaterial, itemIconPath, rarityColor, rarityOf } from '~/data/equipment'
+import { ALLOC_DEFS, STAT_ALLOC_ENABLED, STAT_POINTS_PER_LEVEL } from '~/data/statAllocation'
+
+const allocDefs = ALLOC_DEFS
+import { getEquipmentVisual, type Facing } from '~/data/equipmentVisuals'
+import heroAtlas from '../../../public/character-sprites/hero-atlas.json'
 import { usePlayerStore } from '~/stores/player'
 
 defineProps<{ open: boolean; avatar: string }>()
@@ -96,6 +140,39 @@ const gearBadges = computed(() =>
     })
     .filter((g): g is { slot: 'weapon' | 'armor' | 'trinket'; id: string; color: string } => !!g),
 )
+
+// ---- Paper-doll preview 4 ทิศ (Phase 3 Batch D) ----
+const dirs: Facing[] = ['down', 'left', 'right', 'up']
+const previewDir = ref<Facing>('down')
+type AtlasFrame = { frame: { x: number; y: number; w: number; h: number } }
+const atlasFrames = (heroAtlas as unknown as { frames: Record<string, AtlasFrame> }).frames
+
+const heroFrame = computed(() => {
+  const f = atlasFrames[`${player.classId}_${player.gender}_${previewDir.value}_0`]
+  return f ? f.frame : null
+})
+const heroFrameStyle = computed(() => heroFrame.value ? {
+  width: `${heroFrame.value.w}px`,
+  height: `${heroFrame.value.h}px`,
+  backgroundImage: `url(${assetPath('character-sprites/hero-atlas.png')})`,
+  backgroundPosition: `-${heroFrame.value.x}px -${heroFrame.value.y}px`,
+} : {})
+const weaponPreview = computed(() => {
+  const id = player.equipment.weapon
+  if (!id) return null
+  const visual = getEquipmentVisual(id)
+  const anchor = visual?.anchors?.[previewDir.value]
+  if (!visual?.iconPath || !anchor) return null
+  return {
+    src: assetPath(visual.iconPath),
+    style: {
+      left: `calc(50% + ${anchor.x}px)`,
+      top: `calc(58% + ${anchor.y}px)`,
+      zIndex: anchor.front ? 2 : 0,
+      transform: `translate(-50%, -50%) rotate(${anchor.angle}deg)${anchor.flipX ? ' scaleX(-1)' : ''}`,
+    },
+  }
+})
 
 const bagItems = computed(() =>
   Object.entries(player.inventory)
@@ -148,4 +225,7 @@ const bagItems = computed(() =>
   background: rgba(0, 0, 0, 0.3);
 }
 .pixelated { image-rendering: pixelated; }
+.preview-stage { position: relative; }
+.preview-hero { position: relative; z-index: 1; background-repeat: no-repeat; }
+.preview-weapon { position: absolute; width: 20px; height: 20px; object-fit: contain; }
 </style>
