@@ -1,12 +1,13 @@
 {
- "generated": "2026-07-16T17:03:24.412Z",
+ "generated": "2026-07-18T13:39:00.069Z",
  "totals": {
   "files": 236,
   "bytes": 21900359,
   "used": 206,
   "unused": 22,
   "devOnly": 8,
-  "duplicate": 0
+  "duplicate": 0,
+  "conceptRefs": 21
  },
  "budgetByDir": {
   "branding": 4866806,
@@ -441,6 +442,7 @@
    "bytes": 26553,
    "hash": "efdea2e42fcf",
    "consumers": [
+    "app/components/game/StatusModal.vue",
     "app/game/systems/textures.ts"
    ],
    "source": "inherited onet-game-2569 (reviewed)",
@@ -458,6 +460,8 @@
    ],
    "hash": "aa2f3144a1c0",
    "consumers": [
+    "app/components/game/StatusModal.vue",
+    "app/game/systems/heroFrames.ts",
     "app/game/systems/textures.ts",
     "scripts/sprite-crop/build-hero-atlas.cjs",
     "scripts/verify-pages.cjs"
@@ -906,7 +910,8 @@
    ],
    "hash": "46164b014b04",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -923,7 +928,8 @@
    ],
    "hash": "3d2bb2feb98e",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -940,7 +946,8 @@
    ],
    "hash": "ffec7f66a640",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -957,7 +964,8 @@
    ],
    "hash": "f4b8a92e6450",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -974,7 +982,8 @@
    ],
    "hash": "06b41912c387",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -991,7 +1000,8 @@
    ],
    "hash": "0f5560b26bb8",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1008,7 +1018,8 @@
    ],
    "hash": "9a1b0ec27198",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1025,7 +1036,8 @@
    ],
    "hash": "9fb47700d2ae",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1042,7 +1054,8 @@
    ],
    "hash": "076035154967",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1059,7 +1072,8 @@
    ],
    "hash": "857251eee920",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1076,7 +1090,8 @@
    ],
    "hash": "b410856ea226",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1093,7 +1108,8 @@
    ],
    "hash": "d149d33e5390",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1110,7 +1126,8 @@
    ],
    "hash": "6dea279ec920",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1127,7 +1144,8 @@
    ],
    "hash": "b6a2f5a24e68",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1144,7 +1162,8 @@
    ],
    "hash": "fddff8b89791",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1161,7 +1180,8 @@
    ],
    "hash": "048b49128c5c",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1178,7 +1198,8 @@
    ],
    "hash": "6d461eb6f433",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1195,7 +1216,8 @@
    ],
    "hash": "41137a88c6a4",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1212,7 +1234,8 @@
    ],
    "hash": "cd263f253392",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1229,7 +1252,8 @@
    ],
    "hash": "bd1848246b9e",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1246,7 +1270,8 @@
    ],
    "hash": "5a09911eefa6",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1263,7 +1288,8 @@
    ],
    "hash": "21af90c0c6ca",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1280,7 +1306,8 @@
    ],
    "hash": "578547fc4368",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1297,7 +1324,8 @@
    ],
    "hash": "d57c8591e30f",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1314,7 +1342,8 @@
    ],
    "hash": "995a98daa779",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1331,7 +1360,8 @@
    ],
    "hash": "fe3f26256217",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1348,7 +1378,8 @@
    ],
    "hash": "06a72d27ea37",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1365,7 +1396,8 @@
    ],
    "hash": "3b47400e647b",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1382,7 +1414,8 @@
    ],
    "hash": "29e0220b33dc",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1399,7 +1432,8 @@
    ],
    "hash": "4abada5019ac",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1416,7 +1450,8 @@
    ],
    "hash": "4088fffe6a3c",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1433,7 +1468,8 @@
    ],
    "hash": "bc7207e43aed",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1450,7 +1486,8 @@
    ],
    "hash": "afeaf474ded5",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1467,7 +1504,8 @@
    ],
    "hash": "da89fea8cfd3",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1484,7 +1522,8 @@
    ],
    "hash": "2ebf778ada76",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1501,7 +1540,8 @@
    ],
    "hash": "3fe9581f92b5",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1518,7 +1558,8 @@
    ],
    "hash": "911dd5a04a53",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1535,7 +1576,8 @@
    ],
    "hash": "a5880c5eaa03",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1552,7 +1594,8 @@
    ],
    "hash": "96d844aab755",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1569,7 +1612,8 @@
    ],
    "hash": "ba3e6f19cc14",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1586,7 +1630,8 @@
    ],
    "hash": "21ec705a5ec8",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1603,7 +1648,8 @@
    ],
    "hash": "146d2cb67b71",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1620,7 +1666,8 @@
    ],
    "hash": "61e0d9d84be2",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1637,7 +1684,8 @@
    ],
    "hash": "e002b71edfd5",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1654,7 +1702,8 @@
    ],
    "hash": "b2e20b7a79c0",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1671,7 +1720,8 @@
    ],
    "hash": "f2945959247b",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1688,7 +1738,8 @@
    ],
    "hash": "a6148620fc18",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1705,7 +1756,8 @@
    ],
    "hash": "b023e1ba8dac",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1722,7 +1774,8 @@
    ],
    "hash": "7fe785f9b5b0",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -1735,7 +1788,8 @@
    "bytes": 1777,
    "hash": "7952f6e62d37",
    "consumers": [
-    "app/data/equipment.ts"
+    "app/data/equipment.ts",
+    "app/data/equipmentVisuals.ts"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -4105,6 +4159,365 @@
    "source": "Craftpix (licensed)",
    "license": "licensed",
    "status": "used"
+  }
+ ],
+ "conceptReferences": [
+  {
+   "id": "docs-mockups-endless-tower-of-echoes-tower-asset-board-png",
+   "path": "docs/mockups/endless-tower-of-echoes/tower-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 2365112,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "59a97585bd8a",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-endless-tower-of-echoes-tower-room-archetypes-png",
+   "path": "docs/mockups/endless-tower-of-echoes/tower-room-archetypes.png",
+   "type": "concept-reference",
+   "bytes": 3065221,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "ee58836feaf7",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-building-exteriors-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-building-exteriors.png",
+   "type": "concept-reference",
+   "bytes": 2767760,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "ad91d28b09da",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-interior-assets-core-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interior-assets-core.png",
+   "type": "concept-reference",
+   "bytes": 2471342,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "3995ef2fe2b5",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-interior-assets-progression-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interior-assets-progression.png",
+   "type": "concept-reference",
+   "bytes": 3193574,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "d5e2488a1d38",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-interiors-core-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interiors-core.png",
+   "type": "concept-reference",
+   "bytes": 2867572,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "b75429d033a0",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-interiors-progression-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interiors-progression.png",
+   "type": "concept-reference",
+   "bytes": 3076966,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "af8525810ae5",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-outdoor-assets-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-outdoor-assets.png",
+   "type": "concept-reference",
+   "bytes": 2826995,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "f90b02741eca",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-aethergate-town-aethergate-town-map-png",
+   "path": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-town-map.png",
+   "type": "concept-reference",
+   "bytes": 4068575,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "9a58c1f92095",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-region-01-asset-board-png",
+   "path": "docs/mockups/region-01-everbloom/region-01-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 3907027,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "8f8f13a0a781",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-01-everbloom-region-01-map-mockups-png",
+   "path": "docs/mockups/region-01-everbloom/region-01-map-mockups.png",
+   "type": "concept-reference",
+   "bytes": 4128957,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "b0dfd0bd7065",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-02-sunveil-region-02-asset-board-png",
+   "path": "docs/mockups/region-02-sunveil/region-02-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 3607464,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "8b3c8f42219f",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-02-sunveil-region-02-map-mockups-png",
+   "path": "docs/mockups/region-02-sunveil/region-02-map-mockups.png",
+   "type": "concept-reference",
+   "bytes": 3940690,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "163f2361b2a6",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-03-emberfrost-region-03-asset-board-png",
+   "path": "docs/mockups/region-03-emberfrost/region-03-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 3683361,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "54ce48c617b4",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-03-emberfrost-region-03-map-mockups-png",
+   "path": "docs/mockups/region-03-emberfrost/region-03-map-mockups.png",
+   "type": "concept-reference",
+   "bytes": 4096630,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "eab25b643daa",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-04-mycelial-gloam-region-04-asset-board-png",
+   "path": "docs/mockups/region-04-mycelial-gloam/region-04-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 2973927,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "0f118da0618f",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-04-mycelial-gloam-region-04-map-mockups-png",
+   "path": "docs/mockups/region-04-mycelial-gloam/region-04-map-mockups.png",
+   "type": "concept-reference",
+   "bytes": 3717925,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "e9830a4a883f",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-05-skyclock-meridian-region-05-asset-board-png",
+   "path": "docs/mockups/region-05-skyclock-meridian/region-05-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 2980968,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "2b12a98d8331",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-05-skyclock-meridian-region-05-map-mockups-png",
+   "path": "docs/mockups/region-05-skyclock-meridian/region-05-map-mockups.png",
+   "type": "concept-reference",
+   "bytes": 3745681,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "1e4c1cf6b82e",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-06-astral-rift-region-06-asset-board-png",
+   "path": "docs/mockups/region-06-astral-rift/region-06-asset-board.png",
+   "type": "concept-reference",
+   "bytes": 2985311,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "fdffa72cc10e",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
+  },
+  {
+   "id": "docs-mockups-region-06-astral-rift-region-06-map-mockups-png",
+   "path": "docs/mockups/region-06-astral-rift/region-06-map-mockups.png",
+   "type": "concept-reference",
+   "bytes": 3364886,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "b835efa491f7",
+   "consumers": [
+    "docs/mockups/MOCKUP_MANIFEST.md"
+   ],
+   "source": "OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)",
+   "license": "project",
+   "status": "concept-reference"
   }
  ]
 }

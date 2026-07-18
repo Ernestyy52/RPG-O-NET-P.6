@@ -110,12 +110,24 @@ NEXT_PHASE: S1 DONE · S2 **DONE 2026-07-18** (hero คง 48px — ปฏิเ
    หลักฐาน: unit 424/424, mobile-layout 20/20, minimap/battle/stat-alloc/scale-lab เขียวหมด
    0 errors, screenshots `.playtest/s4-tower-centered.png` + `mobile-layout/`; รายละเอียด
    MAP_SCALE_DECISION §S4
-5. **งานถัดไป — MapBuild P1**: Aethergate production assets จาก 7 ภาพ detailed
-   (modular 16px source → atlas → provenance ใน ASSET_REGISTRY → dev gallery) → สร้าง
-   ZoneDefinition M1 64×48 ตามผัง greybox ที่พิสูจน์แล้ว (+shortcut ปิด route 12.6s,
-   lane ≥2 tiles, interior ≥ viewport) → Whisperwood field → slice playtest end-to-end
-   (Town→field→Town, save/reload, มือถือ) — **นี่คืองาน art+content ก้อนใหญ่ก้อนแรก**
-6. ลงทะเบียน mockup 21 ภาพเป็น concept-reference ใน ASSET_REGISTRY (dev-only)
+5. **MapBuild P1 — เริ่มแล้ว (ชั้นข้อมูลเสร็จ 2026-07-18):**
+   - ~~ลงทะเบียน mockup 21 ภาพเป็น concept-reference~~ DONE — `scripts/asset-truth.cjs` เพิ่ม
+     บล็อก conceptReferences (21 ภาพใน docs/mockups มี hash/dimensions/provenance), แยกจาก
+     production assets ไม่ปน unused/duplicate; ASSET_REGISTRY.json regenerated (totals.conceptRefs=21)
+   - ~~Aethergate ZoneDefinition (ชั้นข้อมูล)~~ **DONE + tested** — `app/game/runtime/campaignZone.ts`
+     (CampaignZone generic + `validateCampaignZone` = per-map contract validator ใช้ได้ทั้ง 32 แมพ)
+     + `app/data/zones/aethergate.ts` (64×48 จาก greybox ที่พิสูจน์แล้ว: 12 อาคาร, น้ำพุ/เวที,
+     4 interior door portals จริง (guild/hospital/item-shop/forge→equipment-shop) + 8 อาคารเป็น
+     interaction anchor (ไม่ fake ประตู), arrival return + tower gate, waystone shortcut, secret
+     garden, safe pocket plaza+inn, capacity 0 (hub ปลอดภัย), **แก้หนี้ S3: lane ≥2 tiles**);
+     asset dependency manifest ในไฟล์ (reuse/author ต่อ role); `test/aethergate-zone.spec.ts`
+     9 เทส + ASCII dump ยืนยันผังตรง mockup; unit รวม 433/433
+   - **งานถัดไปของ P1 (ยังไม่ทำ — งาน art + scene จริง)**: (a) curate/author production 16px tiles
+     ตาม AETHERGATE_ASSET_MANIFEST (tiny-town CC0 + craftpix path/village/bushes ใน D:\Asset →
+     atlas → public/aethergate/ + provenance) (b) AethergateScene เรนเดอร์ zone data ด้วย tile
+     จริง (ไม่ใช่ mockup PNG) + wire portals→InteriorScene/tower + spawn/collision/depth (c)
+     playtest ในเบราว์เซอร์ (Town→interior→Town, save/reload, มือถือ 390×844) (d) Whisperwood
+     field → slice loop — **ต้องมี art จริงก่อน mark map complete (non-negotiable #6)**
 
 LAST_UPDATED: 2026-07-18 (S2+S3+mobile fix+S4 code DONE — **SCALE GATE PASSED + APPLIED**;
 RO-feel pass ลงด้วย (stat allocation v7, เมนู 3 หมวด — ดู RO_FEEL_GAP_ANALYSIS.md);

@@ -173,6 +173,31 @@ for (const r of registry) {
   budget[top] = (budget[top] || 0) + r.bytes
 }
 
+// --- 5) concept references (docs/mockups) — MapBuild non-negotiable #5: mockup 21 ภาพต้องมี
+// provenance ใน registry; เป็น "ภาพอ้างอิงก่อนผลิต" เท่านั้น (ไม่อยู่ใน public/ ไม่เข้า runtime,
+// ไม่เข้าเช็ค unused/duplicate ของ production) — production asset ที่สร้างตามภาพเหล่านี้ต้อง
+// ลงทะเบียนแยกอีกครั้งใน public/ ตามปกติ
+const MOCKUPS_DIR = path.join(ROOT, 'docs', 'mockups')
+const conceptRefs = fs.existsSync(MOCKUPS_DIR)
+  ? walk(MOCKUPS_DIR)
+      .filter((f) => f.toLowerCase().endsWith('.png'))
+      .map((abs) => {
+        const rel = 'docs/mockups/' + path.relative(MOCKUPS_DIR, abs).replace(/\\/g, '/')
+        return {
+          id: rel.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+          path: rel,
+          type: 'concept-reference',
+          bytes: fs.statSync(abs).size,
+          dimensions: pngDims(abs),
+          hash: crypto.createHash('sha1').update(fs.readFileSync(abs)).digest('hex').slice(0, 12),
+          consumers: ['docs/mockups/MOCKUP_MANIFEST.md'],
+          source: 'OpenAI built-in imagegen (prompt recipe ใน MOCKUP_MANIFEST.md, 2026-07-17)',
+          license: 'project',
+          status: 'concept-reference',
+        }
+      })
+  : []
+
 const out = {
   generated: new Date().toISOString(),
   totals: {
@@ -182,10 +207,12 @@ const out = {
     unused: unused.length,
     devOnly: registry.filter((r) => r.status === 'dev-only').length,
     duplicate: registry.filter((r) => r.status === 'duplicate').length,
+    conceptRefs: conceptRefs.length,
   },
   budgetByDir: Object.fromEntries(Object.entries(budget).sort((a, b) => b[1] - a[1])),
   errors, warnings,
   assets: registry,
+  conceptReferences: conceptRefs,
 }
 fs.writeFileSync(path.join(ROOT, 'docs', 'ASSET_REGISTRY.json'), JSON.stringify(out, null, 1))
 
