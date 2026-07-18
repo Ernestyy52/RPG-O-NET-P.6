@@ -20,10 +20,11 @@ import type { GridRect } from '../../game/runtime/zoneValidate'
 export const AETHERGATE_COLS = 64
 export const AETHERGATE_ROWS = 48
 
-interface BuildingRect { id: string; name: string; tx: number; ty: number; tw: number; th: number; door: { x: number; y: number } }
+export interface BuildingRect { id: string; name: string; tx: number; ty: number; tw: number; th: number; door: { x: number; y: number } }
 
-/** Building footprints in tile space (traced @64×48). academy tw trimmed 9→8 = the S3 lane fix. */
-const BUILDINGS: BuildingRect[] = [
+/** Building footprints in tile space (traced @64×48). academy tw trimmed 9→8 = the S3 lane fix.
+ *  Exported so a renderer can draw each of the 12 landmarks as one labelled block. */
+export const AETHERGATE_BUILDING_RECTS: BuildingRect[] = [
   { id: 'guild', name: "Adventurers' Guild", tx: 4, ty: 6, tw: 11, th: 9, door: { x: 10, y: 16 } },
   { id: 'academy', name: 'Academy & Library', tx: 18, ty: 2, tw: 8, th: 12, door: { x: 22, y: 15 } },
   { id: 'gatehouse', name: 'Tower Gatehouse', tx: 28, ty: 1, tw: 8, th: 11, door: { x: 32, y: 13 } },
@@ -58,10 +59,6 @@ const WIRED_INTERIORS: Record<string, string> = {
   forge: 'interior:equipment-shop',
 }
 
-function inRect(x: number, y: number, tx: number, ty: number, tw: number, th: number): boolean {
-  return x >= tx && x < tx + tw && y >= ty && y < ty + th
-}
-
 /** Build the frozen Aethergate CampaignZone (pure — no Phaser, no art). */
 export function buildAethergateZone(): CampaignZone {
   const { collision, roles } = blankGrids(AETHERGATE_COLS, AETHERGATE_ROWS)
@@ -78,7 +75,7 @@ export function buildAethergateZone(): CampaignZone {
   for (let x = SPAWN.x - 1; x <= SPAWN.x + 1; x++) { collision[AETHERGATE_ROWS - 1]![x] = false; roles[AETHERGATE_ROWS - 1]![x] = 'portal' }
 
   // buildings (wall silhouette)
-  for (const b of BUILDINGS) {
+  for (const b of AETHERGATE_BUILDING_RECTS) {
     for (let y = b.ty; y < Math.min(AETHERGATE_ROWS - 1, b.ty + b.th); y++) {
       for (let x = b.tx; x < Math.min(AETHERGATE_COLS - 1, b.tx + b.tw); x++) {
         collision[y]![x] = true
@@ -99,7 +96,7 @@ export function buildAethergateZone(): CampaignZone {
   const portals: CampaignPortal[] = []
 
   // every building door: a wired interior becomes a two-way portal; the rest are interaction anchors
-  for (const b of BUILDINGS) {
+  for (const b of AETHERGATE_BUILDING_RECTS) {
     const dest = WIRED_INTERIORS[b.id]
     if (dest) {
       portals.push({ id: `door-${b.id}`, at: b.door, to: dest, kind: 'door', twoWay: true, label: b.name })
@@ -136,7 +133,7 @@ export function buildAethergateZone(): CampaignZone {
 
   // force every labelled tile walkable even if rounding landed it on a footprint edge
   const carve = (p: { x: number; y: number }) => { collision[p.y]![p.x] = false }
-  for (const b of BUILDINGS) carve(b.door)
+  for (const b of AETHERGATE_BUILDING_RECTS) carve(b.door)
   for (const a of anchors) carve(a.at)
   for (const p of portals) carve(p.at)
   carve(SPAWN); carve(LANDMARK); carve(WAYSTONE_W); carve(WAYSTONE_E); carve(SECRET)
