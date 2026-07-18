@@ -122,13 +122,24 @@ NEXT_PHASE: S1 DONE · S2 **DONE 2026-07-18** (hero คง 48px — ปฏิเ
      garden, safe pocket plaza+inn, capacity 0 (hub ปลอดภัย), **แก้หนี้ S3: lane ≥2 tiles**);
      asset dependency manifest ในไฟล์ (reuse/author ต่อ role); `test/aethergate-zone.spec.ts`
      9 เทส + ASCII dump ยืนยันผังตรง mockup; unit รวม 433/433
-   - **งานถัดไปของ P1 (ยังไม่ทำ — งาน art + scene จริง)**: (a) curate/author production 16px tiles
-     ตาม AETHERGATE_ASSET_MANIFEST (tiny-town CC0 + craftpix path/village/bushes ใน D:\Asset →
-     atlas → public/aethergate/ + provenance) (b) AethergateScene เรนเดอร์ zone data ด้วย tile
-     จริง (ไม่ใช่ mockup PNG) + wire portals→InteriorScene/tower + spawn/collision/depth (c)
-     playtest ในเบราว์เซอร์ (Town→interior→Town, save/reload, มือถือ 390×844) (d) Whisperwood
-     field → slice loop — **ต้องมี art จริงก่อน mark map complete (non-negotiable #6)**
+   - ~~dev preview เรนเดอร์ zone เป็นเมืองเดินได้~~ **DONE + playtest 16/16** — `/dev/aethergate`
+     (`app/pages/dev/aethergate.vue` + `app/game/dev/AethergateScene.ts`, ตัดจาก prod ยืนยันใน
+     .output): พื้น tiny-town CC0 จริง (ไม่ใช่ mockup PNG), 12 อาคาร greybox + label, น้ำพุ/เวที,
+     marker portal/anchor/secret, ฮีโร่ atlas จริง scale contract (48px, foot 18×12), เดิน
+     diagonal-normalized + กล้องกึ่งกลาง; `scripts/playtest-aethergate.mjs` เดิน BFS จาก spawn
+     ไปครบทุกปลายทาง (landmark/guild/hospital/shop/tower-gate/secret) จริงในเบราว์เซอร์
+     desktop+mobile 0 errors → **พิสูจน์ pipeline data→playable แล้ว**
+   - **งานถัดไปของ P1 (ยังไม่ทำ — งาน art + production scene)**: (a) curate/author production 16px
+     tiles ตาม AETHERGATE_ASSET_MANIFEST (tiny-town CC0 + craftpix path/village/bushes ใน D:\Asset
+     → atlas → public/aethergate/ + provenance) แทน greybox บล็อก (b) production scene/หรือ
+     ต่อยอด TownScene ให้โหลด Aethergate zone + wire portals→InteriorScene/tower + save/quest/NPC
+     (ระวังของเดิมที่ต้องไม่พัง) (c) playtest Town→interior→Town + save/reload + มือถือ (d)
+     Whisperwood field → slice loop — **ต้องมี art จริงก่อน mark map complete (non-negotiable #6)**
 
-LAST_UPDATED: 2026-07-18 (S2+S3+mobile fix+S4 code DONE — **SCALE GATE PASSED + APPLIED**;
-RO-feel pass ลงด้วย (stat allocation v7, เมนู 3 หมวด — ดู RO_FEEL_GAP_ANALYSIS.md);
-unit 424/424 49 ไฟล์, vue-tsc 0, playtests 0 errors ทุกชุด, generate+verify:pages PASS)
+LAST_UPDATED: 2026-07-18 (S2+S3+mobile+S4 DONE **SCALE GATE PASSED+APPLIED** + RO-feel pass
+(stat alloc v7, เมนู 3 หมวด) + **P1 data foundation DONE + committed** (campaignZone validator +
+aethergate zone 64×48 S3-lane-fixed + 21 mockups เป็น concept-ref + /dev/aethergate เดินได้จริง);
+งานทั้งหมด committed เป็น checkpoint แล้ว (c4cbb8b, e2afb5f, 54d929f — ผู้ใช้อนุญาต commit,
+push/deploy ยังต้องถาม); unit 434/434 50 ไฟล์, vue-tsc 0, playtests 0 errors ทุกชุด
+(mobile-layout 20/20, aethergate 16/16, minimap/battle/stat-alloc/scale-lab เขียว), generate+
+verify:pages PASS; **งานถัดไป = P1 art pass + production scene** (ดูข้อ 5))
