@@ -22,6 +22,12 @@ CURRENT_BATCH: 2A+2B บางส่วน DONE (world graph + PlayerLocation + 
   mockup แมพ + asset — session หน้าจะ "เปลี่ยนแมพครั้งใหญ่")
 PHASE_STATUS: ACTIVE
 
+LATEST_UPDATE_2026_07_20:
+- Aethergate Town + 4 core service interiors now share MMORPG locomotion (WASD/arrows/touch,
+  acceleration/braking, 8-way obstacle-aware click path) and moving shadow/aura layers.
+- Interior mockup crops are standalone production files with collision, occluders, lights and provenance.
+- Gate evidence: 440/440 tests, build PASS, Town smoke PASS, interiors PASS, mobile layout 20/20 PASS.
+
 MINIMAP (คำขอผู้ใช้ 2026-07-17 — DONE, playtest ผ่าน):
 - contract: `minimap:layout` / `minimap:tick` / `minimap:clear` บน eventBus (world-px —
   รอดการเปลี่ยนแมพ: แมพใหม่แค่ publish ข้อมูลใหม่ ตัววาดไม่ต้องแก้)

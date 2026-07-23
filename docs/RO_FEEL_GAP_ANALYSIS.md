@@ -9,9 +9,9 @@
 | ระบบ RO-like | สถานะในเกมเรา |
 |---|---|
 | คลาส + เปลี่ยนอาชีพ | 4 คลาสฐาน → เลือก 1 จาก 2 อาชีพขั้นสูงที่ Lv15 (8 อาชีพ, เปลี่ยนฟรี) — โครง 2 ชั้นแบบ Novice→Job แล้ว |
-| สกิลบิลด์ | loadout 5+1+2 passive, preset 3/คลาส + custom + Respec ฟรี, balance sim บังคับ parity |
+| สกิลบิลด์ | เริ่มด้วย 3 Skill Points, ได้แต้มทุกเลเวลและโบนัส milestone, อัป talent หลายแรงก์พร้อม prerequisite, คืนแต้มได้ครบ และยังมี loadout 5+1+2 passive/preset 3 แบบต่อคลาส |
 | **อัพสเตตัสเอง** | **ลงแล้ว 2026-07-18**: +3 แต้ม/เลเวล กด VIT/ATK/DEF/MAG/SPD/WIS ในหน้า Status, ราคาแพงขึ้นทุก 10 แต้ม (กัน dump), Reset ฟรี, เซฟ v7 |
-| ของสวม + ออร่า rarity | paper-doll weapon จริง + gear aura + trinket |
+| ของสวม + ออร่า rarity | paper-doll แสดงอาวุธ ชุด 5 ตระกูล และ trinket ลอยจริงทั้งในโลกเกม HUD และหน้าสถานะ พร้อม aura ตาม rarity |
 | การ์ด/ซ็อกเก็ต analog | Sigils craft + socket (บวก stat แบบ bounded) — ของเราเอง ไม่ใช่การ์ดมอนสเตอร์ |
 | เมืองศูนย์กลาง + บริการ | Town + Guild/Hospital/Shop/Forge; แผน Aethergate มี Job Hall/Bank/Inn ครบ 12 อาคาร |
 | World boss | บอสประจำโลก 10 โลก + boss arena แยก |

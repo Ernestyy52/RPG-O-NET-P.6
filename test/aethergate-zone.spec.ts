@@ -5,6 +5,7 @@ import { describe, it, expect } from 'vitest'
 import { validateCampaignZone, walkGridOf } from '~/game/runtime/campaignZone'
 import {
   buildAethergateZone, validateAethergate, AETHERGATE_ASSET_MANIFEST,
+  AETHERGATE_BUILDING_RECTS,
   AETHERGATE_COLS, AETHERGATE_ROWS,
 } from '~/data/zones/aethergate'
 
@@ -28,18 +29,17 @@ describe('Aethergate zone — per-map contract', () => {
     expect(report.spawnRegionOk).toBe(true)
   })
 
-  it('wires exactly the 4 real interiors as two-way door portals (no fake doors)', () => {
+  it('wires all 12 enclosed town buildings as two-way interiors', () => {
     const doorPortals = zone.portals.filter((p) => p.kind === 'door')
-    expect(doorPortals.map((p) => p.id).sort()).toEqual(
-      ['door-forge', 'door-guild', 'door-hospital', 'door-item-shop'],
+    expect(doorPortals.map((portal) => portal.id).sort()).toEqual(
+      AETHERGATE_BUILDING_RECTS.map((building) => `door-${building.id}`).sort(),
     )
     for (const p of doorPortals) {
       expect(p.twoWay).toBe(true)
       expect(p.to).toMatch(/^interior:/)
     }
-    // the other 8 buildings are interaction anchors, not portals (interiors are future content)
-    const doorAnchors = zone.anchors.filter((a) => a.id.startsWith('door-'))
-    expect(doorAnchors.length).toBe(8)
+    expect(zone.anchors.filter((anchor) => anchor.id.startsWith('door-'))).toHaveLength(0)
+    expect(zone.portals.some((portal) => portal.id === 'gate-tower')).toBe(false)
   })
 
   it('has a memorable entrance/exit that never soft-locks', () => {

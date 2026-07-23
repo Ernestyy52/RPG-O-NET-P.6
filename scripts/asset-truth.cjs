@@ -17,12 +17,14 @@ const PROVENANCE = {
   'character-sprites': { source: 'inherited onet-game-2569 (reviewed)', license: 'project' },
   'character-icons': { source: 'inherited onet-game-2569 (reviewed)', license: 'project' },
   'character-assets': { source: 'inherited onet-game-2569 (reviewed)', license: 'project' },
+  'paperdoll': { source: 'OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)', license: 'project' },
   'mob-sprites': { source: 'Main Character Asset pack (licensed)', license: 'licensed' },
   'npc-sprites': { source: 'Craftpix (licensed, curated)', license: 'licensed' },
   'npc': { source: 'Craftpix (licensed)', license: 'licensed' },
   'world1-props': { source: 'Craftpix (licensed)', license: 'licensed' },
   'exterior-props': { source: 'Craftpix (licensed)', license: 'licensed' },
   'interior-props': { source: 'Craftpix (licensed)', license: 'licensed' },
+  'interior-maps': { source: 'project-approved Aethergate mockup crops', license: 'project' },
   'guildhall-props': { source: 'Craftpix (licensed)', license: 'licensed' },
   'town-art': { source: 'user-provided', license: 'project' },
   'branding': { source: 'user-provided', license: 'project' },
@@ -31,7 +33,7 @@ const PROVENANCE = {
   'skill-icons': { source: 'Kenney/Craftpix (curated)', license: 'licensed' },
   'skill-assets': { source: 'Kenney/Craftpix (curated)', license: 'licensed' },
   'quest-icons': { source: 'Kenney/Craftpix (curated)', license: 'licensed' },
-  'audio': { source: 'see folder provenance', license: 'licensed' },
+  'audio': { source: 'licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)', license: 'mixed licensed/project' },
   'lpc-poc': { source: 'LPC (see CREDITS.md)', license: 'CC-BY-SA/GPL — dev PoC only' },
 }
 const DEV_ONLY_DIRS = new Set(['lpc-poc'])
@@ -90,6 +92,8 @@ for (const f of SRC_FILES) {
   const src = fs.readFileSync(f, 'utf8')
   const rel = path.relative(ROOT, f).replace(/\\/g, '/')
   for (const m of src.match(exactRx) || []) {
+    // Nuxt ~/assets/... is source code, not a file expected under public/assets/.
+    if (src.includes(`~/${m}`)) continue
     if (!exactRefs.has(m)) exactRefs.set(m, [])
     if (!exactRefs.get(m).includes(rel)) exactRefs.get(m).push(rel)
   }

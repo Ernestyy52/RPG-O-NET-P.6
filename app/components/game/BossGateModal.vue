@@ -1,8 +1,8 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3">
-    <div class="pixel-window w-full max-w-md">
+  <div v-if="open" class="modal-backdrop">
+    <div class="pixel-window anime-window w-full max-w-md">
       <div class="pixel-titlebar">
-        <h2 class="gold-text text-lg font-bold">Boss Gate · Floor {{ floor }}</h2>
+        <h2 class="gold-text text-lg font-bold">{{ region.guardian }} · Guardian Gate</h2>
         <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
       </div>
       <div class="pixel-window-body space-y-3 p-4">
@@ -20,7 +20,7 @@
 
         <div class="glass-panel p-2 text-xs">
           <span class="gold-text font-bold">Reward:</span>
-          ⭐ {{ reward.expReward }} EXP · 🪙 {{ reward.goldReward }}g · 💎 {{ isMilestone ? 3 : 1 }} Gems · 🚪 Floor {{ floor + 1 }}
+          ⭐ {{ reward.expReward }} EXP · 🪙 {{ reward.goldReward }}g · 💎 {{ isMilestone ? 3 : 1 }} Gems · 🚪 Adventure Rank {{ floor + 1 }}
         </div>
 
         <button class="btn-primary w-full" :disabled="!ready" @click="enter">
@@ -36,12 +36,14 @@ import { computed } from 'vue'
 import { gameEvents } from '~/game/systems/eventBus'
 import { getBossRequirement } from '~/data/bossRequirements'
 import { getBossStats } from '~/data/floors'
+import { regionForFloor } from '~/data/adventureRegions'
 import { usePlayerStore } from '~/stores/player'
 
 const props = defineProps<{ open: boolean; floor: number }>()
 defineEmits<{ (e: 'close'): void }>()
 
 const player = usePlayerStore()
+const region = computed(() => regionForFloor(props.floor))
 const requirement = computed(() => getBossRequirement(props.floor))
 const reward = computed(() => getBossStats(props.floor))
 const isMilestone = computed(() => props.floor % 10 === 0)

@@ -146,14 +146,14 @@ const BASE: SkillDef[] = [
 export const JOB_UNLOCK_LEVEL = 15
 export interface JobDef { id: JobId; classId: HeroClassId; name: string; theme: string }
 export const JOBS: JobDef[] = [
-  { id: 'berserker', classId: 'warrior', name: 'Berserker', theme: 'All-out offense — trade safety for fury.' },
-  { id: 'warmaster', classId: 'warrior', name: 'Warmaster', theme: 'Discipline — bleed control and counter-tempo.' },
-  { id: 'stormcaller', classId: 'mage', name: 'Stormcaller', theme: 'Lightning burst and stunning force.' },
-  { id: 'lorekeeper', classId: 'mage', name: 'Lorekeeper', theme: 'Knowledge itself becomes power.' },
-  { id: 'sharpshooter', classId: 'archer', name: 'Sharpshooter', theme: 'One perfect shot at the perfect moment.' },
-  { id: 'trickster', classId: 'archer', name: 'Trickster', theme: 'Never there when the blow lands.' },
-  { id: 'bulwark', classId: 'guardian', name: 'Bulwark', theme: 'The wall that outlasts everything.' },
-  { id: 'lightwarden', classId: 'guardian', name: 'Lightwarden', theme: 'Radiant mending and righteous wrath.' },
+  { id: 'berserker', classId: 'warrior', name: 'Bloodreaver', theme: 'ดาบใหญ่และความคลั่ง · เสี่ยงรับดาเมจเพื่อบุกต่อเนื่อง' },
+  { id: 'warmaster', classId: 'warrior', name: 'Banner Knight', theme: 'วินัย โล่ และธงรบ · คุมจังหวะด้วยการสวนกลับ' },
+  { id: 'stormcaller', classId: 'mage', name: 'Tempest Sage', theme: 'เวทสายฟ้า · สะสมประจุแล้วระเบิดสถานะ Shock' },
+  { id: 'lorekeeper', classId: 'mage', name: 'Rune Scholar', theme: 'รูนและตำรา · เปิดจุดอ่อนแล้วใช้ความรู้เป็นพลัง' },
+  { id: 'sharpshooter', classId: 'archer', name: 'Falconeye', theme: 'ธนูยาว · หนึ่งนัดแม่นยำในจังหวะที่ถูกต้อง' },
+  { id: 'trickster', classId: 'archer', name: 'Shadow Scout', theme: 'มีดและกับดัก · เร็ว หลบเก่ง และโจมตีสถานะ' },
+  { id: 'bulwark', classId: 'guardian', name: 'Iron Templar', theme: 'ค้อนและโล่หนัก · กำแพงที่ปกป้องปาร์ตี้' },
+  { id: 'lightwarden', classId: 'guardian', name: 'Dawn Priest', theme: 'แสงรักษา · ฟื้นฟูและพิพากษาศัตรูที่ถูกเปิดจุดอ่อน' },
 ]
 
 const JOB_SKILLS: SkillDef[] = [

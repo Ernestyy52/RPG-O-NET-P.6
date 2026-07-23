@@ -18,9 +18,9 @@ describe('equipment — catalog integrity', () => {
     }
   })
 
-  it('epic/legendary gear is craft-only (never sold in shops)', () => {
+  it('epic/legendary gear is acquisition-restricted (never sold in shops)', () => {
     for (const it of ALL_EQUIPMENT) {
-      if (it.rarity === 'epic' || it.rarity === 'legendary') expect(it.craftable).toBe(true)
+      if (it.rarity === 'epic' || it.rarity === 'legendary') expect(it.craftable || it.dropOnly).toBe(true)
     }
   })
 })
@@ -57,6 +57,7 @@ describe('equipment — shop inventory', () => {
       expect(item.minFloor).toBeLessThanOrEqual(floor)
       if (item.kind === 'equipment') {
         expect(item.craftable).not.toBe(true)
+        expect(item.dropOnly).not.toBe(true)
         expect(['common', 'uncommon', 'rare']).toContain(item.rarity)
       }
     }

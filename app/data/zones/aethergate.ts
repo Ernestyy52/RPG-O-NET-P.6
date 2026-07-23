@@ -54,9 +54,17 @@ const SECRET = { x: 6, y: 45 } // hidden garden, SW corner behind the inn
 /** Building doors that lead to a real interior scene today (honest — no fake doors). */
 const WIRED_INTERIORS: Record<string, string> = {
   guild: 'interior:guild',
+  academy: 'interior:library',
+  gatehouse: 'interior:gatehouse',
+  'town-hall': 'interior:town-hall',
   hospital: 'interior:hospital',
+  'job-hall': 'interior:crystal-shrine',
   'item-shop': 'interior:item-shop',
   forge: 'interior:equipment-shop',
+  bank: 'interior:bank',
+  inn: 'interior:inn',
+  lodge: 'interior:stable',
+  tailor: 'interior:tailor',
 }
 
 /** Build the frozen Aethergate CampaignZone (pure — no Phaser, no art). */
@@ -107,10 +115,8 @@ export function buildAethergateZone(): CampaignZone {
     }
   }
 
-  // arrival gate (return to overworld/title, always reversible) + Tower gate at the Gatehouse
+  // Arrival remains reversible. Tower travel moved behind Kael inside the Gatehouse.
   portals.push({ id: 'arrival', at: SPAWN, to: 'arrival', kind: 'return', twoWay: true, label: 'South Arrival Gate' })
-  portals.push({ id: 'gate-tower', at: { x: 32, y: 12 }, to: 'tower', kind: 'gate', twoWay: true, label: 'Tower Gate' })
-  roles[12]![32] = 'portal'
 
   // future field exit (Whisperwood) declared as an anchor, NOT a live portal — the field is not
   // built yet, so shipping it as a working portal would be a fake exit. Marked reachable + planned.

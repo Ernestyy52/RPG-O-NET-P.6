@@ -6,7 +6,7 @@
   <!-- Knowledge Break: a centered interrupt that pauses the fight for one reviewed question. Shown
        only while a break is open (KNOWLEDGE_BREAK_ENABLED gates whether one ever opens). -->
   <div v-if="active && breakOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
-    <div class="pixel-window w-full max-w-lg">
+    <div class="pixel-window anime-window w-full max-w-lg">
       <div class="pixel-titlebar"><h2 class="gold-text text-base font-bold">📖 Knowledge Break</h2><span class="text-xs opacity-75">{{ breakQuestion.cefr }}</span></div>
       <div class="pixel-window-body p-4">
         <p class="mb-3 text-sm">The monster's assault pauses — answer to empower your hero. (A wrong answer only costs your combo, never HP.)</p>
@@ -37,16 +37,16 @@
   </div>
 
   <div v-if="active" class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center p-2 sm:p-3">
-    <div class="pointer-events-auto pixel-window w-full max-w-3xl">
+    <div class="pointer-events-auto pixel-window anime-window w-full max-w-3xl">
       <div class="pixel-titlebar gap-3">
         <div>
           <h2 class="gold-text text-base font-bold">
-            Floor {{ floor }} {{ isBoss ? 'Boss' : 'Battle' }}
+            {{ battleContext }} {{ isBoss ? '· Guardian' : '· Encounter' }}
             <span v-if="isBoss && phaseName" class="ml-2 rounded px-2 py-0.5 text-xs" :style="{ background: phaseCss, color: '#1a1208' }">
               Phase {{ phaseId }} · {{ phaseName }}
             </span>
           </h2>
-          <p class="text-xs opacity-75">{{ cefr }} · {{ world.description }} · real-time</p>
+          <p class="text-xs opacity-75">{{ knowledgeProfile.icon }} {{ knowledgeProfile.name }} · {{ cefr }} · {{ world.description }} · real-time</p>
         </div>
         <span class="text-xs">
           HP {{ Math.max(0, Math.round(heroHp)) }}/{{ maxHp }}
@@ -72,7 +72,15 @@
           <div class="flex-1">
             <div class="mb-1 flex justify-between text-xs" :class="{ 'battle-shake': monsterHit }"><span class="font-bold">{{ monster.name }}</span><span>{{ Math.max(0, Math.round(monsterHp)) }}/{{ monster.maxHp }}</span></div>
             <div class="h-2 overflow-hidden rounded bg-black/40"><div class="h-full transition-all duration-150" :style="{ width: `${monsterHpPct}%`, background: isBoss ? phaseCss : '#ef4444' }" /></div>
+            <div class="mt-1 flex items-center gap-2"><span class="w-20 text-[9px] text-amber-200">{{ breakStunMs > 0 ? 'BROKEN' : breakLabel }}</span><div class="h-1.5 flex-1 overflow-hidden rounded bg-black/50"><div class="h-full bg-amber-400 transition-all duration-200" :style="{ width: `${monsterBreakPct}%` }" /></div></div>
           </div>
+        </div>
+
+        <div class="ecology-strip" aria-label="Monster ecology">
+          <span class="ecology-chip">{{ ecologyProfile.element.toUpperCase() }}</span>
+          <span class="ecology-chip weakness">Weak: {{ ecologyProfile.weakness }}</span>
+          <span class="ecology-passive" :title="ecologyProfile.lore">{{ ecologyProfile.passive }}</span>
+          <span class="ecology-drop">Drop: {{ ecologyProfile.signatureDrop }}</span>
         </div>
 
         <!-- status telegraph (loadout mode): รูปทรง/ฝั่งต่างกัน ไม่พึ่งสีอย่างเดียว (color-blind cue) -->
@@ -81,7 +89,8 @@
           <span v-for="s in selfStatuses" :key="`s-${s.id}`" class="status-badge status-self" :title="`${statusName(s.id)} on you`">✚ {{ statusName(s.id) }} {{ Math.ceil(s.remainingMs / 1000) }}s</span>
         </div>
 
-        <p class="min-h-5 text-sm font-medium" data-testid="battle-log">{{ log }}</p>
+        <div class="flex items-center justify-between gap-2"><p class="min-h-5 text-sm font-medium" data-testid="battle-log">{{ log }}</p><span v-if="answerGrade" class="answer-grade" :data-grade="answerGrade.grade">{{ answerGrade.label }}</span></div>
+        <p class="text-[10px] text-sky-200/75">{{ knowledgeProfile.battleTip }}</p>
 
         <!-- question: answering correct auto-attacks + builds combo/MP; wrong resets combo -->
         <p class="text-sm opacity-80">{{ question.prompt }}</p>
@@ -123,7 +132,7 @@
             </button>
           </div>
           <div class="grid grid-cols-2 gap-2">
-            <button class="btn-primary text-xs" :disabled="!hasPotion" @click="usePotion">Item</button>
+            <button class="btn-primary text-xs" :disabled="!hasPotion" :title="potionLocked ? 'Dry Run modifier: potions disabled' : ''" @click="usePotion">{{ potionLocked ? 'Item Sealed' : 'Item' }}</button>
             <button class="btn-secondary text-xs" :disabled="isBoss" @click="escape">Flee</button>
           </div>
         </template>
@@ -131,7 +140,7 @@
           <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('attack')" @click="useSkill('attack')">{{ slots?.attack.name ?? 'Attack' }}<span v-if="(slots?.attack.mpCost ?? 0) > 0" class="opacity-70"> {{ slots?.attack.mpCost }}</span><span v-if="cd.attack > 0" class="cd-veil" :style="{ height: `${cdPct('attack')}%` }" /></button>
           <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('counter')" @click="useSkill('counter')">{{ slots?.counter.name ?? 'Counter' }} <span class="opacity-70">{{ slots?.counter.mpCost ?? COUNTER_MP }}</span><span v-if="cd.counter > 0" class="cd-veil" :style="{ height: `${cdPct('counter')}%` }" /></button>
           <button class="btn-primary relative overflow-hidden text-xs" :disabled="!canUse('support')" @click="useSkill('support')">{{ slots?.support.name ?? 'Support' }} <span class="opacity-70">{{ slots?.support.mpCost ?? SUPPORT_MP }}</span><span v-if="cd.support > 0" class="cd-veil" :style="{ height: `${cdPct('support')}%` }" /></button>
-          <button class="btn-primary text-xs" :disabled="!hasPotion" @click="usePotion">Item</button>
+          <button class="btn-primary text-xs" :disabled="!hasPotion" :title="potionLocked ? 'Dry Run modifier: potions disabled' : ''" @click="usePotion">{{ potionLocked ? 'Item Sealed' : 'Item' }}</button>
           <button class="btn-secondary text-xs" :disabled="isBoss" @click="escape">Flee</button>
         </div>
       </div>
@@ -144,6 +153,10 @@ import { computed, onUnmounted, reactive, ref } from 'vue'
 import { gameEvents, type BattleOutcome } from '~/game/systems/eventBus'
 import { getFloorConfig, getQuestionDifficulty } from '~/data/floors'
 import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/questions'
+import { selectMonsterQuestion, MONSTER_KNOWLEDGE_PROFILES, type MonsterKnowledgeProfile } from '~/data/monsterKnowledge'
+import { applyBreakDamage, gradeAnswer, monsterBreakProfile, type AnswerGrade } from '~/data/combat/monsterBreak'
+import { regionForFloor } from '~/data/adventureRegions'
+import { monsterEcology } from '~/data/monsterEcology'
 import { getWorldState, isWorld1Floor } from '~/data/world'
 import { rollLoot } from '~/data/loot'
 import { getItemById } from '~/data/equipment'
@@ -177,6 +190,14 @@ const isBoss = ref(false)
 const log = ref('')
 const answerLock = ref(false)
 const monsterHit = ref(false)
+const worldMode = ref<'adventure' | 'ranked-tower'>('adventure')
+const knowledgeProfile = ref<MonsterKnowledgeProfile>(MONSTER_KNOWLEDGE_PROFILES.slime)
+const breakGauge = ref(6)
+const breakGaugeMax = ref(6)
+const breakStunMs = ref(0)
+const breakLabel = ref('Break')
+const answerGrade = ref<{ grade: AnswerGrade; label: string } | null>(null)
+let questionStartedAt = 0
 
 const world = computed(() => getWorldState())
 const config = computed(() => getFloorConfig(floor.value))
@@ -205,8 +226,12 @@ const comboBonus = computed(() => domainComboBonus(combo.value))
 const heroHpPct = computed(() => clampPct(heroHp.value, maxHp.value))
 const mpPct = computed(() => clampPct(mp.value, maxMp.value))
 const monsterHpPct = computed(() => clampPct(monsterHp.value, monster.maxHp))
-const hasPotion = computed(() => (player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0)
+const potionLocked = ref(false)
+const hasPotion = computed(() => !potionLocked.value && ((player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0))
 const phaseCss = computed(() => `#${phaseTint.value.toString(16).padStart(6, '0')}`)
+const monsterBreakPct = computed(() => clampPct(breakGauge.value, breakGaugeMax.value))
+const ecologyProfile = ref(monsterEcology(undefined))
+const battleContext = computed(() => worldMode.value === 'ranked-tower' ? `Endless Spire · Ranked ${floor.value}` : `${regionForFloor(floor.value).name} · Zone ${floor.value}`)
 
 // ---- Knowledge Break (Phase 10 → flip #4): occasionally interrupts the fight with one reviewed
 // question that pauses the monster assault, feeds mastery, and empowers the hero. All gated by
@@ -246,6 +271,10 @@ let bossState: BossPhaseState | null = null
 let encounterId = ''
 let encExp = 0
 let encGold = 0
+let encounterMonsterId: string | undefined
+let encounterElite = false
+let encounterRare = false
+let encounterModifiers: import('~/data/activities').DailyRiftModifier[] = []
 let battleSeq = 0
 let raf = 0
 let lastTs = 0
@@ -261,16 +290,28 @@ function assetSprite(path?: string) {
 }
 
 function loadQuestion() {
-  // Flip: เลือกข้อโดยถ่วงน้ำหนักไปทาง subskill ที่ยังอ่อน/ถึงรอบทบทวน (weak-recur) — flag off = bag เดิม
-  const q = MASTERY_BATTLE_SELECTION_ENABLED
+  const monsterPick = selectMonsterQuestion({
+    monsterId: encounterMonsterId,
+    isBoss: isBoss.value,
+    floor: floor.value,
+    difficulty: getQuestionDifficulty(floor.value),
+    seenIds: player.monsterQuestionHistory[encounterMonsterId || 'unknown-monster'] ?? [],
+  })
+  const masteryPick = MASTERY_BATTLE_SELECTION_ENABLED
     ? drawBattleQuestion(CURRICULUM_QUESTIONS, floor.value, getQuestionDifficulty(floor.value), learning.mastery)
     : null
-  const picked = q ?? getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)[0]
-  // เคลียร์ field เสริมก่อน assign กัน explanation/distractorReasoning ข้อเก่าค้างเมื่อข้อใหม่ไม่มี
+  const picked = monsterPick?.question ?? masteryPick ?? getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)[0]
+  if (!picked) return
+  if (monsterPick) {
+    knowledgeProfile.value = monsterPick.profile
+    player.recordMonsterQuestion(encounterMonsterId, picked.id, monsterPick.exhaustedCycle)
+  }
   Object.assign(question, { explanation: undefined, distractorReasoning: undefined, subskillId: undefined, patternId: undefined }, picked)
+  questionStartedAt = Date.now()
 }
 
 function pulseMonster() {
+  gameEvents.emit('audio:sfx', { key: 'attack' })
   monsterHit.value = false
   requestAnimationFrame(() => { monsterHit.value = true; setTimeout(() => { monsterHit.value = false }, 300) })
 }
@@ -308,6 +349,7 @@ const onBattleStart = (payload: import('~/game/systems/eventBus').EncounterInfo)
   strikeQueued = false
 
   floor.value = payload.floor
+  worldMode.value = payload.worldMode ?? 'adventure'
   isBoss.value = !!payload.isBoss
   monster.isMilestone = config.value.isMilestone
   const setup = setupEncounter(payload, config.value, world.value.combatModifier)
@@ -315,6 +357,19 @@ const onBattleStart = (payload: import('~/game/systems/eventBus').EncounterInfo)
   monster.maxHp = setup.maxHp
   encExp = setup.expReward
   encGold = setup.goldReward
+  encounterMonsterId = payload.monsterId
+  ecologyProfile.value = monsterEcology(payload.monsterId)
+  knowledgeProfile.value = MONSTER_KNOWLEDGE_PROFILES[isBoss.value ? 'boss' : 'slime']
+  const poise = monsterBreakProfile(payload.monsterId, !!payload.isBoss)
+  breakGauge.value = poise.max
+  breakGaugeMax.value = poise.max
+  breakStunMs.value = 0
+  breakLabel.value = poise.label
+  answerGrade.value = null
+  encounterElite = !!payload.elite
+  encounterRare = !!payload.rare
+  encounterModifiers = payload.riftModifiers ?? []
+  potionLocked.value = encounterModifiers.includes('no-potion')
 
   encounterId = `rt-f${payload.floor}:${Date.now()}:${battleSeq++}`
   const heroSnapshot = { atk: player.atk, knowledge: player.knowledge, def: player.def, hp: player.hp, maxHp: player.maxHp, maxMp: player.maxMp }
@@ -389,11 +444,25 @@ const onBattleStart = (payload: import('~/game/systems/eventBus').EncounterInfo)
   lastTs = 0
   raf = requestAnimationFrame(frame)
 }
+const onBattleAbort = () => {
+  if (raf) cancelAnimationFrame(raf)
+  raf = 0
+  active.value = false
+  strikeQueued = false
+  breakCtl?.cancel(Date.now())
+  breakCtl = null
+  breakOpen.value = false
+  combat = null
+  lcombat = null
+  potionLocked.value = false
+}
 gameEvents.on('battle:start', onBattleStart)
+gameEvents.on('battle:abort', onBattleAbort)
 
 // P0.9: ปลด listener + RAF + break ที่ค้างเมื่อ component ถูกถอด — ไม่มี handler ผีหลัง unmount
 onUnmounted(() => {
   gameEvents.off('battle:start', onBattleStart)
+  gameEvents.off('battle:abort', onBattleAbort)
   if (raf) cancelAnimationFrame(raf)
   raf = 0
   breakCtl?.cancel(Date.now())
@@ -416,6 +485,12 @@ function step(dt: number) {
   // a Knowledge Break freezes the monster assault while the question is open (a wrong answer can
   // never be lethal by itself) — skip the combat tick entirely until it resolves.
   if (breakOpen.value) { syncFromEngine(); return }
+  if (breakStunMs.value > 0) {
+    breakStunMs.value = Math.max(0, breakStunMs.value - dt)
+    if (breakStunMs.value === 0) { breakGauge.value = breakGaugeMax.value; log.value = `${monster.name} recovers its poise.` }
+    syncFromEngine()
+    return
+  }
   if (breakCtl && !eng.state.over) maybeOpenBreak()
   if (breakOpen.value) { syncFromEngine(); return }
   const events = eng.tick(dt)
@@ -474,12 +549,24 @@ function answer(index: number) {
   if (!eng || answerLock.value) return
   answerLock.value = true
   const correct = index === question.answerIndex
+  const timing = gradeAnswer(correct, Date.now() - questionStartedAt)
+  answerGrade.value = { grade: timing.grade, label: timing.label }
+  let brokeMonster = false
   answerFeedback.value = { correct, chosen: index }
   // ทุกคำตอบในไฟต์คือ learning event — ป้อนเข้า mastery (ไม่เคยอ่านกลับมา scale พลังต่อสู้)
   learning.recordBattleAnswer(question.subskillId, correct)
   if (correct) {
     player.recordCorrectAnswer()
     eng.registerAnswer(true) // +Insight เสมอ — ไม่มีคำตอบถูกสูญเปล่า (P0.6)
+    const breakResult = applyBreakDamage(breakGauge.value, timing.breakDamage)
+    breakGauge.value = breakResult.remaining
+    brokeMonster = breakResult.broken
+    if (brokeMonster) {
+      const poise = monsterBreakProfile(encounterMonsterId, isBoss.value)
+      breakStunMs.value = poise.stunMs
+      eng.registerAnswer(true)
+      gameEvents.emit('audio:sfx', { key: 'rare_drop' })
+    }
     // อ่านค่า combo ก่อนออกท่า — killing blow จะ null engine (นี่คือ crash เดิม, P0.4)
     const comboNow = eng.state.combo
     if (lcombat) {
@@ -497,6 +584,7 @@ function answer(index: number) {
     eng.registerAnswer(false)
     log.value = 'Wrong — combo lost. Check the answer below.'
   }
+  log.value = `${timing.label}! ${log.value}${correct ? ` · ${breakLabel.value} -${timing.breakDamage}` : ''}${brokeMonster ? ' · BREAK! Enemy stunned.' : ''}`
   syncFromEngine()
   // ตอบผิดค้างเฉลยไว้นานกว่าให้พออ่านหนึ่งบรรทัด (ไฟต์เรียลไทม์ยังเดินต่อ — ราคาของการตอบผิด)
   const readMs = correct ? 450 : 2600
@@ -619,6 +707,7 @@ function closeBreak() {
 }
 
 function usePotion() {
+  if (potionLocked.value) { log.value = 'Dry Run: potions are sealed inside this Rift.'; return }
   const eng = engine()
   if (!eng) return
   const itemId = (player.inventory.potion_m ?? 0) > 0 ? 'potion_m' : 'potion_s'
@@ -673,7 +762,13 @@ function produceLearningSummary() {
 /** Mirror of BattleModal.winBattle — same idempotent, validated reward path (constitution rule 3). */
 function grantVictoryRewards() {
   const gems = gemsForEncounter(isBoss.value, monster.isMilestone)
-  const drops = rollLoot(floor.value, isBoss.value)
+  const ownedItemIds = [...Object.entries(player.inventory).filter(([, qty]) => qty > 0).map(([id]) => id), ...Object.values(player.equipment).filter((id): id is string => !!id)]
+  const drops = rollLoot(floor.value, isBoss.value, {
+    monsterId: encounterMonsterId, elite: encounterElite, rare: encounterRare,
+    setPityCount: encounterMonsterId ? player.setDropPity[encounterMonsterId] ?? 0 : 0,
+    ownedItemIds,
+  })
+  const pityDrop = drops.find((drop) => drop.guaranteed)
   // exp/gold come from the encounter setup (scaled for elites/bosses), matching the fight's monster
   const reward = buildRewardRequest({
     encounterId, exp: encExp, gold: encGold, gems,
@@ -683,7 +778,13 @@ function grantVictoryRewards() {
     player.gainCombatRewards(reward.exp, reward.gold, reward.gems)
     player.recordDefeat()
     for (const drop of reward.loot) player.addItem(drop.itemId, drop.qty)
+    player.recordSetHunt(encounterMonsterId, reward.loot.some((drop) => drop.itemId.startsWith('set_')))
   }
+  gameEvents.emit('audio:sfx', { key: 'victory' })
+  if (reward.loot.some((drop) => drop.itemId.startsWith('set_')) || encounterRare) {
+    setTimeout(() => gameEvents.emit('audio:sfx', { key: 'rare_drop' }), 220)
+  }
+  if (pityDrop) player.addLog(`Pity guarantee activated: ${pityDrop.name}.`)
   const dropText = reward.loot.length ? ` Dropped: ${reward.loot.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
   player.addLog(`Defeated ${monster.name} on Floor ${floor.value} (+${reward.exp} EXP, +${reward.gold}g${reward.gems ? `, +${reward.gems} Gems` : ''})`)
   log.value = `Victory. +${reward.exp} EXP, +${reward.gold} gold.${dropText}`
@@ -706,13 +807,18 @@ function finish(outcome: BattleOutcome) {
   enemyStatuses.value = []
   selfStatuses.value = []
   bossState = null
-  gameEvents.emit('battle:end', { outcome, won: outcome === 'victory', isBoss: wasBoss })
+  gameEvents.emit('battle:end', { outcome, won: outcome === 'victory', isBoss: wasBoss, monsterId: encounterMonsterId, elite: encounterElite, rare: encounterRare, expReward: encExp })
 }
 </script>
 
 <style scoped>
 @keyframes battle-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 .battle-shake { animation: battle-shake 0.3s ease-in-out; }
+.ecology-strip { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; padding: .35rem .5rem; border: 1px solid rgb(122 101 61 / 45%); border-radius: .45rem; background: linear-gradient(90deg, rgb(16 25 35 / 85%), rgb(35 24 43 / 75%)); font-size: 10px; }
+.ecology-chip { padding: .12rem .38rem; border: 1px solid rgb(132 190 224 / 55%); border-radius: 999px; color: #bfe7ff; font-weight: 800; }
+.ecology-chip.weakness { border-color: rgb(237 157 114 / 55%); color: #ffc7a8; }
+.ecology-passive { flex: 1 1 220px; color: #d9d2c3; }
+.ecology-drop { color: #ebcf82; }
 /* cooldown veil fills from the bottom as the skill recharges (engine-driven, not per-frame damage) */
 .cd-veil { position: absolute; inset-inline: 0; bottom: 0; background: rgba(0, 0, 0, 0.55); pointer-events: none; }
 /* combo telegraph: skill whose consume-target is on the enemy glows (reduced-motion users still get the ring) */
@@ -724,4 +830,7 @@ function finish(outcome: BattleOutcome) {
 .status-badge { border: 1px solid; border-radius: 4px; padding: 1px 5px; background: rgba(0, 0, 0, 0.35); }
 .status-enemy { border-color: #ef8a8a; color: #ffb4b4; }
 .status-self { border-color: #7fe0a7; color: #a9f0c8; }
+.answer-grade { flex: 0 0 auto; border: 1px solid #e5be64; border-radius: 999px; padding: 2px 8px; color: #f8d97c; font-size: 10px; font-weight: 900; letter-spacing: .1em; box-shadow: 0 0 10px #e5be643d; }
+.answer-grade[data-grade='perfect'] { border-color: #78e5cf; color: #9effe8; box-shadow: 0 0 12px #78e5cf66; }
+.answer-grade[data-grade='miss'] { border-color: #d96b73; color: #ff9da5; box-shadow: none; }
 </style>

@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import type { HeroClassId } from '../../data/classes'
+import type { AdventureRegionId } from '../../data/adventureRegions'
 import { gameEvents } from '../systems/eventBus'
 import { getFloorConfig, isTownFloor, getBossStats } from '../../data/floors'
 import { biomeForFloor } from '../../data/biomes'
@@ -25,12 +26,13 @@ import {
   assetPath,
 } from '../systems/textures'
 import { applyAtmosphere, createIdleBreath, addPlaque, addPortalGlow, addGearAura, addTorchFlicker } from '../systems/atmosphere'
-import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
+import { preloadBgm, playBgm } from '../systems/bgm'
 import { useSettingsStore } from '../../stores/settings'
 import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, DUNGEON_FIRE } from '../../data/world1/decor'
 import { BIOME_BUSHES } from '../../data/floorFeatures'
 import { MinimapTicker, borderRects, tileRect, publishMinimapLayout, clearMinimap } from '../systems/minimap'
-import { resolveMovement } from '../runtime/movement'
+import { PlayerLocomotion } from '../systems/playerLocomotion'
+import { playerAuraDepth, playerRenderDepth, playerShadowDepth } from '../runtime/renderDepth'
 import { FIELD_SPEED, centeredCameraBounds } from '../scaleContract'
 
 const TILE = 32
@@ -48,11 +50,16 @@ function titleCase(slug: string): string {
  */
 export class BossScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
+  private playerShadow!: Phaser.GameObjects.Image
+  private locomotion!: PlayerLocomotion
   private gender = 'male'
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private boss?: Phaser.Physics.Arcade.Sprite
   private portal?: Phaser.Physics.Arcade.Sprite
   private floor = 2
+  private mode: 'adventure' | 'ranked-tower' = 'adventure'
+  private regionId?: AdventureRegionId
+  private zoneId?: string
   private classId: HeroClassId = 'warrior'
   private theme!: MonsterTheme
   private facing: 'down' | 'left' | 'right' | 'up' = 'down'
@@ -73,19 +80,23 @@ export class BossScene extends Phaser.Scene {
     super('BossScene')
   }
 
-  init(data: { floor?: number; classId?: HeroClassId }) {
+  init(data: { floor?: number; classId?: HeroClassId; mode?: 'adventure' | 'ranked-tower'; regionId?: AdventureRegionId; zoneId?: string }) {
     this.floor = data.floor ?? 2
+    this.mode = data.mode ?? 'adventure'
+    this.regionId = data.regionId
+    this.zoneId = data.zoneId
     this.classId = data.classId ?? this.classId
     this.inBattle = false
     this.bossDown = false
     this.boss = undefined
     this.portal = undefined
+    this.ascending = false
   }
 
   preload() {
     preloadSharedAssets(this)
     preloadFloorMonsters(this, this.floor)
-    preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
+    preloadBgm(this, 'boss', assetPath)
     // พร็อพลานประลอง: กองไฟคู่ + ไห/ถัง + พุ่มไม้ตามไบโอม (พอดีพองาม ไม่รก)
     for (const p of [...WORLD1_BUSHES, ...WORLD1_DUNGEON_PROPS]) {
       if (!this.textures.exists(p.key)) this.load.image(p.key, assetPath(p.sprite))
@@ -179,7 +190,7 @@ export class BossScene extends Phaser.Scene {
     const pScale = HERO_DISPLAY_H / size.fh
     const startX = (MAP_W / 2) * TILE
     const startY = (MAP_H - 2) * TILE
-    this.add.image(startX, startY + 12, 'shadow_blob').setDepth(startY - 1)
+    this.playerShadow = this.add.image(startX, startY + 12, 'shadow_blob').setDepth(playerShadowDepth(startY))
     this.player = this.physics.add.sprite(startX, startY, heroKey(this.classId, this.gender), heroIdleFrame(this.classId, this.gender))
     this.player.setOrigin(0.5, 0.92).setScale(pScale)
     this.player.setCollideWorldBounds(true)
@@ -188,7 +199,7 @@ export class BossScene extends Phaser.Scene {
     this.physics.add.collider(this.player, walls)
     this.idleBreath = createIdleBreath(this, this.player, pScale)
     this.gearAura = addGearAura(this, store.gearAuraColor, store.gearRarity)
-    this.gearAura?.setDepth(startY - 2)
+    this.gearAura?.setDepth(playerAuraDepth(startY))
     this.weaponOverlay = new WeaponOverlay(this)
 
     this.physics.world.setBounds(0, 0, MAP_W * TILE, MAP_H * TILE)
@@ -218,13 +229,14 @@ export class BossScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, boss, () => this.engageBoss())
 
     this.cursors = this.input.keyboard!.createCursorKeys()
+    this.locomotion = new PlayerLocomotion(this, this.player, FIELD_SPEED, walls)
 
     const label = config.isMilestone ? this.theme.worldBossName : `${titleCase(this.theme.boss)} · Boss`
     addPlaque(this, 8, 8, `Boss Arena · Floor ${this.floor}`, { fontSize: '13px', depth: 100, fixed: true, origin: [0, 0] })
     addPlaque(this, bx, by + 22, label, { fontSize: '11px', depth: by + 1, color: '#ffd0c0' })
 
     applyAtmosphere(this, biome, getWorldState())
-    playBgm(this, bgmKeyForBiome(biome.id))
+    playBgm(this, 'boss')
 
     // ---- minimap: ลานปิดสี่เหลี่ยม + เสามุม + ตำแหน่งบอส ----
     publishMinimapLayout({
@@ -309,10 +321,10 @@ export class BossScene extends Phaser.Scene {
     const stats = getBossStats(this.floor)
     const portrait = config.isMilestone ? bossVisualForFloor(this.floor).portrait : `mob-sprites/mca/${this.theme.boss}.png`
     gameEvents.emit('battle:start', {
-      floor: this.floor, isBoss: true,
+      floor: this.floor, isBoss: true, monsterId: this.theme.boss, elite: true,
       name: config.isMilestone ? this.theme.worldBossName : `${titleCase(this.theme.boss)} (Boss)`,
       sprite: portrait, hp: stats.hp, atk: stats.atk, speed: config.monsterLevel + 4,
-      expReward: stats.expReward, goldReward: stats.goldReward,
+      expReward: stats.expReward, goldReward: stats.goldReward, worldMode: this.mode,
     })
   }
 
@@ -320,9 +332,14 @@ export class BossScene extends Phaser.Scene {
     this.inBattle = false
     // ห้องบอสหนีไม่ได้ (ปุ่ม Flee ถูกปิด) — ผลลัพธ์มีแค่ victory/defeat
     if (!payload.won) {
+      if (this.mode === 'ranked-tower') gameEvents.emit('tower:ranked-clear', { floor: this.floor, won: false })
       // แพ้บอส → กลับห้องมอนสเตอร์ชั้นเดิม (ฟาร์มต่อ/เตรียมตัวใหม่)
       this.cameras.main.fade(260, 0, 0, 0)
-      this.time.delayedCall(280, () => this.scene.start('TowerScene', { floor: this.floor, classId: this.classId }))
+      this.time.delayedCall(280, () => {
+        if (this.mode === 'adventure' && this.zoneId === 'myco-sanctum') {
+          gameEvents.emit('world:travel-request', { mode: 'adventure', floor: 8, regionId: 'verdant-frontier', zoneId: 'deepgrove', fromZoneId: 'myco-sanctum' })
+        } else this.scene.start('TowerScene', { floor: this.floor, classId: this.classId, mode: this.mode, regionId: this.regionId, zoneId: this.zoneId })
+      })
       return
     }
     // ชนะบอส → บอสสลาย + เปิด portal ขึ้นชั้นต่อไป
@@ -333,7 +350,7 @@ export class BossScene extends Phaser.Scene {
       this.tweens.add({ targets: boss, alpha: 0, scaleX: boss.scaleX * 1.4, scaleY: boss.scaleY * 1.4, duration: 500, onComplete: () => boss.destroy() })
     }
     this.time.delayedCall(400, () => this.spawnExitPortal())
-    gameEvents.emit('notice', { text: 'Boss defeated! Step into the portal to ascend.' })
+    gameEvents.emit('notice', { text: this.mode === 'ranked-tower' ? 'Rank Guardian defeated! Enter the portal for the next trial.' : 'Region guardian defeated! Enter the portal to continue your adventure.' })
   }
 
   /** portal ทางออก โผล่กลางห้องหลังปราบบอส — เดินเข้าไป = ขึ้นชั้นถัดไป */
@@ -357,31 +374,38 @@ export class BossScene extends Phaser.Scene {
     if (this.ascending) return
     this.ascending = true
     const nextFloor = this.floor + 1
-    gameEvents.emit('floor:advance', { floor: nextFloor })
+    if (this.mode === 'adventure' && this.zoneId === 'myco-sanctum') {
+      this.cameras.main.fade(320, 0, 0, 0)
+      this.time.delayedCall(340, () => {
+        gameEvents.emit('world:region-complete', { regionId: 'verdant-frontier' })
+        gameEvents.emit('world:travel-request', {
+          mode: 'town', floor: 1, regionId: 'verdant-frontier', zoneId: 'aethergate', fromZoneId: 'myco-sanctum',
+        })
+      })
+      return
+    }
+    if (this.mode === 'ranked-tower') gameEvents.emit('tower:ranked-clear', { floor: this.floor, won: true })
+    else gameEvents.emit('floor:advance', { floor: nextFloor })
     this.cameras.main.fade(320, 0, 0, 0)
     this.time.delayedCall(340, () => {
-      if (isTownFloor(nextFloor)) this.scene.start('TownScene', { floor: nextFloor, classId: this.classId })
-      else this.scene.start('TowerScene', { floor: nextFloor, classId: this.classId })
+      if (this.mode === 'ranked-tower') this.scene.start('TowerScene', { floor: Math.min(100, nextFloor), classId: this.classId, mode: this.mode })
+      else if (isTownFloor(nextFloor)) this.scene.start('TownScene', { floor: nextFloor, classId: this.classId })
+      else this.scene.start('TowerScene', { floor: nextFloor, classId: this.classId, mode: this.mode, regionId: this.regionId })
     })
   }
 
-  update() {
-    if (this.inBattle) { this.player.setVelocity(0); return }
-    // S4: กติกาเดินรวมที่ resolveMovement (diagonal normalize) — สปีดจาก scale contract
-    const move = resolveMovement({
-      left: !!this.cursors.left?.isDown,
-      right: !!this.cursors.right?.isDown,
-      up: !!this.cursors.up?.isDown,
-      down: !!this.cursors.down?.isDown,
-    }, this.facing, FIELD_SPEED)
+  update(_time: number, delta: number) {
+    if (this.inBattle) { this.locomotion.stopImmediate(); return }
+    const move = this.locomotion.update(this.cursors, this.facing, delta)
     this.player.setVelocity(move.vx, move.vy)
     this.facing = move.facing
     const moving = move.moving
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
-    this.player.setDepth(this.player.y)
-    this.gearAura?.setPosition(this.player.x, this.player.y + 4)
-    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
+    this.player.setDepth(playerRenderDepth(this.player.y))
+    this.playerShadow.setPosition(this.player.x, this.player.y + 12).setDepth(playerShadowDepth(this.player.y))
+    this.gearAura?.setPosition(this.player.x, this.player.y + 4).setDepth(playerAuraDepth(this.player.y))
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment)
     this.idleBreath.setMoving(moving)
     if (this.boss?.active) this.boss.setDepth(this.boss.y + 200)
 

@@ -27,7 +27,7 @@ describe('World-1 main quest — chain integrity', () => {
   })
 
   it('has NO RNG-gated step — every trigger is a deterministic, offline-earnable kind', () => {
-    const deterministic = ['talk-npc', 'reach-floor', 'defeat-monsters', 'answer-correct', 'find-secret', 'enter-dungeon', 'clear-dungeon', 'defeat-boss']
+    const deterministic = ['talk-npc', 'reach-floor', 'reach-zone', 'defeat-monsters', 'answer-correct', 'find-secret', 'enter-dungeon', 'clear-dungeon', 'defeat-boss']
     for (const s of WORLD1_MAIN_QUEST) expect(deterministic).toContain(s.trigger.kind)
   })
 
@@ -61,9 +61,9 @@ describe('World-1 main quest — reducer', () => {
     expect(res.state.progress).toBe(0)
   })
 
-  it('a higher floor satisfies a reach-floor threshold', () => {
+  it('requires the authored destination instead of a numeric floor shortcut', () => {
     const state: MainQuestState = { step: 1, progress: 0 } // reach floor 2
-    const res = advanceMainQuest(state, { type: 'reach-floor', floor: 5 })
+    const res = advanceMainQuest(state, { type: 'reach-zone', zoneId: 'whisperleaf-meadow' })
     expect(res.completed?.id).toBe('w1_into_the_forest')
     expect(res.state.step).toBe(2)
   })
@@ -78,14 +78,14 @@ describe('World-1 main quest — full playthrough', () => {
   it('completes every step exactly once from town to boss and grants each reward once', () => {
     const journey: QuestEvent[] = [
       { type: 'talk-npc', npcId: 'guildmaster' },
-      { type: 'reach-floor', floor: 2 },
+      { type: 'reach-zone', zoneId: 'whisperleaf-meadow' },
       { type: 'defeat-monster' }, { type: 'defeat-monster' }, { type: 'defeat-monster' },
       { type: 'answer-correct' }, { type: 'answer-correct' }, { type: 'answer-correct' }, { type: 'answer-correct' }, { type: 'answer-correct' },
-      { type: 'reach-floor', floor: 5 },
+      { type: 'reach-zone', zoneId: 'mosswood-trail' },
       { type: 'enter-dungeon', layoutId: 'world01-mini' },
       { type: 'clear-dungeon', layoutId: 'world01-mini' },
       { type: 'talk-npc', npcId: 'portal_guardian' },
-      { type: 'reach-floor', floor: 8 },
+      { type: 'reach-zone', zoneId: 'deepgrove' },
       { type: 'enter-dungeon', layoutId: 'world01-main' },
       { type: 'clear-dungeon', layoutId: 'world01-main' },
       { type: 'defeat-boss', bossId: 'myco_colossus' },

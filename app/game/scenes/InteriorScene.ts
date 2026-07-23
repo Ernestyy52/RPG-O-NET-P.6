@@ -1,292 +1,277 @@
 import Phaser from 'phaser'
 import type { HeroClassId } from '../../data/classes'
 import { gameEvents } from '../systems/eventBus'
-import { getInterior, INTERIOR_TOWN_DOORS, type InteriorId } from '../../data/town/interiors'
+import { allInteriorNpcs, getInterior, INTERIOR_TOWN_DOORS, type InteriorId, type InteriorNpcSpec, type InteriorSpec, type InteriorTransition } from '../../data/town/interiors'
 import { getTownNpc } from '../../data/world1/npcs'
 import { usePlayerStore } from '../../stores/player'
 import { WeaponOverlay } from '../systems/paperdoll'
 import { useSettingsStore } from '../../stores/settings'
-import { addPlaque, addWindowGlow, createIdleBreath, addGearAura } from '../systems/atmosphere'
+import { addPlaque, addTorchFlicker, createIdleBreath, addGearAura } from '../systems/atmosphere'
 import {
   assetPath, preloadSharedAssets, buildSharedTextures,
   heroKey, heroIdleFrame, heroAnim, heroSheetSize, HERO_DISPLAY_H, applyStandardHeroBody,
 } from '../systems/textures'
 import { preloadBgm, playBgm } from '../systems/bgm'
 import { MinimapTicker, publishMinimapLayout, clearMinimap } from '../systems/minimap'
-import { resolveMovement } from '../runtime/movement'
-import { FIELD_SPEED, centeredCameraBounds } from '../scaleContract'
+import { FIELD_SPEED, TILE_SIZE, centeredCameraBounds } from '../scaleContract'
+import { PlayerLocomotion } from '../systems/playerLocomotion'
+import { playerAuraDepth, playerRenderDepth, playerShadowDepth } from '../runtime/renderDepth'
 
-const TILE = 32
+const TILE = TILE_SIZE
+const DEPTH_LIGHTS = 2200
+const DEPTH_UI = 4200
 
-// ================================================================================================
-// InteriorScene — ห้องภายในอาคารเมือง (data-driven จาก app/data/town/interiors.ts)
-// ผู้เล่นเดินเข้าประตูอาคารใน TownScene → มาอยู่ในห้องนี้: พื้น/ผนังปูจาก tile จริง (Craftpix),
-// พร็อพแน่นพอดี ๆ (ชนได้เฉพาะตัวที่ solid), NPC ประจำร้านยืนรอพร้อมบทพูดหมุนเวียน — เดินชน NPC
-// = ได้ยินหนึ่งประโยค + เปิดบริการของอาคารนั้น (ฮีล/ร้านค้า/กิลด์) ผ่าน event เดิมทุกประการ
-// ประตูพรมด้านล่าง = กลับออกไปยืนหน้าอาคารเดิมในเมือง
-// ================================================================================================
+interface NpcTrigger {
+  zone: Phaser.Physics.Arcade.Sprite
+  spec: InteriorNpcSpec
+  latch: boolean
+  dialogueIndex: number
+  lastInteract: number
+}
+
+interface TransitionTrigger {
+  zone: Phaser.Physics.Arcade.Sprite
+  transition: InteriorTransition
+  armed: boolean
+}
+
+/** Playable, NPC-owned building interiors with safe two-way transitions. */
 export class InteriorScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
+  private playerShadow!: Phaser.GameObjects.Image
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
+  private locomotion!: PlayerLocomotion
   private building: InteriorId = 'guild'
   private floor = 1
   private classId: HeroClassId = 'warrior'
   private gender = 'male'
-  private facing: 'down' | 'left' | 'right' | 'up' = 'down'
-  private lastInteract = 0
-  private dialogueIndex = 0
+  private facing: 'down' | 'left' | 'right' | 'up' = 'up'
   private leaving = false
-  // latch กันสแปม: ยืนแช่บนโซน NPC จะไม่ trigger ซ้ำ — ต้องเดินออกจากโซนก่อนหนึ่งครั้ง
-  private npcZone?: Phaser.Physics.Arcade.Sprite
-  private npcLatch = false
+  private spawnAt?: [number, number]
   private idleBreath!: ReturnType<typeof createIdleBreath>
   private gearAura?: Phaser.GameObjects.Image | null
   private weaponOverlay!: WeaponOverlay
   private minimapTicker = new MinimapTicker()
+  private npcTriggers: NpcTrigger[] = []
+  private transitionTriggers: TransitionTrigger[] = []
 
-  constructor() {
-    super('InteriorScene')
-  }
+  constructor() { super('InteriorScene') }
 
-  init(data: { building?: InteriorId; floor?: number; classId?: HeroClassId }) {
+  init(data: { building?: InteriorId; floor?: number; classId?: HeroClassId; spawnAt?: [number, number] }) {
     this.building = data.building ?? 'guild'
     this.floor = data.floor ?? 1
     this.classId = data.classId ?? 'warrior'
+    this.spawnAt = data.spawnAt
     this.leaving = false
+    this.facing = 'up'
+    this.npcTriggers = []
+    this.transitionTriggers = []
   }
 
   preload() {
     preloadSharedAssets(this)
     const spec = getInterior(this.building)
     if (!spec) return
-    // พื้น/ผนัง — tile กลางของ pack (ใช้ร่วมกันทุกอาคาร แล้วย้อมสีตามอาคาร)
-    if (!this.textures.exists('int_floor0')) this.load.image('int_floor0', assetPath('interior-props/guild_floor0.png'))
-    if (!this.textures.exists('int_floor1')) this.load.image('int_floor1', assetPath('interior-props/guild_floor1.png'))
-    if (!this.textures.exists('int_wall')) this.load.image('int_wall', assetPath('interior-props/guild_wall.png'))
-    for (const prop of spec.props) {
-      if (prop.sprite && !this.textures.exists(prop.key)) this.load.image(prop.key, assetPath(prop.sprite))
-    }
-    const npc = getTownNpc(spec.npc.id)
-    if (npc && !this.textures.exists(`npc_${npc.id}`)) {
-      this.load.spritesheet(`npc_${npc.id}`, assetPath(npc.sprite), { frameWidth: npc.frameW, frameHeight: npc.frameH })
+    const artKey = this.artKey(spec)
+    if (!this.textures.exists(artKey)) this.load.image(artKey, assetPath(spec.art.sprite))
+    for (const npcSpec of allInteriorNpcs(spec)) {
+      const npc = getTownNpc(npcSpec.id)
+      if (npc && !this.textures.exists(`npc_${npc.id}`)) {
+        this.load.spritesheet(`npc_${npc.id}`, assetPath(npc.sprite), { frameWidth: npc.frameW, frameHeight: npc.frameH })
+      }
     }
     preloadBgm(this, 'town', assetPath)
   }
 
   create() {
     const spec = getInterior(this.building)
-    if (!spec) { this.exitToTown(); return }
+    if (!spec) { this.scene.start('TownScene', { floor: this.floor, classId: this.classId }); return }
     buildSharedTextures(this)
-    this.buildBedTexture()
 
-    const W = spec.tiles.w
-    const H = spec.tiles.h
-    const worldW = W * TILE
-    const worldH = H * TILE
-    this.cameras.main.setBackgroundColor(0x0a0810)
-    this.cameras.main.fadeIn(240)
+    const artKey = this.artKey(spec)
+    const { width: worldW, height: worldH } = spec.art
+    this.cameras.main.setBackgroundColor(0x09070d)
+    this.cameras.main.fadeIn(220)
+    this.add.image(0, 0, artKey).setOrigin(0).setDepth(0)
+    this.add.rectangle(0, 0, worldW, worldH, spec.floorTint, 0.018).setOrigin(0).setDepth(1)
 
-    // ---- พื้น (checker floor0/floor1 ย้อมโทนตามอาคาร) + แถบผนังสองแถวบน ----
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        if (y < 2) {
-          this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, 'int_wall').setDepth(0)
-        } else {
-          this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, (x + y) % 2 ? 'int_floor1' : 'int_floor0')
-            .setTint(spec.floorTint).setDepth(0)
-        }
-      }
-    }
-    // เงาขอบห้อง (vignette เบา ๆ ให้ห้องดูอุ่น ไม่แบน)
-    this.add.rectangle(0, 0, worldW, TILE * 2.4, 0x000000, 0.25).setOrigin(0).setDepth(1)
-    this.add.rectangle(0, worldH - TILE, worldW, TILE, 0x000000, 0.18).setOrigin(0).setDepth(1)
-
-    // ---- กำแพงฟิสิกส์: แถบผนังบน + ขอบสามด้าน (ประตูอยู่ล่างกลาง) ----
     const walls = this.physics.add.staticGroup()
-    const solid = (cx: number, cy: number, w: number, h: number) => {
-      const b = walls.create(cx, cy, undefined) as Phaser.Physics.Arcade.Sprite
-      b.setVisible(false)
-      b.body.setSize(w, h)
+    for (const [x, y, w, h] of spec.art.collision) {
+      const body = walls.create(x + w / 2, y + h / 2, undefined) as Phaser.Physics.Arcade.Sprite
+      body.setVisible(false)
+      body.body.setSize(w, h)
     }
-    solid(worldW / 2, TILE, worldW, TILE * 2)                       // ผนังบน
-    solid(TILE * 0.25, worldH / 2, TILE * 0.5, worldH)              // ซ้าย
-    solid(worldW - TILE * 0.25, worldH / 2, TILE * 0.5, worldH)     // ขวา
-    // ผนังล่างเว้นช่องประตูตรงกลาง (กว้าง 2 tile)
-    const doorHalf = TILE
-    solid((worldW / 2 - doorHalf) / 2, worldH - TILE * 0.25, worldW / 2 - doorHalf, TILE * 0.5)
-    solid(worldW - (worldW / 2 - doorHalf) / 2, worldH - TILE * 0.25, worldW / 2 - doorHalf, TILE * 0.5)
+    this.buildOccluders(spec, artKey)
+    this.buildPracticalLights(spec)
 
-    // ---- พร็อพ (จาก data — ตัว solid ได้กล่องชนที่ "ตีน" เพื่อเดินอ้อมหลังได้) ----
-    for (const prop of spec.props) {
-      if (!this.textures.exists(prop.key)) continue
-      const px = prop.at[0] * TILE
-      const py = prop.at[1] * TILE
-      const img = this.add.image(px, py, prop.key).setScale(prop.scale ?? 1)
-      img.setOrigin(0.5, 0.85).setDepth(py)
-      if (prop.solid) {
-        const w = img.displayWidth * 0.7
-        const h = Math.max(10, img.displayHeight * 0.28)
-        const b = walls.create(px, py - h / 2, undefined) as Phaser.Physics.Arcade.Sprite
-        b.setVisible(false)
-        b.body.setSize(w, h)
-      }
-    }
-
-    // ---- แสงหน้าต่างอุ่น ๆ บนแถบผนัง ----
-    for (const wx of [2.5, 7, 11.5]) addWindowGlow(this, wx * TILE, TILE * 1.1, 600)
-
-    // ---- ประตูออก (พรม + แสง) ----
-    const doorX = worldW / 2
-    const doorY = worldH - TILE * 0.6
-    this.add.rectangle(doorX, doorY, TILE * 2, TILE * 0.9, 0x8a5a30, 0.9).setDepth(2)
-    this.add.rectangle(doorX, doorY, TILE * 1.7, TILE * 0.6, 0xb4854e, 0.9).setDepth(2.1)
-    const doorGlow = this.add.image(doorX, doorY, 'atmo_dot').setTint(0xffe2a8)
-      .setBlendMode(Phaser.BlendModes.ADD).setScale(3).setAlpha(0.35).setDepth(600)
+    const [doorX, doorY] = spec.art.exit
+    const doorGlow = this.add.image(doorX, doorY - 2, 'atmo_dot').setTint(0xffd48a)
+      .setBlendMode(Phaser.BlendModes.ADD).setScale(2.5).setAlpha(0.34).setDepth(DEPTH_LIGHTS)
     if (!useSettingsStore().reducedMotion) {
-      this.tweens.add({ targets: doorGlow, alpha: { from: 0.25, to: 0.5 }, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+      this.tweens.add({ targets: doorGlow, alpha: { from: 0.22, to: 0.48 }, duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
     }
-    addPlaque(this, doorX, doorY - TILE * 0.9, 'ออกสู่เมือง ▼', { fontSize: '9px', depth: 601, color: '#cdb27a' })
+    addPlaque(this, doorX, doorY - 28, spec.exitTarget ? 'ลงสู่ Guild 1F ↓' : 'ออกสู่เมือง ↓', { fontSize: '9px', depth: DEPTH_UI, color: '#f2d18a' })
 
-    // ---- ผู้เล่น (เกิดหน้าประตู) ----
     const store = usePlayerStore()
     this.gender = store.gender
     const size = heroSheetSize(this.classId, this.gender)
-    const pScale = HERO_DISPLAY_H / size.fh
-    const startX = doorX
-    const startY = worldH - TILE * 1.8
-    this.add.image(startX, startY + 8, 'shadow_blob').setDepth(startY - 1)
+    const playerScale = HERO_DISPLAY_H / size.fh
+    const [startX, startY] = this.spawnAt ?? spec.art.spawn
+    this.playerShadow = this.add.image(startX, startY + 7, 'shadow_blob').setDepth(playerShadowDepth(startY))
     this.player = this.physics.add.sprite(startX, startY, heroKey(this.classId, this.gender), heroIdleFrame(this.classId, this.gender))
-    this.player.setOrigin(0.5, 0.92).setScale(pScale)
-    this.player.setCollideWorldBounds(true)
+    this.player.setOrigin(0.5, 0.92).setScale(playerScale).setCollideWorldBounds(true)
     this.player.play(heroAnim(this.classId, this.gender, 'idle', 'up'))
-    applyStandardHeroBody(this.player, pScale)
+    applyStandardHeroBody(this.player, playerScale)
     this.physics.add.collider(this.player, walls)
-    this.idleBreath = createIdleBreath(this, this.player, pScale)
+    this.idleBreath = createIdleBreath(this, this.player, playerScale)
     this.gearAura = addGearAura(this, store.gearAuraColor, store.gearRarity)
-    this.gearAura?.setDepth(startY - 2)
+    this.gearAura?.setDepth(playerAuraDepth(startY))
     this.weaponOverlay = new WeaponOverlay(this)
 
     this.physics.world.setBounds(0, 0, worldW, worldH)
-    // S4: ห้องเล็กกว่าจอ → กล้องกึ่งกลางห้อง (ปิดหนี้ S0 #2 — เดิมภาพชิดซ้ายบน + แถบดำตาย)
-    const camB = centeredCameraBounds(worldW, worldH, this.scale.width, this.scale.height)
-    this.cameras.main.setBounds(camB.x, camB.y, camB.width, camB.height)
-    this.cameras.main.startFollow(this.player, true, 0.15, 0.15)
+    const cameraBounds = centeredCameraBounds(worldW, worldH, this.scale.width, this.scale.height)
+    this.cameras.main.setBounds(cameraBounds.x, cameraBounds.y, cameraBounds.width, cameraBounds.height)
+    this.cameras.main.startFollow(this.player, true, 0.14, 0.14)
 
-    // ---- NPC ประจำอาคาร (หลังสร้างผู้เล่น เพื่อผูก overlap ได้เลย) ----
-    const npcData = getTownNpc(spec.npc.id)
-    if (npcData && this.textures.exists(`npc_${npcData.id}`)) {
-      const nx = spec.npc.at[0] * TILE
-      const ny = spec.npc.at[1] * TILE
-      const scale = HERO_DISPLAY_H / npcData.frameH
-      this.add.image(nx, ny + 4, 'shadow_blob').setDepth(ny - 1)
-      const spr = this.add.sprite(nx, ny, `npc_${npcData.id}`, 0).setOrigin(0.5, 0.95).setScale(scale).setDepth(ny)
-      if (!useSettingsStore().reducedMotion) {
-        this.tweens.add({ targets: spr, y: ny - 3, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-      }
-      addPlaque(this, nx, ny - HERO_DISPLAY_H * 1.05, `${npcData.name} · ${npcData.title}`, { fontSize: '10px', depth: ny + 1, color: '#f2d98a' })
-      // วงโต้ตอบ: เดินเข้าใกล้ = คุย + เปิดบริการ
-      const zone = this.physics.add.staticSprite(nx, ny + TILE * 0.4, undefined) as Phaser.Physics.Arcade.Sprite
-      zone.setVisible(false)
-      zone.body.setSize(TILE * 2.6, TILE * 1.8)
-      this.npcZone = zone
-      this.physics.add.overlap(this.player, zone, () => this.talkToNpc(spec.npc.dialogueTh, spec.event))
-      const hintGlow = this.add.image(nx, ny + TILE * 0.3, 'atmo_dot').setTint(0xfff2b0)
-        .setBlendMode(Phaser.BlendModes.ADD).setScale(2.6).setAlpha(0.25).setDepth(600)
-      if (!useSettingsStore().reducedMotion) {
-        this.tweens.add({ targets: hintGlow, alpha: { from: 0.15, to: 0.4 }, duration: 1300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
-      }
-    }
+    for (const npcSpec of allInteriorNpcs(spec)) this.buildNpc(npcSpec)
+    for (const transition of spec.transitions ?? []) this.buildTransition(transition)
 
-    // เดินออกทางประตูล่าง (ทะลุขอบล่างช่วงกลาง) = กลับเมือง
-    const exitZone = this.physics.add.staticSprite(doorX, worldH - TILE * 0.2, undefined) as Phaser.Physics.Arcade.Sprite
+    const exitZone = this.physics.add.staticSprite(doorX, doorY, undefined) as Phaser.Physics.Arcade.Sprite
     exitZone.setVisible(false)
-    exitZone.body.setSize(TILE * 2, TILE * 0.5)
-    this.physics.add.overlap(this.player, exitZone, () => this.exitToTown())
+    exitZone.body.setSize(54, 16)
+    this.physics.add.overlap(this.player, exitZone, () => this.leaveInterior(spec))
 
     this.cursors = this.input.keyboard!.createCursorKeys()
-    addPlaque(this, 8, 8, `${spec.nameTh} · ${spec.nameEn}`, { fontSize: '13px', depth: 1000, fixed: true, origin: [0, 0] })
+    this.locomotion = new PlayerLocomotion(this, this.player, FIELD_SPEED, walls)
+    addPlaque(this, 8, 8, `${spec.nameTh} · ${spec.nameEn}`, { fontSize: '13px', depth: DEPTH_UI, fixed: true, origin: [0, 0] })
+    const hint = addPlaque(this, 8, 36, 'เดินเข้าใกล้ NPC เพื่อคุยและใช้บริการ · ลูกศร / WASD / จอย / คลิกพื้น', { fontSize: '9px', depth: DEPTH_UI, fixed: true, origin: [0, 0], color: '#cdb27a' })
+    this.tweens.add({ targets: [hint.label, hint.bg], alpha: 0, delay: 6500, duration: 600, onComplete: () => { hint.label.destroy(); hint.bg.destroy() } })
     playBgm(this, 'town')
 
-    // ---- minimap: ผนังห้อง + พร็อพ solid + NPC + ประตูออก ----
     publishMinimapLayout({
-      worldW,
-      worldH,
-      blocks: [
-        { x: 0, y: 0, w: worldW, h: TILE * 2 },
-        { x: 0, y: 0, w: TILE * 0.5, h: worldH },
-        { x: worldW - TILE * 0.5, y: 0, w: TILE * 0.5, h: worldH },
-        { x: 0, y: worldH - TILE * 0.5, w: worldW / 2 - TILE, h: TILE * 0.5 },
-        { x: worldW / 2 + TILE, y: worldH - TILE * 0.5, w: worldW / 2 - TILE, h: TILE * 0.5 },
-        ...spec.props.filter((p) => p.solid).map((p) => ({
-          x: p.at[0] * TILE - TILE / 2, y: p.at[1] * TILE - TILE / 2, w: TILE, h: TILE,
-        })),
-      ],
+      worldW, worldH,
+      blocks: spec.art.collision.map(([x, y, w, h]) => ({ x, y, w, h })),
       markers: [
         { kind: 'exit', x: doorX, y: doorY },
-        ...(npcData ? [{ kind: 'npc' as const, x: spec.npc.at[0] * TILE, y: spec.npc.at[1] * TILE }] : []),
+        ...allInteriorNpcs(spec).map((npc) => ({ kind: 'npc' as const, x: npc.at[0] * TILE, y: npc.at[1] * TILE })),
+        ...(spec.transitions ?? []).map((transition) => ({ kind: 'door' as const, x: transition.at[0], y: transition.at[1] })),
       ],
     })
     this.events.once('shutdown', () => clearMinimap())
   }
 
-  /** เตียงพยาบาลแบบ pixel — วาดสดเพราะ pack ที่มีไม่มีเตียง (ออกแบบเองตามที่ตกลง) */
-  private buildBedTexture() {
-    if (this.textures.exists('interior_bed')) return
-    const g = this.add.graphics()
-    g.fillStyle(0x6a4526).fillRect(0, 0, 26, 44)          // โครงไม้
-    g.fillStyle(0x8a5f38).fillRect(1, 1, 24, 42)
-    g.fillStyle(0xf0ead8).fillRect(3, 3, 20, 38)          // ฟูก
-    g.fillStyle(0xffffff).fillRect(4, 5, 18, 9)           // หมอน
-    g.fillStyle(0xb03a30).fillRect(3, 17, 20, 22)         // ผ้าห่มแดง
-    g.fillStyle(0xd05a4a).fillRect(3, 17, 20, 4)          // ขอบผ้าห่ม
-    g.generateTexture('interior_bed', 26, 44)
-    g.destroy()
+  private artKey(spec: InteriorSpec) { return `interior_art_${spec.id}` }
+
+  private buildNpc(npcSpec: InteriorNpcSpec) {
+    const npcData = getTownNpc(npcSpec.id)
+    if (!npcData || !this.textures.exists(`npc_${npcData.id}`)) return
+    const nx = npcSpec.at[0] * TILE
+    const ny = npcSpec.at[1] * TILE
+    const npcScale = HERO_DISPLAY_H / npcData.frameH
+    this.add.image(nx, ny + 4, 'shadow_blob').setDepth(ny - 1)
+    const npc = this.add.sprite(nx, ny, `npc_${npcData.id}`, 0).setOrigin(0.5, 0.95).setScale(npcScale).setDepth(ny)
+    if (!useSettingsStore().reducedMotion) this.tweens.add({ targets: npc, y: ny - 2, duration: 1550, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' })
+    addPlaque(this, nx, ny - HERO_DISPLAY_H * 1.03, `${npcData.name} · ${npcData.title}`, { fontSize: '10px', depth: ny + 1, color: '#f7dc96' })
+    const zone = this.physics.add.staticSprite(nx, ny + TILE * 0.55, undefined) as Phaser.Physics.Arcade.Sprite
+    zone.setVisible(false)
+    zone.body.setSize(TILE * 2.4, TILE * 1.55)
+    const trigger: NpcTrigger = { zone, spec: npcSpec, latch: false, dialogueIndex: 0, lastInteract: 0 }
+    this.npcTriggers.push(trigger)
+    this.physics.add.overlap(this.player, zone, () => this.talkToNpc(trigger))
+    this.add.image(nx, ny + TILE * 0.5, 'atmo_dot').setTint(0xffedb5)
+      .setBlendMode(Phaser.BlendModes.ADD).setScale(1.8).setAlpha(0.16).setDepth(DEPTH_LIGHTS)
   }
 
-  private talkToNpc(lines: string[], event: string) {
-    const now = this.time.now
-    if (this.npcLatch || now - this.lastInteract < 1600) return
-    this.npcLatch = true
-    this.lastInteract = now
-    const line = lines[this.dialogueIndex % lines.length]
-    this.dialogueIndex++
-    gameEvents.emit('notice', { text: `💬 ${line}` })
-    gameEvents.emit(event as 'town:hospital' | 'town:item-shop' | 'town:equipment-shop' | 'town:guild')
-  }
-
-  private exitToTown() {
-    if (this.leaving) return
-    this.leaving = true
-    const door = INTERIOR_TOWN_DOORS[this.building]
-    this.cameras.main.fade(200, 0, 0, 0)
-    this.time.delayedCall(220, () => {
-      this.scene.start('TownScene', { floor: this.floor, classId: this.classId, spawnAt: door })
+  private buildTransition(transition: InteriorTransition) {
+    const [x, y] = transition.at
+    const zone = this.physics.add.staticSprite(x, y, undefined) as Phaser.Physics.Arcade.Sprite
+    zone.setVisible(false)
+    const [w, h] = transition.size ?? [48, 30]
+    zone.body.setSize(w, h)
+    const trigger: TransitionTrigger = { zone, transition, armed: !this.physics.overlap(this.player, zone) }
+    this.transitionTriggers.push(trigger)
+    addPlaque(this, x, y - 28, transition.labelTh, { fontSize: '9px', depth: DEPTH_UI, color: '#a9d8ff' })
+    this.physics.add.overlap(this.player, zone, () => {
+      if (!trigger.armed || this.leaving) return
+      trigger.armed = false
+      this.transitionTo(transition.target, transition.spawnAt)
     })
   }
 
-  update() {
-    if (this.leaving || !this.player) return
-    // S4: กติกาเดินรวมที่ resolveMovement (diagonal normalize) — สปีดจาก scale contract
-    const move = resolveMovement({
-      left: !!this.cursors.left?.isDown,
-      right: !!this.cursors.right?.isDown,
-      up: !!this.cursors.up?.isDown,
-      down: !!this.cursors.down?.isDown,
-    }, this.facing, FIELD_SPEED)
+  private talkToNpc(trigger: NpcTrigger) {
+    const now = this.time.now
+    if (trigger.latch || now - trigger.lastInteract < 1400) return
+    trigger.latch = true
+    trigger.lastInteract = now
+    this.locomotion?.stopImmediate()
+    const lines = trigger.spec.dialogueTh
+    const line = lines[trigger.dialogueIndex % lines.length]
+    trigger.dialogueIndex++
+    gameEvents.emit('notice', { text: `💬 ${line}` })
+    gameEvents.emit('npc:interact', {
+      npcId: trigger.spec.id,
+      service: trigger.spec.service,
+      academyCategory: trigger.spec.academyCategory,
+    })
+  }
+
+  private transitionTo(building: InteriorId, spawnAt: [number, number]) {
+    if (this.leaving) return
+    this.leaving = true
+    this.locomotion?.stopImmediate()
+    this.cameras.main.fade(170, 0, 0, 0)
+    this.time.delayedCall(190, () => this.scene.start('InteriorScene', { building, floor: this.floor, classId: this.classId, spawnAt }))
+  }
+
+  private leaveInterior(spec: InteriorSpec) {
+    if (this.leaving) return
+    if (spec.exitTarget) { this.transitionTo(spec.exitTarget.building, spec.exitTarget.spawnAt); return }
+    const door = INTERIOR_TOWN_DOORS[this.building]
+    if (!door) { this.transitionTo('guild', [360, 320]); return }
+    this.leaving = true
+    this.locomotion?.stopImmediate()
+    this.cameras.main.fade(180, 0, 0, 0)
+    this.time.delayedCall(200, () => this.scene.start('TownScene', { floor: this.floor, classId: this.classId, spawnAt: door }))
+  }
+
+  private buildOccluders(spec: InteriorSpec, artKey: string) {
+    const source = this.textures.get(artKey).getSourceImage() as HTMLImageElement
+    spec.art.occluders.forEach(([x, y, w, h], index) => {
+      const key = `${artKey}_occluder_${index}`
+      if (!this.textures.exists(key)) {
+        const texture = this.textures.createCanvas(key, w, h)!
+        texture.getContext().drawImage(source, x, y, w, h, 0, 0, w, h)
+        texture.refresh()
+      }
+      this.add.image(x, y + h, key).setOrigin(0, 1).setDepth(y + h)
+    })
+  }
+
+  private buildPracticalLights(spec: InteriorSpec) {
+    const reduced = useSettingsStore().reducedMotion
+    for (const light of spec.art.lights) {
+      if (reduced) {
+        this.add.image(light.at[0], light.at[1], 'atmo_dot').setTint(light.color)
+          .setBlendMode(Phaser.BlendModes.ADD).setScale(2.6).setAlpha(0.38).setDepth(DEPTH_LIGHTS)
+      } else addTorchFlicker(this, light.at[0], light.at[1], DEPTH_LIGHTS, light.color, [light.color])
+    }
+  }
+
+  update(_time: number, delta: number) {
+    if (this.leaving || !this.player || !this.locomotion) return
+    const move = this.locomotion.update(this.cursors, this.facing, delta)
     this.player.setVelocity(move.vx, move.vy)
     this.facing = move.facing
-    const moving = move.moving
-    const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
-    if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
-    this.player.setDepth(this.player.y)
-    this.gearAura?.setPosition(this.player.x, this.player.y + 4)
-    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
-    this.idleBreath.setMoving(moving)
-    // ปลด latch เมื่อผู้เล่นเดินพ้นโซน NPC แล้ว — เข้าใหม่ค่อยคุยรอบถัดไป
-    if (this.npcLatch && this.npcZone && !this.physics.overlap(this.player, this.npcZone)) {
-      this.npcLatch = false
-    }
-
+    const animation = heroAnim(this.classId, this.gender, move.moving ? 'walk' : 'idle', this.facing)
+    if (this.player.anims.currentAnim?.key !== animation) this.player.play(animation)
+    this.player.setDepth(playerRenderDepth(this.player.y))
+    this.playerShadow.setPosition(this.player.x, this.player.y + 7).setDepth(playerShadowDepth(this.player.y))
+    this.gearAura?.setPosition(this.player.x, this.player.y + 4).setDepth(playerAuraDepth(this.player.y))
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment)
+    this.idleBreath.setMoving(move.moving)
+    for (const trigger of this.npcTriggers) if (trigger.latch && !this.physics.overlap(this.player, trigger.zone)) trigger.latch = false
+    for (const trigger of this.transitionTriggers) if (!trigger.armed && !this.physics.overlap(this.player, trigger.zone)) trigger.armed = true
     this.minimapTicker.tick(this.time.now, { player: { x: this.player.x, y: this.player.y } })
   }
 }
+

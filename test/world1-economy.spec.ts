@@ -4,6 +4,7 @@ import { usePlayerStore } from '~/stores/player'
 import { WORLD1_MAIN_QUEST } from '~/data/world1/quests'
 import { WORLD1_SIDE_QUESTS } from '~/data/world1/sideQuests'
 import { WORLD1_SECRETS } from '~/data/world1/secrets'
+import { WORLD1_HANDOFF_CONTRACT } from '~/data/world1/completion'
 import { simulateEconomy } from '~/data/economy'
 
 // ================================================================================================
@@ -18,6 +19,7 @@ const allRewards = [
   ...WORLD1_MAIN_QUEST.map((s) => s.reward),
   ...WORLD1_SIDE_QUESTS.map((q) => q.reward),
   ...WORLD1_SECRETS.map((s) => s.reward),
+  WORLD1_HANDOFF_CONTRACT.reward,
 ]
 const sum = (pick: (r: { exp: number; gold: number; gems: number }) => number) =>
   allRewards.reduce((t, r) => t + pick(r), 0)

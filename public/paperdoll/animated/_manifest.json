@@ -1,0 +1,48 @@
+{
+  "generatedWith": "OpenAI image generation",
+  "license": "project-owned generated assets",
+  "frameSize": [
+    64,
+    96
+  ],
+  "layout": {
+    "columns": [
+      "idle",
+      "step-left",
+      "step-right"
+    ],
+    "rows": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ]
+  },
+  "families": [
+    {
+      "family": "robe",
+      "source": "assets/generated/paperdoll-animation-sources/robe-sheet-source.png",
+      "file": "paperdoll/animated/outfit-robe-sheet.png"
+    },
+    {
+      "family": "leather",
+      "source": "assets/generated/paperdoll-animation-sources/leather-sheet-source.png",
+      "file": "paperdoll/animated/outfit-leather-sheet.png"
+    },
+    {
+      "family": "chain",
+      "source": "assets/generated/paperdoll-animation-sources/chain-sheet-source.png",
+      "file": "paperdoll/animated/outfit-chain-sheet.png"
+    },
+    {
+      "family": "plate",
+      "source": "assets/generated/paperdoll-animation-sources/plate-sheet-source.png",
+      "file": "paperdoll/animated/outfit-plate-sheet.png"
+    },
+    {
+      "family": "dragon",
+      "source": "assets/generated/paperdoll-animation-sources/dragon-sheet-source.png",
+      "file": "paperdoll/animated/outfit-dragon-sheet.png"
+    }
+  ]
+}

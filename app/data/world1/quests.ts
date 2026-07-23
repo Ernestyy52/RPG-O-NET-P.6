@@ -18,6 +18,7 @@ export type World1DungeonId = 'world01-mini' | 'world01-main'
 export type QuestTrigger =
   | { kind: 'talk-npc'; npcId: string }
   | { kind: 'reach-floor'; floor: number }
+  | { kind: 'reach-zone'; zoneId: string }
   | { kind: 'defeat-monsters'; count: number }
   | { kind: 'answer-correct'; count: number }
   | { kind: 'find-secret'; secretId: string }
@@ -49,8 +50,8 @@ export const WORLD1_MAIN_QUEST: QuestStep[] = [
   },
   {
     id: 'w1_into_the_forest', title: 'Into the Verdant Forest', titleTh: 'สู่ป่าเวอร์แดนต์',
-    summary: 'Slimes have woken in the forest. Climb to Floor 2 and see for yourself.',
-    giver: 'guildmaster', trigger: { kind: 'reach-floor', floor: 2 },
+    summary: 'Slimes have woken beyond Aethergate. Travel to Whisperleaf Fields and investigate.',
+    giver: 'guildmaster', trigger: { kind: 'reach-zone', zoneId: 'whisperleaf-meadow' },
     reward: { exp: 30, gold: 20, gems: 0 },
   },
   {
@@ -67,13 +68,13 @@ export const WORLD1_MAIN_QUEST: QuestStep[] = [
   },
   {
     id: 'w1_grotto_path', title: 'The Grotto Path', titleTh: 'เส้นทางสู่ถ้ำ',
-    summary: 'The ranger points you onward. Climb to Floor 5, where a cave waits.',
-    giver: 'forest_ranger', trigger: { kind: 'reach-floor', floor: 5 },
+    summary: 'The ranger marks a route through the forest. Reach Rootcellar Trail, where a cave waits.',
+    giver: 'forest_ranger', trigger: { kind: 'reach-zone', zoneId: 'mosswood-trail' },
     reward: { exp: 60, gold: 40, gems: 1 },
   },
   {
     id: 'w1_enter_grotto', title: 'The Slime Grotto', titleTh: 'ถ้ำสไลม์',
-    summary: 'A cave opens on Floor 5. Step into the grotto and explore its chamber.',
+    summary: 'A cave opens beneath Rootcellar Trail. Enter the grotto and explore its chamber.',
     giver: 'portal_guardian', trigger: { kind: 'enter-dungeon', layoutId: 'world01-mini' },
     reward: { exp: 70, gold: 45, gems: 0 },
   },
@@ -91,13 +92,13 @@ export const WORLD1_MAIN_QUEST: QuestStep[] = [
   },
   {
     id: 'w1_deeper_still', title: 'Deeper Still', titleTh: 'ลึกลงไปอีก',
-    summary: 'The forest grows darker. Push on and climb to Floor 8.',
-    giver: 'portal_guardian', trigger: { kind: 'reach-floor', floor: 8 },
+    summary: 'The forest grows darker. Follow the trail into the Deepgrove hunting grounds.',
+    giver: 'portal_guardian', trigger: { kind: 'reach-zone', zoneId: 'deepgrove' },
     reward: { exp: 100, gold: 65, gems: 0 },
   },
   {
     id: 'w1_approach', title: 'The Colossus Approach', titleTh: 'ทางสู่โคลอสซัส',
-    summary: 'The great dungeon lies on Floor 10. Enter the approach to the Colossus.',
+    summary: 'The great dungeon lies at the heart of Verdant Frontier. Enter the Colossus Approach.',
     giver: 'portal_guardian', trigger: { kind: 'enter-dungeon', layoutId: 'world01-main' },
     reward: { exp: 110, gold: 70, gems: 1 },
   },
@@ -129,6 +130,7 @@ export const INITIAL_MAIN_QUEST_STATE: MainQuestState = { step: 0, progress: 0 }
 export type QuestEvent =
   | { type: 'talk-npc'; npcId: string }
   | { type: 'reach-floor'; floor: number }
+  | { type: 'reach-zone'; zoneId: string }
   | { type: 'defeat-monster' }
   | { type: 'answer-correct' }
   | { type: 'find-secret'; secretId: string }
@@ -160,6 +162,7 @@ function applyToTrigger(trigger: QuestTrigger, progress: number, event: QuestEve
   switch (trigger.kind) {
     case 'talk-npc': return event.type === 'talk-npc' && event.npcId === trigger.npcId ? 1 : -1
     case 'reach-floor': return event.type === 'reach-floor' && event.floor >= trigger.floor ? 1 : -1
+    case 'reach-zone': return event.type === 'reach-zone' && event.zoneId === trigger.zoneId ? 1 : -1
     case 'defeat-monsters': return event.type === 'defeat-monster' ? progress + 1 : -1
     case 'answer-correct': return event.type === 'answer-correct' ? progress + 1 : -1
     case 'find-secret': return event.type === 'find-secret' && event.secretId === trigger.secretId ? 1 : -1

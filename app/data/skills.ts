@@ -107,6 +107,14 @@ const TREES: Record<HeroClassId, Record<SkillBranch, Row[]>> = {
 
 const BRANCHES: SkillBranch[] = ['attack', 'defense', 'knowledge']
 
+// ผู้เล่นได้ทดลองบิลด์ทันที ไม่ต้องฟาร์มก่อนเห็นระบบ: 3 แต้มเริ่มต้น + 1/เลเวล + โบนัสทุก 5 เลเวล
+export const STARTING_SKILL_POINTS = 3
+export const SKILL_POINTS_PER_LEVEL = 1
+export const SKILL_POINT_MILESTONE = 5
+export function skillPointsGrantedAtLevel(level: number): number {
+  return SKILL_POINTS_PER_LEVEL + (level > 0 && level % SKILL_POINT_MILESTONE === 0 ? 1 : 0)
+}
+
 export const SKILL_TREE: SkillNode[] = (Object.keys(TREES) as HeroClassId[]).flatMap((classId) =>
   BRANCHES.flatMap((branch) =>
     TREES[classId][branch].map((row, i) => ({
@@ -125,6 +133,12 @@ export const SKILL_TREE: SkillNode[] = (Object.keys(TREES) as HeroClassId[]).fla
 
 export function skillsForClass(classId: HeroClassId): SkillNode[] {
   return SKILL_TREE.filter((s) => s.classId === classId)
+}
+
+/** แต้มที่ลงทุนจริง — ใช้ทั้ง UI และ reset เพื่อไม่มีเลขซ้ำซ้อนในเซฟ */
+export function skillPointsSpent(learned: string[]): number {
+  const learnedSet = new Set(learned)
+  return SKILL_TREE.reduce((total, skill) => total + (learnedSet.has(skill.id) ? skill.cost : 0), 0)
 }
 
 /** เรียนได้เมื่อ: ยังไม่เรียน + แต้มพอ + (ระดับ 1 หรือเรียนระดับก่อนหน้าของสาย+คลาสเดียวกันแล้ว) */

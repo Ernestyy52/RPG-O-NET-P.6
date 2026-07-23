@@ -19,6 +19,7 @@ describe('player store — character creation & stats', () => {
     expect(p.hp).toBe(p.maxHp)
     expect(p.maxHp).toBe(72) // warrior base hp
     expect(p.inventory.potion_s).toBe(2)
+    expect(p.skillPoints).toBe(3) // ทดลองอัป talent ได้ตั้งแต่เริ่มเกม
   })
 
   it('composes stats from class base + level growth', () => {
@@ -37,7 +38,7 @@ describe('player store — rewards & level up', () => {
     p.gainRewards(30, 25) // expToNextLevel(1) === 30
     expect(p.level).toBe(2)
     expect(p.exp).toBe(0)
-    expect(p.skillPoints).toBe(1)
+    expect(p.skillPoints).toBe(4)
     expect(p.gold).toBe(90 + 25)
     expect(p.hp).toBe(p.maxHp) // healed on level up
   })
@@ -47,7 +48,7 @@ describe('player store — rewards & level up', () => {
     p.gainRewards(10, 0)
     expect(p.level).toBe(1)
     expect(p.exp).toBe(10)
-    expect(p.skillPoints).toBe(0)
+    expect(p.skillPoints).toBe(3)
   })
 })
 
@@ -202,6 +203,8 @@ describe('player store — World-1 main quest (Inc 4 infra)', () => {
 
   it('side quests progress on dispatched events and claim exactly once', () => {
     const p = freshWarrior()
+    expect(p.acceptSideQuestsFromNpc('blacksmith')).toBeGreaterThan(0)
+    expect(p.sideQuests.find((s) => s.quest.id === 'sq_gather_gel')?.accepted).toBe(true)
     // sq_gather_gel = defeat 3 monsters
     for (let i = 0; i < 3; i++) p.dispatchQuestEvent({ type: 'defeat-monster' })
     const gel = p.sideQuests.find((s) => s.quest.id === 'sq_gather_gel')!
@@ -220,6 +223,7 @@ describe('player store — World-1 main quest (Inc 4 infra)', () => {
   it('discovering a secret grants its reward once and completes the matching find-secret quest', () => {
     const p = freshWarrior()
     const gold0 = p.gold
+    p.acceptSideQuestsFromNpc('portal_guardian')
     expect(p.discoverSecret('w1-main-chest')).toBe(true)
     expect(p.secretsFound).toContain('w1-main-chest')
     expect(p.gold).toBe(gold0 + 80) // w1-main-chest gold reward
@@ -247,6 +251,8 @@ describe('player store — save compatibility (pre-Phase-14 blob loads with zero
     ;(p as unknown as Record<string, unknown>).sideQuestClaimed = undefined
     ;(p as unknown as Record<string, unknown>).secretsFound = undefined
 
+    ;(p as unknown as Record<string, unknown>).sideQuestAccepted = undefined
+    ;(p as unknown as Record<string, unknown>).academyLessonsCompleted = undefined
     ensurePlayerDefaults(p) // what afterHydrate runs on load
 
     // legacy data preserved exactly (zero loss)
@@ -260,6 +266,8 @@ describe('player store — save compatibility (pre-Phase-14 blob loads with zero
     expect(p.sideQuestProgress).toEqual({})
     expect(p.secretsFound).toEqual([])
     // and every Phase-14 getter is safe (no crash reading a defaulted field)
+    expect(p.sideQuestAccepted).toEqual([])
+    expect(p.academyLessonsCompleted).toEqual([])
     expect(p.mainQuestStep?.id).toBe('w1_call_to_adventure')
     expect(p.sideQuests.length).toBeGreaterThan(0)
     expect(typeof p.stats.atk).toBe('number')
@@ -292,5 +300,27 @@ describe('player store — daily quest transitions', () => {
     expect(p.gold).toBeGreaterThan(goldBefore)
     // second claim is rejected (idempotent reward)
     expect(p.claimQuest(answerQuest.id)).toBe(false)
+  })
+})
+describe('player store - World-1 location authority', () => {
+  it('keeps the highest Adventure Rank while travelling backward', () => {
+    const p = freshWarrior()
+    p.enterAdventureZone('mosswood-trail')
+    expect(p.currentFloor).toBe(5)
+    expect(p.adventureRank).toBe(5)
+
+    p.enterAdventureZone('whisperleaf-meadow')
+    expect(p.currentFloor).toBe(1)
+    expect(p.currentZoneId).toBe('whisperleaf-meadow')
+    expect(p.adventureRank).toBe(5)
+  })
+
+  it('records a region clear once without duplicating completion state', () => {
+    const p = freshWarrior()
+    expect(p.completeAdventureRegion('verdant-frontier')).toBe(true)
+    expect(p.completeAdventureRegion('verdant-frontier')).toBe(false)
+    expect(p.completedRegionIds).toEqual(['verdant-frontier'])
+    expect(p.world1Completed).toBe(true)
+    expect(p.regionReputation['verdant-frontier']).toBe(100)
   })
 })

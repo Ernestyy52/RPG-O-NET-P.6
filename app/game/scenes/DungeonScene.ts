@@ -1,8 +1,8 @@
 import Phaser from 'phaser'
 import type { HeroClassId } from '../../data/classes'
 import { gameEvents } from '../systems/eventBus'
+import { getAdventureZone } from '../../data/adventureZones'
 import { getFloorConfig } from '../../data/floors'
-import { biomeForFloor } from '../../data/biomes'
 import { getWorldState } from '../../data/world'
 import { usePlayerStore } from '../../stores/player'
 import { WeaponOverlay } from '../systems/paperdoll'
@@ -21,23 +21,29 @@ import {
   assetPath,
 } from '../systems/textures'
 import { createIdleBreath, addPlaque } from '../systems/atmosphere'
-import { preloadBgm, playBgm, bgmKeyForBiome } from '../systems/bgm'
+import { preloadBgm, playBgm } from '../systems/bgm'
 import { WORLD1_BUSHES, WORLD1_DUNGEON_PROPS, DUNGEON_FIRE, pickDecorTiles } from '../../data/world1/decor'
 import { seedFromString } from '../../data/learning/rng'
 import {
   TILE,
-  resolveMovement,
   rollMonsterSpawns,
   canStartEncounter,
   getDungeonLayout,
   type DungeonLayoutId,
   type DungeonLayoutConfig,
 } from '../runtime'
-import { centeredCameraBounds } from '../scaleContract'
+import { FIELD_SPEED, centeredCameraBounds } from '../scaleContract'
 import { MinimapTicker, rectsFromWallGrid, publishMinimapLayout, clearMinimap } from '../systems/minimap'
+import { PlayerLocomotion } from '../systems/playerLocomotion'
+import { playerAuraDepth, playerRenderDepth, playerShadowDepth } from '../runtime/renderDepth'
+import { DAILY_RIFT_MODIFIER_LABELS, dailyActivityPlan, dailyRiftLayout, type DailyRiftModifier } from '../../data/activities'
 
 const DUNGEON_TILES = 'dungeon_tiles'
 const DUNGEON_WALLS = 'dungeon_walls'
+// tiny-dungeon / walls_floor sheets are 16px source; the world grid is TILE(32)px, so every raw
+// frame must display at integer 2× (scale-contract: source 16 → integer 2×). Without this the floor,
+// walls and props render — and collide — at half a tile (scale-integration non-negotiable).
+const TILE_DISPLAY_SCALE = TILE / 16
 
 function titleCase(slug: string): string {
   return slug.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
@@ -51,6 +57,8 @@ function titleCase(slug: string): string {
  */
 export class DungeonScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite
+  private playerShadow!: Phaser.GameObjects.Image
+  private locomotion!: PlayerLocomotion
   private gender = 'male'
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
   private monsters!: Phaser.Physics.Arcade.Group
@@ -59,6 +67,8 @@ export class DungeonScene extends Phaser.Scene {
   private classId: HeroClassId = 'warrior'
   private floor = 5
   private layoutId: DungeonLayoutId = 'world01-mini'
+  private zoneId = 'rootcellar-hollow'
+  private returnZoneId = 'mosswood-trail'
   private layout!: DungeonLayoutConfig
   private inBattle = false
   private idleBreath!: ReturnType<typeof createIdleBreath>
@@ -70,17 +80,33 @@ export class DungeonScene extends Phaser.Scene {
   private foundSecrets = new Set<string>()
   private activeMonster?: Phaser.Physics.Arcade.Sprite
   private minimapTicker = new MinimapTicker()
+  private dailyDate = ''
+  private dailySeed = 0
+  private dailyRareAssigned = false
+  private dailyModifiers: DailyRiftModifier[] = []
+  private dailyDeadline = 0
+  private dailyTimerText?: Phaser.GameObjects.Text
+  private dailyExpired = false
 
   constructor() {
     super('DungeonScene')
   }
 
-  init(data: { layoutId?: DungeonLayoutId; floor?: number; classId?: HeroClassId }) {
+  init(data: { layoutId?: DungeonLayoutId; floor?: number; classId?: HeroClassId; zoneId?: string; returnZoneId?: string; daily?: { date: string; seed: number } }) {
     this.layoutId = data.layoutId ?? 'world01-mini'
     this.floor = data.floor ?? 5
     this.classId = data.classId ?? this.classId
     this.inBattle = false
+    this.zoneId = data.zoneId ?? (this.layoutId === 'world01-main' ? 'myco-sanctum' : 'rootcellar-hollow')
+    this.returnZoneId = data.returnZoneId ?? (this.layoutId === 'world01-main' ? 'deepgrove' : 'mosswood-trail')
     this.exitArmed = false
+    this.dailyDate = data.daily?.date ?? ''
+    this.dailySeed = data.daily?.seed ?? 0
+    this.dailyRareAssigned = false
+    this.dailyModifiers = []
+    this.dailyDeadline = 0
+    this.dailyTimerText = undefined
+    this.dailyExpired = false
   }
 
   preload() {
@@ -99,11 +125,14 @@ export class DungeonScene extends Phaser.Scene {
     if (!this.textures.exists(DUNGEON_FIRE.key)) {
       this.load.spritesheet(DUNGEON_FIRE.key, assetPath(DUNGEON_FIRE.sprite), { frameWidth: DUNGEON_FIRE.frameW, frameHeight: DUNGEON_FIRE.frameH })
     }
-    preloadBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id), assetPath)
+    preloadBgm(this, 'dungeon', assetPath)
   }
 
   create() {
-    this.layout = getDungeonLayout(this.layoutId)
+    const authoredLayout = getDungeonLayout(this.layoutId)
+    const dailyPlan = this.dailyDate ? dailyActivityPlan(this.dailyDate, this.floor) : undefined
+    this.dailyModifiers = dailyPlan?.modifiers ?? []
+    this.layout = dailyPlan ? dailyRiftLayout(dailyPlan, authoredLayout) : authoredLayout
     this.enteredAt = this.time.now
     const store = usePlayerStore()
     this.gender = store.gender
@@ -117,7 +146,7 @@ export class DungeonScene extends Phaser.Scene {
     // ---- floor tiles ----
     for (let y = 0; y < this.layout.rows; y++) {
       for (let x = 0; x < this.layout.cols; x++) {
-        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, DUNGEON_TILES, this.layout.floorGrid[y][x]).setDepth(0)
+        this.add.image(x * TILE + TILE / 2, y * TILE + TILE / 2, DUNGEON_TILES, this.layout.floorGrid[y]![x]!).setScale(TILE_DISPLAY_SCALE).setDepth(0)
       }
     }
 
@@ -125,9 +154,11 @@ export class DungeonScene extends Phaser.Scene {
     const walls = this.physics.add.staticGroup()
     for (let y = 0; y < this.layout.rows; y++) {
       for (let x = 0; x < this.layout.cols; x++) {
-        const frame = this.layout.wallGrid[y][x]
+        const frame = this.layout.wallGrid[y]![x]!
         if (frame === null) continue
         const w = walls.create(x * TILE + TILE / 2, y * TILE + TILE / 2, DUNGEON_WALLS, frame) as Phaser.Physics.Arcade.Sprite
+        // display 16px source at integer 2× and refresh the static body so collision fills the whole tile
+        w.setScale(TILE_DISPLAY_SCALE).refreshBody()
         // wall tops sort by their tile row so the hero can walk behind upper walls (layered composition)
         w.setDepth(y * TILE)
       }
@@ -136,6 +167,7 @@ export class DungeonScene extends Phaser.Scene {
     // ---- blocking props ----
     for (const p of this.layout.props) {
       const img = walls.create(p.x * TILE + TILE / 2, p.y * TILE + TILE / 2, DUNGEON_TILES, p.frame) as Phaser.Physics.Arcade.Sprite
+      img.setScale(TILE_DISPLAY_SCALE).refreshBody()
       img.setDepth(p.y * TILE)
       if (!p.blocking) (img.body as Phaser.Physics.Arcade.StaticBody).enable = false
     }
@@ -167,7 +199,7 @@ export class DungeonScene extends Phaser.Scene {
     const pScale = HERO_DISPLAY_H / size.fh
     const startX = this.layout.entry.x * TILE + TILE / 2
     const startY = this.layout.entry.y * TILE + TILE / 2
-    this.add.image(startX, startY + 12, 'shadow_blob').setDepth(startY - 1)
+    this.playerShadow = this.add.image(startX, startY + 12, 'shadow_blob').setDepth(playerShadowDepth(startY))
     this.player = this.physics.add.sprite(startX, startY, heroKey(this.classId, this.gender), heroIdleFrame(this.classId, this.gender))
     this.player.setOrigin(0.5, 0.92).setScale(pScale)
     this.player.setCollideWorldBounds(true)
@@ -189,7 +221,17 @@ export class DungeonScene extends Phaser.Scene {
     this.physics.add.collider(this.monsters, this.monsters)
     for (const region of this.layout.spawns) {
       const slots = rollMonsterSpawns(region.count, { bounds: region.bounds, slugs: [region.slug], rng: Phaser.Math.RND })
-      for (const [i, s] of slots.entries()) this.spawnMonsterSprite(s.slug, s.x, s.y, i)
+      for (const [i, s] of slots.entries()) {
+        const monster = this.spawnMonsterSprite(s.slug, s.x, s.y, i)
+        if (this.dailyDate && !this.dailyRareAssigned) {
+          this.dailyRareAssigned = true
+          monster.setData('rare', true)
+          monster.setScale(monster.scale * 1.22).setTint(0xffd15c)
+          const badge = addPlaque(this, monster.x, monster.y - 34, 'RARE', { fontSize: '9px', depth: 100000, color: '#ffe8a3' })
+          monster.setData('variantLabel', badge)
+          gameEvents.emit('audio:sfx', { key: 'elite_spawn' })
+        }
+      }
     }
     // ---- elites: tint + scale + nameplate (the required non-color second threat tell) ----
     this.elitesRemaining = this.layout.elites.length // P0.8: objective ของดันเจี้ยนนี้
@@ -210,10 +252,10 @@ export class DungeonScene extends Phaser.Scene {
       this.add.image(px, py + 4, d.key).setOrigin(0.5, 0.9).setScale(30 / d.h).setDepth(py - 1)
     }
     const bushTiles = pickDecorTiles(this.layout.wallGrid, decorReserved, 7, seedFromString(`bush:${this.layoutId}`))
-    for (const d of bushTiles) placeDecor(d.x * TILE + TILE / 2, d.y * TILE + TILE / 2, WORLD1_BUSHES[d.bush])
+    for (const d of bushTiles) placeDecor(d.x * TILE + TILE / 2, d.y * TILE + TILE / 2, WORLD1_BUSHES[d.bush]!)
     // props go on DIFFERENT tiles (bush tiles reserved so they never stack)
     const propTiles = pickDecorTiles(this.layout.wallGrid, [...decorReserved, ...bushTiles], 4, seedFromString(`prop:${this.layoutId}`))
-    for (const d of propTiles) placeDecor(d.x * TILE + TILE / 2, d.y * TILE + TILE / 2, WORLD1_DUNGEON_PROPS[d.bush % WORLD1_DUNGEON_PROPS.length])
+    for (const d of propTiles) placeDecor(d.x * TILE + TILE / 2, d.y * TILE + TILE / 2, WORLD1_DUNGEON_PROPS[d.bush % WORLD1_DUNGEON_PROPS.length]!)
 
     // ---- exit stairs (returns to the owning tower floor) ----
     const exitX = this.layout.exit.x * TILE + TILE / 2
@@ -250,8 +292,10 @@ export class DungeonScene extends Phaser.Scene {
     }
 
     this.cursors = this.input.keyboard!.createCursorKeys()
+    this.locomotion = new PlayerLocomotion(this, this.player, FIELD_SPEED, walls)
 
-    addPlaque(this, 8, 8, `${this.layout.nameTh}  ·  ${this.layout.name}`, {
+    const displayTitle = dailyPlan ? `DAILY RIFT · ${dailyPlan.layoutVariantName}` : `${this.layout.nameTh}  ·  ${this.layout.name}`
+    addPlaque(this, 8, 8, displayTitle, {
       fontSize: '13px', depth: 100, fixed: true, origin: [0, 0],
     })
     addPlaque(this, 8, 36, this.elitesRemaining > 0
@@ -263,14 +307,27 @@ export class DungeonScene extends Phaser.Scene {
     // simple dungeon vignette (mood, not weather)
     const cam = this.cameras.main
     this.add.rectangle(0, 0, cam.width, cam.height, 0x07060c, 0.26).setOrigin(0).setScrollFactor(0).setDepth(90)
+    if (this.dailyModifiers.includes('shadowed')) {
+      this.add.rectangle(0, 0, cam.width, cam.height, 0x02030a, 0.42).setOrigin(0).setScrollFactor(0).setDepth(94)
+    }
+    if (dailyPlan) {
+      const modifierNames = dailyPlan.modifiers.map((modifier) => DAILY_RIFT_MODIFIER_LABELS[modifier].name).join(' · ')
+      addPlaque(this, 8, 64, modifierNames, { fontSize: '10px', depth: 100000, fixed: true, origin: [0, 0], color: '#d9c5ff' })
+      if (dailyPlan.timeLimitSec) {
+        this.dailyDeadline = this.time.now + dailyPlan.timeLimitSec * 1000
+        this.dailyTimerText = this.add.text(8, 90, '', {
+          fontFamily: 'monospace', fontSize: '13px', color: '#ffe29a', backgroundColor: '#130e1fcc', padding: { x: 7, y: 4 },
+        }).setOrigin(0, 0).setScrollFactor(0).setDepth(100000)
+      }
+    }
 
-    playBgm(this, bgmKeyForBiome(biomeForFloor(this.floor).id))
+    playBgm(this, 'dungeon')
 
-    gameEvents.on('battle:end', this.handleBattleEnd, this)
-    const enterBoss = () => this.scene.start('BossScene', { floor: this.floor, classId: this.classId })
+    gameEvents.on('battle:end', this.handleBattleEnd)
+    const enterBoss = () => this.scene.start('BossScene', { floor: this.floor, classId: this.classId, mode: 'adventure', regionId: 'verdant-frontier', zoneId: 'myco-sanctum' })
     gameEvents.on('boss:enter', enterBoss)
     this.events.once('shutdown', () => {
-      gameEvents.off('battle:end', this.handleBattleEnd, this)
+      gameEvents.off('battle:end', this.handleBattleEnd)
       gameEvents.off('boss:enter', enterBoss)
       // zone-scoped unload — release the dungeon sheets so long sessions don't leak textures
       if (this.textures.exists(DUNGEON_TILES)) this.textures.remove(DUNGEON_TILES)
@@ -281,7 +338,7 @@ export class DungeonScene extends Phaser.Scene {
     void getWorldState()
 
     // Inc 4: main-quest signal — the hero has entered this dungeon (bridged to the quest reducer)
-    gameEvents.emit('dungeon:enter', { layoutId: this.layoutId })
+    if (!this.dailyDate) gameEvents.emit('dungeon:enter', { layoutId: this.layoutId })
 
     // ---- minimap: กำแพงจาก wallGrid (merged rects) + prop ที่ block + exit/boss gate ----
     // ความลับ (secrets) จงใจไม่ขึ้น minimap — ให้ค้นเจอด้วยตาในฉากเอง
@@ -307,7 +364,7 @@ export class DungeonScene extends Phaser.Scene {
     m.setData('slug', slug)
     const mScale = 46 / m.height
     m.setScale(mScale).setDepth(y)
-    m.body.setSize(m.width * 0.42, m.height * 0.4).setOffset(m.width * 0.29, m.height * 0.4)
+    ;(m.body as Phaser.Physics.Arcade.Body).setSize(m.width * 0.42, m.height * 0.4).setOffset(m.width * 0.29, m.height * 0.4)
     m.setCollideWorldBounds(true)
     m.setAlpha(0)
     this.tweens.add({ targets: m, alpha: 1, duration: 250, delay: index * 12 })
@@ -326,12 +383,30 @@ export class DungeonScene extends Phaser.Scene {
     gameEvents.emit('notice', { text: `⚔ ล้มผู้พิทักษ์ Elite อีก ${this.elitesRemaining} ตัวเพื่อปลดล็อกทางออก!` })
   }
 
+  private returnToAdventure() {
+    let target = getAdventureZone(this.returnZoneId)
+    if (target.kind !== 'field' && target.kind !== 'town') target = getAdventureZone('aethergate')
+    gameEvents.emit('world:travel-request', {
+      mode: target.kind === 'town' ? 'town' : 'adventure',
+      floor: target.rank,
+      regionId: target.regionId,
+      zoneId: target.id,
+      fromZoneId: this.zoneId,
+    })
+  }
+
   private tryExit() {
     if (!this.exitArmed || this.inBattle) return
     if (!this.objectiveComplete()) return this.notifyObjective()
+    if (this.dailyDate) {
+      gameEvents.emit('daily:rift-clear', { date: this.dailyDate })
+      gameEvents.emit('notice', { text: 'Daily Echo Rift cleared — reward ready on the Hunts board!' })
+      this.returnToAdventure()
+      return
+    }
     // objective ครบ + ถึงทางออก = เคลียร์ดันเจี้ยนจริง → main-quest "clear" signal
     gameEvents.emit('dungeon:clear', { layoutId: this.layoutId })
-    this.scene.start('TowerScene', { floor: this.floor, classId: this.classId })
+    this.returnToAdventure()
   }
 
   private tryBossGate() {
@@ -342,21 +417,30 @@ export class DungeonScene extends Phaser.Scene {
     gameEvents.emit('boss:gate', { floor: this.floor })
   }
 
-  update() {
-    if (this.inBattle) { this.player.setVelocity(0); return }
-    const move = resolveMovement({
-      left: !!this.cursors.left?.isDown,
-      right: !!this.cursors.right?.isDown,
-      up: !!this.cursors.up?.isDown,
-      down: !!this.cursors.down?.isDown,
-    }, this.facing)
+  override update(_time: number, delta: number) {
+    if (this.dailyDeadline && !this.dailyExpired) {
+      const remaining = Math.max(0, Math.ceil((this.dailyDeadline - this.time.now) / 1000))
+      const minutes = Math.floor(remaining / 60)
+      const seconds = String(remaining % 60).padStart(2, '0')
+      this.dailyTimerText?.setText(`CHRONO ${minutes}:${seconds}`)
+      if (remaining <= 0) {
+        this.dailyExpired = true
+        gameEvents.emit('notice', { text: 'Chrono Seal closed the Rift — regroup and try again.' })
+        gameEvents.emit('battle:abort', { reason: 'rift-expired' })
+        this.returnToAdventure()
+        return
+      }
+    }
+    if (this.inBattle) { this.locomotion.stopImmediate(); return }
+    const move = this.locomotion.update(this.cursors, this.facing, delta)
     this.facing = move.facing
     const moving = move.moving
     this.player.setVelocity(move.vx, move.vy)
     const anim = heroAnim(this.classId, this.gender, moving ? 'walk' : 'idle', this.facing)
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim)
-    this.player.setDepth(this.player.y)
-    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment.weapon)
+    this.player.setDepth(playerRenderDepth(this.player.y))
+    this.playerShadow.setPosition(this.player.x, this.player.y + 12).setDepth(playerShadowDepth(this.player.y))
+    this.weaponOverlay.update(this.player, this.facing, usePlayerStore().equipment)
     this.idleBreath.setMoving(moving)
 
     // arm the exit only after the hero has stepped off the entry tile (no instant re-exit on spawn)
@@ -390,17 +474,20 @@ export class DungeonScene extends Phaser.Scene {
     const config = getFloorConfig(this.floor)
     const slug = (monster.getData('slug') as string) ?? this.layout.spawns[0]?.slug ?? 'slime'
     const isElite = !!monster.getData('elite')
+    const isRare = !!monster.getData('rare')
     for (const child of this.monsters.getChildren()) (child as Phaser.Physics.Arcade.Sprite).setVelocity(0, 0)
     gameEvents.emit('battle:start', {
       floor: this.floor,
       isBoss: false,
-      name: isElite ? `Elite ${titleCase(slug)}` : titleCase(slug),
+      name: isRare ? `Rare ${titleCase(slug)}` : isElite ? `Elite ${titleCase(slug)}` : titleCase(slug),
+      monsterId: slug, elite: isElite, rare: isRare,
+      riftModifiers: this.dailyModifiers,
       sprite: `mob-sprites/mca/${slug}.png`,
-      hp: isElite ? Math.round(config.monsterHp * 1.6) : config.monsterHp,
-      atk: isElite ? Math.round(config.monsterAtk * 1.3) : config.monsterAtk,
-      speed: config.monsterLevel,
-      expReward: isElite ? config.expReward * 2 : config.expReward,
-      goldReward: isElite ? config.goldReward * 2 : config.goldReward,
+      hp: Math.round(config.monsterHp * (isRare ? 1.9 : isElite ? 1.6 : 1)),
+      atk: Math.round(config.monsterAtk * (isRare ? 1.42 : isElite ? 1.3 : 1)),
+      speed: config.monsterLevel + (isRare ? 2 : isElite ? 1 : 0) + (this.dailyModifiers.includes('swift') ? 4 : 0),
+      expReward: Math.round(config.expReward * (isRare ? 2.6 : isElite ? 2 : 1)),
+      goldReward: Math.round(config.goldReward * (isRare ? 2.8 : isElite ? 2 : 1)),
     })
     this.activeMonster = monster
   }
@@ -419,7 +506,7 @@ export class DungeonScene extends Phaser.Scene {
       return
     }
     if (payload.outcome === 'defeat') {
-      this.scene.restart({ layoutId: this.layoutId, floor: this.floor, classId: this.classId })
+      this.scene.restart({ layoutId: this.layoutId, floor: this.floor, classId: this.classId, zoneId: this.zoneId, returnZoneId: this.returnZoneId, daily: this.dailyDate ? { date: this.dailyDate, seed: this.dailySeed } : undefined })
       return
     }
     if (monster) {
@@ -432,6 +519,9 @@ export class DungeonScene extends Phaser.Scene {
             : '✅ ผู้พิทักษ์หมดแล้ว — ทางออกปลดล็อก!',
         })
       }
+      const variantLabel = monster.getData('variantLabel') as ReturnType<typeof addPlaque> | undefined
+      variantLabel?.label.destroy()
+      variantLabel?.bg.destroy()
       monster.setActive(false)
       this.tweens.add({ targets: monster, alpha: 0, scaleX: 0, scaleY: 0, duration: 220, onComplete: () => monster.destroy() })
     }

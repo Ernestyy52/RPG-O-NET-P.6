@@ -1,22 +1,25 @@
 {
- "generated": "2026-07-18T13:39:00.069Z",
+ "generated": "2026-07-20T16:03:17.558Z",
  "totals": {
-  "files": 236,
-  "bytes": 21900359,
-  "used": 206,
-  "unused": 22,
+  "files": 300,
+  "bytes": 30805643,
+  "used": 251,
+  "unused": 41,
   "devOnly": 8,
   "duplicate": 0,
   "conceptRefs": 21
  },
  "budgetByDir": {
+  "town-art": 6824031,
   "branding": 4866806,
   "character-assets": 4383350,
-  "town-art": 2755456,
   "mob-sprites": 2743375,
+  "interior-maps": 2454937,
   "skill-assets": 2235398,
   "character-sprites": 2158221,
-  "audio": 1681902,
+  "audio": 2081497,
+  "assets": 1590407,
+  "paperdoll": 391770,
   "lpc-poc": 361601,
   "npc": 260365,
   "character-icons": 204267,
@@ -37,6 +40,19 @@
  "errors": [],
  "warnings": [
   "DUPLICATE CONTENT (4ab6153a7770): npc-sprites/LICENSE-craftpix.txt == world1-props/LICENSE-craftpix.txt == world1-props/LICENSE-dungeon-craftpix.txt",
+  "UNUSED: assets/maps/mockup-derived/slice_academy.png (135 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_bank.png (133 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_forge.png (63 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_guild.png (133 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_hospital.png (101 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_inn.png (141 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_itemshop.png (125 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_portal.png (164 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_shrine.png (136 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_stable.png (104 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_stage.png (84 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_tailor.png (107 KB)",
+  "UNUSED: assets/maps/mockup-derived/slice_townhall.png (126 KB)",
   "UNUSED: branding/homescreen.png (2405 KB)",
   "UNUSED: character-assets/occupation.png (2140 KB)",
   "UNUSED: character-sprites/archer_female.png (180 KB)",
@@ -51,9 +67,15 @@
   "UNUSED: exterior-props/guild_hall_sign.png (1 KB)",
   "UNUSED: guildhall-props/plant.png (1 KB)",
   "UNUSED: interior-props/guildmaster.png (0 KB)",
+  "UNUSED: interior-props/guild_floor0.png (0 KB)",
+  "UNUSED: interior-props/guild_floor1.png (0 KB)",
+  "UNUSED: interior-props/guild_wall.png (0 KB)",
   "UNUSED: interior-props/shop_wall.png (0 KB)",
+  "UNUSED: paperdoll/animated/_manifest.json (1 KB)",
+  "UNUSED: paperdoll/_manifest.json (1 KB)",
   "UNUSED: quest-icons/gem-teal.png (1 KB)",
   "UNUSED: skill-assets/skill_effects.png (2183 KB)",
+  "UNUSED: town-art/town-night.png (2691 KB)",
   "UNUSED: ui-pack/char_frame.png (0 KB)",
   "UNUSED: ui-pack/daynight_dawn.png (1 KB)",
   "UNUSED: ui-pack/daynight_day.png (1 KB)",
@@ -73,6 +95,214 @@
    "status": "used"
   },
   {
+   "id": "assets-maps-mockup-derived-slice-academy-png",
+   "path": "assets/maps/mockup-derived/slice_academy.png",
+   "type": "image",
+   "bytes": 138597,
+   "dimensions": [
+    235,
+    220
+   ],
+   "hash": "1d16c58f9f3a",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-bank-png",
+   "path": "assets/maps/mockup-derived/slice_bank.png",
+   "type": "image",
+   "bytes": 135685,
+   "dimensions": [
+    232,
+    222
+   ],
+   "hash": "59697501dc21",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-forge-png",
+   "path": "assets/maps/mockup-derived/slice_forge.png",
+   "type": "image",
+   "bytes": 64843,
+   "dimensions": [
+    168,
+    140
+   ],
+   "hash": "8a945cf8a837",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-guild-png",
+   "path": "assets/maps/mockup-derived/slice_guild.png",
+   "type": "image",
+   "bytes": 136359,
+   "dimensions": [
+    250,
+    200
+   ],
+   "hash": "726993a07f47",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-hospital-png",
+   "path": "assets/maps/mockup-derived/slice_hospital.png",
+   "type": "image",
+   "bytes": 103599,
+   "dimensions": [
+    200,
+    192
+   ],
+   "hash": "56b445649ba9",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-inn-png",
+   "path": "assets/maps/mockup-derived/slice_inn.png",
+   "type": "image",
+   "bytes": 144377,
+   "dimensions": [
+    262,
+    205
+   ],
+   "hash": "f8192f78c1a7",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-itemshop-png",
+   "path": "assets/maps/mockup-derived/slice_itemshop.png",
+   "type": "image",
+   "bytes": 128405,
+   "dimensions": [
+    240,
+    202
+   ],
+   "hash": "4f0b0794af37",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-portal-png",
+   "path": "assets/maps/mockup-derived/slice_portal.png",
+   "type": "image",
+   "bytes": 167543,
+   "dimensions": [
+    228,
+    275
+   ],
+   "hash": "1eae6599ff97",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-shrine-png",
+   "path": "assets/maps/mockup-derived/slice_shrine.png",
+   "type": "image",
+   "bytes": 139680,
+   "dimensions": [
+    250,
+    205
+   ],
+   "hash": "0a8ead1f96db",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-stable-png",
+   "path": "assets/maps/mockup-derived/slice_stable.png",
+   "type": "image",
+   "bytes": 106718,
+   "dimensions": [
+    212,
+    190
+   ],
+   "hash": "fe42e3eb2abe",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-stage-png",
+   "path": "assets/maps/mockup-derived/slice_stage.png",
+   "type": "image",
+   "bytes": 86243,
+   "dimensions": [
+    175,
+    180
+   ],
+   "hash": "dcf2e79ef9bb",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-tailor-png",
+   "path": "assets/maps/mockup-derived/slice_tailor.png",
+   "type": "image",
+   "bytes": 109729,
+   "dimensions": [
+    200,
+    202
+   ],
+   "hash": "d984600f7901",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "assets-maps-mockup-derived-slice-townhall-png",
+   "path": "assets/maps/mockup-derived/slice_townhall.png",
+   "type": "image",
+   "bytes": 128629,
+   "dimensions": [
+    195,
+    248
+   ],
+   "hash": "34dc83c77f2f",
+   "consumers": [],
+   "source": "unknown",
+   "license": "unknown",
+   "status": "unused"
+  },
+  {
+   "id": "audio-bgm-boss-ogg",
+   "path": "audio/bgm_boss.ogg",
+   "type": "audio",
+   "bytes": 63649,
+   "hash": "20da4ac2dd2d",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
    "id": "audio-bgm-cave-mp3",
    "path": "audio/bgm_cave.mp3",
    "type": "audio",
@@ -81,8 +311,8 @@
    "consumers": [
     "app/game/systems/bgm.ts"
    ],
-   "source": "see folder provenance",
-   "license": "licensed",
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
    "status": "used"
   },
   {
@@ -94,8 +324,21 @@
    "consumers": [
     "app/game/systems/bgm.ts"
    ],
-   "source": "see folder provenance",
-   "license": "licensed",
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-bgm-dungeon-ogg",
+   "path": "audio/bgm_dungeon.ogg",
+   "type": "audio",
+   "bytes": 91777,
+   "hash": "78472ea26f39",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
    "status": "used"
   },
   {
@@ -107,8 +350,8 @@
    "consumers": [
     "app/game/systems/bgm.ts"
    ],
-   "source": "see folder provenance",
-   "license": "licensed",
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
    "status": "used"
   },
   {
@@ -120,8 +363,8 @@
    "consumers": [
     "app/game/systems/bgm.ts"
    ],
-   "source": "see folder provenance",
-   "license": "licensed",
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
    "status": "used"
   },
   {
@@ -133,8 +376,8 @@
    "consumers": [
     "app/game/systems/bgm.ts"
    ],
-   "source": "see folder provenance",
-   "license": "licensed",
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
    "status": "used"
   },
   {
@@ -146,8 +389,152 @@
    "consumers": [
     "app/game/systems/bgm.ts"
    ],
-   "source": "see folder provenance",
-   "license": "licensed",
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-CREDITS-md",
+   "path": "audio/CREDITS.md",
+   "type": "doc",
+   "bytes": 669,
+   "hash": "8bb32904124f",
+   "consumers": [
+    "scripts/asset-truth.cjs",
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-attack-wav",
+   "path": "audio/sfx_attack.wav",
+   "type": "audio",
+   "bytes": 8864,
+   "hash": "d6f64efb7549",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-battle-start-wav",
+   "path": "audio/sfx_battle_start.wav",
+   "type": "audio",
+   "bytes": 28708,
+   "hash": "2abf0be13b26",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-elite-spawn-wav",
+   "path": "audio/sfx_elite_spawn.wav",
+   "type": "audio",
+   "bytes": 35324,
+   "hash": "a4dd1c7c3584",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-footstep-wav",
+   "path": "audio/sfx_footstep.wav",
+   "type": "audio",
+   "bytes": 4012,
+   "hash": "4f4e04f3aa48",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-hit-wav",
+   "path": "audio/sfx_hit.wav",
+   "type": "audio",
+   "bytes": 7982,
+   "hash": "151b491ed223",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-portal-wav",
+   "path": "audio/sfx_portal.wav",
+   "type": "audio",
+   "bytes": 39734,
+   "hash": "cb5fdf5030ff",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-rare-drop-wav",
+   "path": "audio/sfx_rare_drop.wav",
+   "type": "audio",
+   "bytes": 59578,
+   "hash": "c02d8cab5e3b",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-ui-wav",
+   "path": "audio/sfx_ui.wav",
+   "type": "audio",
+   "bytes": 3572,
+   "hash": "f119be4c065e",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-sfx-victory-wav",
+   "path": "audio/sfx_victory.wav",
+   "type": "audio",
+   "bytes": 55168,
+   "hash": "a73ddffb7b29",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
+   "status": "used"
+  },
+  {
+   "id": "audio-generated-audio-manifest-json",
+   "path": "audio/_generated-audio-manifest.json",
+   "type": "atlas",
+   "bytes": 558,
+   "hash": "2fd5bf0e7e68",
+   "consumers": [
+    "app/game/systems/bgm.ts"
+   ],
+   "source": "licensed MCA BGM + project-owned procedural audio (see public/audio/CREDITS.md)",
+   "license": "mixed licensed/project",
    "status": "used"
   },
   {
@@ -442,7 +829,7 @@
    "bytes": 26553,
    "hash": "efdea2e42fcf",
    "consumers": [
-    "app/components/game/StatusModal.vue",
+    "app/components/game/GearPaperdoll.vue",
     "app/game/systems/textures.ts"
    ],
    "source": "inherited onet-game-2569 (reviewed)",
@@ -460,7 +847,7 @@
    ],
    "hash": "aa2f3144a1c0",
    "consumers": [
-    "app/components/game/StatusModal.vue",
+    "app/components/game/GearPaperdoll.vue",
     "app/game/systems/heroFrames.ts",
     "app/game/systems/textures.ts",
     "scripts/sprite-crop/build-hero-atlas.cjs",
@@ -681,6 +1068,74 @@
    "status": "used"
   },
   {
+   "id": "interior-maps-equipment-shop-png",
+   "path": "interior-maps/equipment-shop.png",
+   "type": "image",
+   "bytes": 594517,
+   "dimensions": [
+    494,
+    504
+   ],
+   "hash": "ffbaf63a076f",
+   "consumers": [
+    "app/data/town/interiors.ts"
+   ],
+   "source": "project-approved Aethergate mockup crops",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "interior-maps-guild-png",
+   "path": "interior-maps/guild.png",
+   "type": "image",
+   "bytes": 611457,
+   "dimensions": [
+    494,
+    470
+   ],
+   "hash": "e8e9894ae947",
+   "consumers": [
+    "app/data/town/interiors.ts"
+   ],
+   "source": "project-approved Aethergate mockup crops",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "interior-maps-hospital-png",
+   "path": "interior-maps/hospital.png",
+   "type": "image",
+   "bytes": 650243,
+   "dimensions": [
+    495,
+    479
+   ],
+   "hash": "6bb1703cdcda",
+   "consumers": [
+    "app/data/town/interiors.ts"
+   ],
+   "source": "project-approved Aethergate mockup crops",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "interior-maps-item-shop-png",
+   "path": "interior-maps/item-shop.png",
+   "type": "image",
+   "bytes": 598720,
+   "dimensions": [
+    490,
+    479
+   ],
+   "hash": "d4657fd75409",
+   "consumers": [
+    "app/data/town/interiors.ts"
+   ],
+   "source": "project-approved Aethergate mockup crops",
+   "license": "project",
+   "status": "used"
+  },
+  {
    "id": "interior-props-guildmaster-png",
    "path": "interior-props/guildmaster.png",
    "type": "image",
@@ -740,12 +1195,10 @@
     32
    ],
    "hash": "68997fd90874",
-   "consumers": [
-    "app/game/scenes/InteriorScene.ts"
-   ],
+   "consumers": [],
    "source": "Craftpix (licensed)",
    "license": "licensed",
-   "status": "used"
+   "status": "unused"
   },
   {
    "id": "interior-props-guild-floor1-png",
@@ -757,12 +1210,10 @@
     32
    ],
    "hash": "a7a64dba31bd",
-   "consumers": [
-    "app/game/scenes/InteriorScene.ts"
-   ],
+   "consumers": [],
    "source": "Craftpix (licensed)",
    "license": "licensed",
-   "status": "used"
+   "status": "unused"
   },
   {
    "id": "interior-props-guild-plant-png",
@@ -791,12 +1242,10 @@
     32
    ],
    "hash": "b15006b138cc",
-   "consumers": [
-    "app/game/scenes/InteriorScene.ts"
-   ],
+   "consumers": [],
    "source": "Craftpix (licensed)",
    "license": "licensed",
-   "status": "used"
+   "status": "unused"
   },
   {
    "id": "interior-props-shelf-jars-png",
@@ -910,6 +1359,9 @@
    ],
    "hash": "46164b014b04",
    "consumers": [
+    "app/components/game/ShopModal.vue",
+    "app/components/game/TownModal.vue",
+    "app/pages/index.vue",
     "app/data/equipment.ts",
     "app/data/equipmentVisuals.ts"
    ],
@@ -1198,6 +1650,7 @@
    ],
    "hash": "6d461eb6f433",
    "consumers": [
+    "app/pages/index.vue",
     "app/data/equipment.ts",
     "app/data/equipmentVisuals.ts"
    ],
@@ -1270,6 +1723,7 @@
    ],
    "hash": "5a09911eefa6",
    "consumers": [
+    "app/components/game/TownModal.vue",
     "app/data/equipment.ts",
     "app/data/equipmentVisuals.ts"
    ],
@@ -1288,6 +1742,7 @@
    ],
    "hash": "21af90c0c6ca",
    "consumers": [
+    "app/components/game/ShopModal.vue",
     "app/data/equipment.ts",
     "app/data/equipmentVisuals.ts"
    ],
@@ -1450,6 +1905,8 @@
    ],
    "hash": "4088fffe6a3c",
    "consumers": [
+    "app/components/game/ShopModal.vue",
+    "app/pages/index.vue",
     "app/data/equipment.ts",
     "app/data/equipmentVisuals.ts"
    ],
@@ -3360,6 +3817,577 @@
    "status": "used"
   },
   {
+   "id": "paperdoll-accessories-head-chain-sheet-png",
+   "path": "paperdoll/accessories/head-chain-sheet.png",
+   "type": "image",
+   "bytes": 7935,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "0ef815035642",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-head-dragon-sheet-png",
+   "path": "paperdoll/accessories/head-dragon-sheet.png",
+   "type": "image",
+   "bytes": 9246,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "b1bb7f9fd9e8",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-head-leather-sheet-png",
+   "path": "paperdoll/accessories/head-leather-sheet.png",
+   "type": "image",
+   "bytes": 11573,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "9996bae720f5",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-head-plate-sheet-png",
+   "path": "paperdoll/accessories/head-plate-sheet.png",
+   "type": "image",
+   "bytes": 7562,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "d7877b97d7f0",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-head-robe-sheet-png",
+   "path": "paperdoll/accessories/head-robe-sheet.png",
+   "type": "image",
+   "bytes": 8908,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "042f6d0d1255",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-shield-arcane-sheet-png",
+   "path": "paperdoll/accessories/shield-arcane-sheet.png",
+   "type": "image",
+   "bytes": 6726,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "26082590692f",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-shield-kite-sheet-png",
+   "path": "paperdoll/accessories/shield-kite-sheet.png",
+   "type": "image",
+   "bytes": 8019,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "0b2cbb092f75",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-shield-round-sheet-png",
+   "path": "paperdoll/accessories/shield-round-sheet.png",
+   "type": "image",
+   "bytes": 9099,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "0cea1e82cb18",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-axe-sheet-png",
+   "path": "paperdoll/accessories/weapon-axe-sheet.png",
+   "type": "image",
+   "bytes": 7123,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "f95fb6289699",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-bow-sheet-png",
+   "path": "paperdoll/accessories/weapon-bow-sheet.png",
+   "type": "image",
+   "bytes": 5899,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "5646474a8f0c",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-crossbow-sheet-png",
+   "path": "paperdoll/accessories/weapon-crossbow-sheet.png",
+   "type": "image",
+   "bytes": 7903,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "4cab693b341c",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-dagger-sheet-png",
+   "path": "paperdoll/accessories/weapon-dagger-sheet.png",
+   "type": "image",
+   "bytes": 4418,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "b09c843e873d",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-greatsword-sheet-png",
+   "path": "paperdoll/accessories/weapon-greatsword-sheet.png",
+   "type": "image",
+   "bytes": 7693,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "a9e56d4376fb",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-mace-sheet-png",
+   "path": "paperdoll/accessories/weapon-mace-sheet.png",
+   "type": "image",
+   "bytes": 8371,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "0f5e73ff628d",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-rapier-sheet-png",
+   "path": "paperdoll/accessories/weapon-rapier-sheet.png",
+   "type": "image",
+   "bytes": 4425,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "f090023ad5cb",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-scythe-sheet-png",
+   "path": "paperdoll/accessories/weapon-scythe-sheet.png",
+   "type": "image",
+   "bytes": 10081,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "e8f95aafeed5",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-spear-sheet-png",
+   "path": "paperdoll/accessories/weapon-spear-sheet.png",
+   "type": "image",
+   "bytes": 7020,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "4e4e43b68a77",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-staff-sheet-png",
+   "path": "paperdoll/accessories/weapon-staff-sheet.png",
+   "type": "image",
+   "bytes": 10685,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "cafac412becd",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-sword-sheet-png",
+   "path": "paperdoll/accessories/weapon-sword-sheet.png",
+   "type": "image",
+   "bytes": 5656,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "48a0b1403531",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-weapon-wand-sheet-png",
+   "path": "paperdoll/accessories/weapon-wand-sheet.png",
+   "type": "image",
+   "bytes": 3601,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "1ae55ec08b5d",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-accessories-manifest-json",
+   "path": "paperdoll/accessories/_manifest.json",
+   "type": "atlas",
+   "bytes": 4223,
+   "hash": "7d25b0680a60",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-accessory-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-animated-outfit-chain-sheet-png",
+   "path": "paperdoll/animated/outfit-chain-sheet.png",
+   "type": "image",
+   "bytes": 35573,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "ab6a1b9371ff",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-animation-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-animated-outfit-dragon-sheet-png",
+   "path": "paperdoll/animated/outfit-dragon-sheet.png",
+   "type": "image",
+   "bytes": 32524,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "e2291c474cbd",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-animation-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-animated-outfit-leather-sheet-png",
+   "path": "paperdoll/animated/outfit-leather-sheet.png",
+   "type": "image",
+   "bytes": 34911,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "c40485a41da5",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-animation-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-animated-outfit-plate-sheet-png",
+   "path": "paperdoll/animated/outfit-plate-sheet.png",
+   "type": "image",
+   "bytes": 34342,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "8f5f4aec8662",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-animation-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-animated-outfit-robe-sheet-png",
+   "path": "paperdoll/animated/outfit-robe-sheet.png",
+   "type": "image",
+   "bytes": 36674,
+   "dimensions": [
+    192,
+    384
+   ],
+   "hash": "75e4055288d1",
+   "consumers": [
+    "app/data/equipmentVisuals.ts",
+    "scripts/build-paperdoll-animation-assets.mjs"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-animated-manifest-json",
+   "path": "paperdoll/animated/_manifest.json",
+   "type": "atlas",
+   "bytes": 1243,
+   "hash": "c3d4a5cad097",
+   "consumers": [],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "unused"
+  },
+  {
+   "id": "paperdoll-outfit-chain-png",
+   "path": "paperdoll/outfit-chain.png",
+   "type": "image",
+   "bytes": 12657,
+   "dimensions": [
+    128,
+    128
+   ],
+   "hash": "c5858d458ea9",
+   "consumers": [
+    "app/data/equipmentVisuals.ts"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-outfit-dragon-png",
+   "path": "paperdoll/outfit-dragon.png",
+   "type": "image",
+   "bytes": 12257,
+   "dimensions": [
+    128,
+    128
+   ],
+   "hash": "2d113e596cbb",
+   "consumers": [
+    "app/data/equipmentVisuals.ts"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-outfit-leather-png",
+   "path": "paperdoll/outfit-leather.png",
+   "type": "image",
+   "bytes": 10438,
+   "dimensions": [
+    128,
+    128
+   ],
+   "hash": "9599417dc87a",
+   "consumers": [
+    "app/data/equipmentVisuals.ts"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-outfit-plate-png",
+   "path": "paperdoll/outfit-plate.png",
+   "type": "image",
+   "bytes": 12834,
+   "dimensions": [
+    128,
+    128
+   ],
+   "hash": "d576050599bb",
+   "consumers": [
+    "app/data/equipmentVisuals.ts"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-outfit-robe-png",
+   "path": "paperdoll/outfit-robe.png",
+   "type": "image",
+   "bytes": 11389,
+   "dimensions": [
+    128,
+    128
+   ],
+   "hash": "cc02992b8d03",
+   "consumers": [
+    "app/data/equipmentVisuals.ts"
+   ],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "used"
+  },
+  {
+   "id": "paperdoll-manifest-json",
+   "path": "paperdoll/_manifest.json",
+   "type": "atlas",
+   "bytes": 762,
+   "hash": "32c88e4acc38",
+   "consumers": [],
+   "source": "OpenAI-generated original outfit/headgear/shield/weapon sprites (2026-07-20)",
+   "license": "project",
+   "status": "unused"
+  },
+  {
    "id": "quest-icons-gem-cyan-png",
    "path": "quest-icons/gem-cyan.png",
    "type": "image",
@@ -3496,6 +4524,8 @@
    ],
    "hash": "043a4df7ebc5",
    "consumers": [
+    "app/components/game/Hud.vue",
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3615,6 +4645,7 @@
    ],
    "hash": "64f03f800a39",
    "consumers": [
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3632,6 +4663,8 @@
    ],
    "hash": "6cf310e57e8f",
    "consumers": [
+    "app/components/game/ShopModal.vue",
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3683,6 +4716,8 @@
    ],
    "hash": "5938356c3110",
    "consumers": [
+    "app/components/game/ActivitiesModal.vue",
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3717,6 +4752,8 @@
    ],
    "hash": "c4e72c3f7382",
    "consumers": [
+    "app/components/game/Hud.vue",
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3768,6 +4805,7 @@
    ],
    "hash": "1123fad6794c",
    "consumers": [
+    "app/components/game/ShopModal.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3785,7 +4823,11 @@
    ],
    "hash": "51356b187b53",
    "consumers": [
-    "app/components/game/SkillTreeModal.vue"
+    "app/components/game/ActivitiesModal.vue",
+    "app/components/game/Hud.vue",
+    "app/components/game/SkillTreeModal.vue",
+    "app/components/game/TownModal.vue",
+    "app/pages/index.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
    "license": "licensed",
@@ -3802,6 +4844,7 @@
    ],
    "hash": "5e480da888f3",
    "consumers": [
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3819,6 +4862,7 @@
    ],
    "hash": "46b1eb6f830e",
    "consumers": [
+    "app/pages/index.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3836,6 +4880,9 @@
    ],
    "hash": "1e3531dd3c5a",
    "consumers": [
+    "app/components/game/ActivitiesModal.vue",
+    "app/components/game/Hud.vue",
+    "app/components/game/TownModal.vue",
     "app/components/game/SkillTreeModal.vue"
    ],
    "source": "Kenney/Craftpix (curated)",
@@ -3894,6 +4941,23 @@
    "status": "used"
   },
   {
+   "id": "town-art-aethergate-town-png",
+   "path": "town-art/aethergate-town.png",
+   "type": "image",
+   "bytes": 4068575,
+   "dimensions": [
+    1536,
+    1024
+   ],
+   "hash": "9a58c1f92095",
+   "consumers": [
+    "app/game/scenes/TownScene.ts"
+   ],
+   "source": "user-provided",
+   "license": "project",
+   "status": "used"
+  },
+  {
    "id": "town-art-town-night-png",
    "path": "town-art/town-night.png",
    "type": "image",
@@ -3903,12 +4967,10 @@
     712
    ],
    "hash": "faf911b54733",
-   "consumers": [
-    "app/game/scenes/TownScene.ts"
-   ],
+   "consumers": [],
    "source": "user-provided",
    "license": "project",
-   "status": "used"
+   "status": "unused"
   },
   {
    "id": "ui-pack-char-frame-png",

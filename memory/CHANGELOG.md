@@ -2,6 +2,14 @@
 
 บันทึกการเปลี่ยนแปลงสำคัญของโปรเจกต์ (สรุปสั้นๆ ต่อรอบงาน ไม่ใช่ commit log ละเอียด — ดู `git log` สำหรับรายละเอียด)
 
+## 2026-07-20
+- ปรับการเดินทุกฉากเป็น locomotion เดียว: ลูกศร/WASD/จอย, เร่ง-ผ่อนความเร็ว, คลิกพื้นเพื่อเดิน,
+  A* อ้อม collision แบบ 8 ทิศ และแก้เงา/ออร่าตามตัวละครแทนค้างที่จุดเกิด
+- สร้าง interior เล่นจริง 4 ห้องจาก Aethergate mockup แบบ standalone 1:1 พร้อม collision ที่ตีน,
+  occluder y-sort, แสง practical, NPC/service/exit/minimap และเปิดช่องเดินกิลด์/โรงตีเหล็ก
+- แก้กรอบ canvas ให้เป็น positioning context ของจอยและ overlay; mobile-layout 20/20 PASS
+- หลักฐาน: 440 tests PASS, production build PASS, Town/interior browser smoke 0 runtime errors
+
 ## 2026-07-12
 - เพิ่ม `knowledge/` (manifest.json, analyzed/<year>.json, knowledge_base.json) — คลัง pattern
   ข้อสอบ O-NET ป.6 ที่สกัดมาจาก 11 ปีข้อสอบจริง (2558-2568) โดยเก็บเฉพาะ pattern (skill/grammar/

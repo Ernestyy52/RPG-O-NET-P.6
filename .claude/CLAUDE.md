@@ -38,7 +38,10 @@ Nuxt 4 ใช้ `app/` เป็น srcDir หลัก (ไม่ใช่ roo
   (ไม่รวม boss-sprites 44MB) — tiny-town/tiny-dungeon tileset, player-sprites (warrior/archer/guardian/mage),
   mob-sprites (goblin/skeleton/slime/dragon ฯลฯ)
 - มี asset pack เพิ่มเติมให้เลือกใช้ที่ `D:\Asset` ดูรายละเอียดใน `docs/asset-index.md`
-- กำแพง/บันได/เงา/อาคารเมืองยังเป็น Phaser Graphics วาดสด (ไม่มี asset จริงมาแทน)
+- กำแพง/บันได/เงาในดันเจี้ยนยังเป็น Phaser Graphics วาดสด (ไม่มี asset จริงมาแทน)
+- เมือง (TownScene) ใช้ภาพ mockup `public/town-art/aethergate-town.png` เป็นแมพทั้งเมือง
+  (มาจาก `docs/mockups/.../aethergate-town-map.png`, scale 1.5×) + slice อาคารตัดรันไทม์เพื่อ y-sort
+  + กล่องชน/interact ล่องหน — ดู `docs/map-rebuild/` (analysis, manifest, crop pipeline, screenshots)
 
 ## กติกาการทำงาน
 

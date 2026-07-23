@@ -4,60 +4,78 @@ import { fileURLToPath } from 'node:url'
 import { ALL_EQUIPMENT } from '~/data/equipment'
 import {
   getEquipmentVisual,
+  shieldFamilyForWeaponType,
   validateEquipmentVisuals,
   visualForItem,
+  weaponFamilyForType,
   WEAPON_ANCHORS,
   type Facing,
 } from '~/data/equipmentVisuals'
 
-// กติกา Phase 3: ทุก equippable item ต้องมี visual mapping หรือ hidden พร้อมเหตุผล
-// weapon ต้องเปลี่ยน sprite จริง (held-icon) และ anchor ครบ 4 ทิศ
-
 const FACINGS: Facing[] = ['down', 'left', 'right', 'up']
 
 describe('equipment visual registry', () => {
-  it('covers every equippable item with a valid mapping (validator returns no problems)', () => {
+  it('covers every equippable item with a valid mapping', () => {
     expect(validateEquipmentVisuals()).toEqual([])
     expect(ALL_EQUIPMENT.length).toBeGreaterThan(200)
   })
 
-  it('all weapons render as held-icon with an icon file that exists on disk', () => {
-    const weapons = ALL_EQUIPMENT.filter((it) => it.slot === 'weapon')
-    expect(weapons.length).toBeGreaterThan(0)
-    for (const w of weapons) {
-      const v = getEquipmentVisual(w.id)!
-      expect(v.mode, w.id).toBe('held-icon')
-      const file = fileURLToPath(new URL(`../public/${v.iconPath}`, import.meta.url))
-      expect(existsSync(file), `${w.id} → ${v.iconPath}`).toBe(true)
+  it('maps all 18 weapon types to one of 12 directional animation families', () => {
+    const weapons = ALL_EQUIPMENT.filter((item) => item.slot === 'weapon')
+    const types = new Set(weapons.map((item) => item.type))
+    const families = new Set(weapons.map((item) => weaponFamilyForType(item.type)))
+    expect(types.size).toBe(18)
+    expect(families.size).toBe(12)
+    for (const weapon of weapons) {
+      const visual = getEquipmentVisual(weapon.id)!
+      expect(visual.mode, weapon.id).toBe('animated-weapon')
+      expect(visual.animationPath, weapon.id).toContain('paperdoll/accessories/weapon-')
+      const animation = fileURLToPath(new URL(`../public/${visual.animationPath}`, import.meta.url))
+      const icon = fileURLToPath(new URL(`../public/${visual.iconPath}`, import.meta.url))
+      expect(existsSync(animation), `${weapon.id} -> ${visual.animationPath}`).toBe(true)
+      expect(existsSync(icon), `${weapon.id} -> ${visual.iconPath}`).toBe(true)
     }
   })
 
-  it('weapon anchors define position/layering/flip for all four directions', () => {
-    for (const f of FACINGS) {
-      const a = WEAPON_ANCHORS[f]
-      expect(a).toBeDefined()
-      expect(typeof a.x).toBe('number')
-      expect(typeof a.y).toBe('number')
-      expect(typeof a.front).toBe('boolean')
+  it('uses true left/right weapon frames without runtime mirroring', () => {
+    for (const facing of FACINGS) {
+      expect(WEAPON_ANCHORS[facing]).toBeDefined()
+      expect(WEAPON_ANCHORS[facing].flipX).toBe(false)
+      expect(WEAPON_ANCHORS[facing].angle).toBe(0)
     }
-    // เดินขึ้น = อาวุธอยู่หลังตัว, ทิศอื่นอยู่หน้า (depth ordering ตามทิศ)
     expect(WEAPON_ANCHORS.up.front).toBe(false)
     expect(WEAPON_ANCHORS.down.front).toBe(true)
-    // ซ้าย/ขวา ต้อง mirror กัน
-    expect(WEAPON_ANCHORS.left.flipX).not.toBe(WEAPON_ANCHORS.right.flipX)
-    expect(WEAPON_ANCHORS.left.x).toBe(-WEAPON_ANCHORS.right.x)
   })
 
-  it('armor/trinket map to aura with an explicit hidden reason (no fake overlay)', () => {
-    for (const it_ of ALL_EQUIPMENT.filter((i) => i.slot !== 'weapon')) {
-      const v = getEquipmentVisual(it_.id)!
-      expect(v.mode, it_.id).toBe('aura')
-      expect(v.auraColor, it_.id).toBeTruthy()
-      expect(v.hiddenReason, it_.id).toBeTruthy()
+  it('adds a matching animated head layer to every armor family', () => {
+    for (const item of ALL_EQUIPMENT.filter((candidate) => candidate.slot === 'armor')) {
+      const visual = getEquipmentVisual(item.id)!
+      expect(visual.mode, item.id).toBe('outfit')
+      expect(visual.outfitFamily, item.id).toBeTruthy()
+      expect(visual.animationPath, item.id).toContain('paperdoll/animated/')
+      expect(visual.headAnimationPath, item.id).toContain('paperdoll/accessories/head-')
+      const head = fileURLToPath(new URL(`../public/${visual.headAnimationPath}`, import.meta.url))
+      expect(existsSync(head), `${item.id} -> ${visual.headAnimationPath}`).toBe(true)
     }
   })
 
-  it('visualForItem is deterministic and stable per item id', () => {
+  it('shows generated shields for compatible one-handed weapons', () => {
+    expect(shieldFamilyForWeaponType('dagger')).toBe('round')
+    expect(shieldFamilyForWeaponType('sword')).toBe('kite')
+    expect(shieldFamilyForWeaponType('wand')).toBe('arcane')
+    expect(shieldFamilyForWeaponType('greatsword')).toBeUndefined()
+    for (const family of ['round', 'kite', 'arcane']) {
+      const file = fileURLToPath(new URL(`../public/paperdoll/accessories/shield-${family}-sheet.png`, import.meta.url))
+      expect(existsSync(file), family).toBe(true)
+    }
+  })
+
+  it('keeps trinkets visible and the mapping deterministic', () => {
+    for (const item of ALL_EQUIPMENT.filter((candidate) => candidate.slot === 'trinket')) {
+      const visual = getEquipmentVisual(item.id)!
+      expect(visual.mode, item.id).toBe('charm')
+      expect(visual.iconPath).toContain('item-icons/')
+    }
     const sample = ALL_EQUIPMENT[0]!
     expect(visualForItem(sample)).toEqual(visualForItem(sample))
     expect(getEquipmentVisual('no_such_item')).toBeUndefined()

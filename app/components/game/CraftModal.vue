@@ -1,6 +1,6 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
-    <div class="pixel-window w-full max-w-2xl">
+  <div v-if="open" class="modal-backdrop">
+    <div class="pixel-window anime-window w-full max-w-2xl">
       <div class="pixel-titlebar">
         <h2 class="gold-text text-lg font-bold">Blacksmith · Crafting</h2>
         <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>

@@ -1,8 +1,8 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
-    <div class="pixel-window w-full max-w-lg">
+  <div v-if="open" class="modal-backdrop">
+    <div class="pixel-window anime-window w-full max-w-lg">
       <div class="pixel-titlebar">
-        <h2 class="gold-text text-lg font-bold">Quests — Floor {{ player.currentFloor }}</h2>
+        <h2 class="gold-text text-lg font-bold">Adventure Journal · {{ currentRegion.name }}</h2>
         <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
       </div>
       <div class="pixel-window-body space-y-3 p-4">
@@ -43,9 +43,8 @@
                 <div class="mt-0.5 h-1.5 overflow-hidden rounded bg-black/40"><div class="h-full bg-emerald-500 transition-all" :style="{ width: `${Math.round((s.progress / s.target) * 100)}%` }" /></div>
                 <div class="mt-0.5 text-[10px] opacity-70">{{ Math.min(s.progress, s.target) }}/{{ s.target }} · <span class="gold-text">{{ s.quest.reward.gold }}g</span> · {{ s.quest.reward.exp }} EXP<span v-if="s.quest.reward.gems" class="text-cyan-200"> · {{ s.quest.reward.gems }}💎</span></div>
               </div>
-              <button class="btn-primary btn-sm" :disabled="!s.done || s.claimed" @click="player.claimSideQuest(s.quest.id)">
-                {{ s.claimed ? 'Claimed' : s.done ? 'Claim' : 'Active' }}
-              </button>
+              <span class="quest-state" :class="{ 'quest-state-done': s.claimed }">{{ s.claimed ? 'CLAIMED' : !s.accepted ? `MEET ${s.npcName}` : s.done ? `RETURN TO ${s.npcName}` : 'ACTIVE' }}</span>
+              <small v-if="!s.accepted || (s.done && !s.claimed)" class="text-[9px] text-amber-200">{{ !s.accepted ? 'เดินไปพบ NPC เพื่อรับเควส' : 'เดินกลับไปพบ NPC เพื่อรับรางวัล' }}</small>
             </div>
           </div>
         </div>
@@ -73,7 +72,7 @@
             <span>⭐ {{ bossReward.expReward }} EXP</span>
             <span class="gold-text">🪙 {{ bossReward.goldReward }} Gold</span>
             <span class="text-cyan-200">💎 {{ isMilestone ? 3 : 1 }} Gems</span>
-            <span>🚪 Advance to Floor {{ player.currentFloor + 1 }}</span>
+            <span>🚪 Unlock Adventure Rank {{ player.currentFloor + 1 }}</span>
           </div>
         </div>
       </div>
@@ -85,6 +84,7 @@
 import { computed } from 'vue'
 import { getBossRequirement } from '~/data/bossRequirements'
 import { getBossStats } from '~/data/floors'
+import { regionForFloor } from '~/data/adventureRegions'
 import { WORLD1_MAIN_QUEST } from '~/data/world1/quests'
 import { getTownNpc } from '~/data/world1/npcs'
 import { usePlayerStore } from '~/stores/player'
@@ -93,6 +93,7 @@ defineProps<{ open: boolean }>()
 defineEmits<{ (e: 'close'): void }>()
 
 const player = usePlayerStore()
+const currentRegion = computed(() => regionForFloor(player.currentFloor))
 
 // World-1 main quest tracker (Inc 4)
 const mainStep = computed(() => player.mainQuestStep)
@@ -103,7 +104,7 @@ const mainSteps = computed(() => WORLD1_MAIN_QUEST.map((s, i) => ({
   done: player.mainQuest.step > i,
   active: player.mainQuest.step === i,
 })))
-const sideQuests = computed(() => player.sideQuests)
+const sideQuests = computed(() => player.sideQuests.map((entry) => ({ ...entry, npcName: getTownNpc(entry.quest.npc)?.name ?? 'NPC' })))
 const giverName = computed(() => {
   const g = player.mainQuestStep?.giver
   const npc = g ? getTownNpc(g) : undefined

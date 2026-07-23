@@ -1,6 +1,6 @@
 ﻿<template>
-  <div v-if="active" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3">
-    <div class="pixel-window w-full max-w-3xl">
+  <div v-if="active" class="modal-backdrop">
+    <div class="pixel-window anime-window w-full max-w-3xl">
       <div class="pixel-titlebar gap-3">
         <div>
           <h2 class="gold-text text-lg font-bold">Floor {{ floor }} {{ isBossFight ? 'Boss' : 'Battle' }}</h2>
@@ -66,7 +66,7 @@
           </div>
           <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < SUPPORT_MP" @click="support">Support <span class="opacity-70">{{ SUPPORT_MP }}MP</span></button>
-            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || !hasPotion" @click="usePotion">Item</button>
+            <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || !hasPotion" :title="enc.noPotion ? 'Dry Run modifier: potions disabled' : ''" @click="usePotion">{{ enc.noPotion ? 'Item Sealed' : 'Item' }}</button>
             <button class="btn-primary text-xs" :disabled="locked || turn !== 'Hero' || player.mp < COUNTER_MP || insight < 1" @click="counter">Counter <span class="opacity-70">{{ COUNTER_MP }}MP ✦1</span></button>
             <button class="btn-secondary text-xs" :disabled="locked || isBossFight" @click="escape">Escape</button>
           </div>
@@ -81,6 +81,7 @@ import { computed, onUnmounted, reactive, ref } from 'vue'
 import { gameEvents, type BattleOutcome } from '~/game/systems/eventBus'
 import { getFloorConfig, getQuestionDifficulty } from '~/data/floors'
 import { cefrForFloor, getQuestionsForDifficulty, type Question } from '~/data/questions'
+import { selectMonsterQuestion } from '~/data/monsterKnowledge'
 import { getWorldState, isWorld1Floor } from '~/data/world'
 import { rollLoot } from '~/data/loot'
 import {
@@ -109,7 +110,7 @@ const cefr = computed(() => cefrForFloor(floor.value))
 const world = computed(() => getWorldState())
 const question = reactive<Question>({ id: '', category: 'vocabulary', cefr: 'Pre-A1', difficulty: 1, prompt: '', choices: [], answerIndex: 0 })
 const monster = reactive({ name: 'Slime', hp: 30, maxHp: 30, atk: 4, speed: 4, sprite: assetPath('mob-sprites/mca/slime.png') })
-const enc = reactive<{ isBoss: boolean; expReward: number; goldReward: number }>({ isBoss: false, expReward: 0, goldReward: 0 })
+const enc = reactive<{ isBoss: boolean; expReward: number; goldReward: number; monsterId?: string; elite: boolean; rare: boolean; noPotion: boolean }>({ isBoss: false, expReward: 0, goldReward: 0, elite: false, rare: false, noPotion: false })
 const isBossFight = computed(() => enc.isBoss)
 // คอมโบ: ตอบถูกติดกันดาเมจแรงขึ้น +15%/สแตค (สูงสุด +60%) ตอบผิด = รีเซ็ต — สูตรอยู่ใน combat domain
 const combo = ref(0)
@@ -143,7 +144,7 @@ function pulse(flag: typeof monsterHit) {
 }
 const playerHpPct = computed(() => Math.max(0, Math.round((player.hp / player.maxHp) * 100)))
 const monsterHpPct = computed(() => Math.max(0, Math.round((monster.hp / monster.maxHp) * 100)))
-const hasPotion = computed(() => (player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0)
+const hasPotion = computed(() => !enc.noPotion && ((player.inventory.potion_s ?? 0) > 0 || (player.inventory.potion_m ?? 0) > 0))
 
 function assetPath(path?: string) {
   if (!path) return ''
@@ -152,12 +153,19 @@ function assetPath(path?: string) {
   return `${base}${cleanPath}`
 }
 function loadQuestion() {
-  // Flip: เลือกข้อโดยถ่วงน้ำหนักไปทาง subskill ที่ยังอ่อน/ถึงรอบทบทวน (weak-recur) — flag off = bag เดิม
-  const q = MASTERY_BATTLE_SELECTION_ENABLED
+  const monsterPick = selectMonsterQuestion({
+    monsterId: enc.monsterId,
+    isBoss: enc.isBoss,
+    floor: floor.value,
+    difficulty: getQuestionDifficulty(floor.value),
+    seenIds: player.monsterQuestionHistory[enc.monsterId || 'unknown-monster'] ?? [],
+  })
+  const masteryPick = MASTERY_BATTLE_SELECTION_ENABLED
     ? drawBattleQuestion(CURRICULUM_QUESTIONS, floor.value, getQuestionDifficulty(floor.value), learning.mastery)
     : null
-  const picked = q ?? getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)[0]
-  // เคลียร์ field เสริมก่อน assign กัน explanation/distractorReasoning ข้อเก่าค้างเมื่อข้อใหม่ไม่มี
+  const picked = monsterPick?.question ?? masteryPick ?? getQuestionsForDifficulty(getQuestionDifficulty(floor.value), 1, floor.value)[0]
+  if (!picked) return
+  if (monsterPick) player.recordMonsterQuestion(enc.monsterId, picked.id, monsterPick.exhaustedCycle)
   Object.assign(question, { explanation: undefined, distractorReasoning: undefined, subskillId: undefined, patternId: undefined }, picked)
 }
 
@@ -167,6 +175,10 @@ function setupMonster(payload: import('~/game/systems/eventBus').EncounterInfo) 
   enc.isBoss = setup.isBoss
   enc.expReward = setup.expReward
   enc.goldReward = setup.goldReward
+  enc.monsterId = payload.monsterId
+  enc.elite = !!payload.elite
+  enc.rare = !!payload.rare
+  enc.noPotion = !!payload.riftModifiers?.includes('no-potion')
   monster.name = setup.name
   monster.maxHp = setup.maxHp
   monster.hp = setup.maxHp
@@ -195,13 +207,18 @@ const onBattleStart = (payload: import('~/game/systems/eventBus').EncounterInfo)
   log.value = turn.value === 'Hero' ? 'Your speed wins initiative. Answer correctly to attack.' : 'The monster is faster.'
   if (turn.value === 'Monster') setTimeout(monsterAttack, 700)
 }
+const onBattleAbort = () => { active.value = false; locked.value = false; feedback.visible = false }
 gameEvents.on('battle:start', onBattleStart)
+gameEvents.on('battle:abort', onBattleAbort)
 // P0.9: ปลด listener เมื่อ component ถูกถอด
-onUnmounted(() => gameEvents.off('battle:start', onBattleStart))
+onUnmounted(() => {
+  gameEvents.off('battle:start', onBattleStart)
+  gameEvents.off('battle:abort', onBattleAbort)
+})
 
 function finish(outcome: BattleOutcome) {
   active.value = false
-  gameEvents.emit('battle:end', { outcome, won: outcome === 'victory', isBoss: enc.isBoss })
+  gameEvents.emit('battle:end', { outcome, won: outcome === 'victory', isBoss: enc.isBoss, monsterId: enc.monsterId, elite: enc.elite, rare: enc.rare, expReward: enc.expReward })
 }
 
 // ดาเมจฮีโร่มาจาก combat domain (single source). flag COMBAT_DOMAIN_ENABLED สลับไปใช้ engine resolver
@@ -237,6 +254,7 @@ function answer(index: number) {
     insight.value = Math.min(5, insight.value + 1) // ตอบถูก = ได้ Insight (ใช้จ่ายกับ Counter)
     const damage = heroHit('attack')
     pulse(monsterHit)
+    gameEvents.emit('audio:sfx', { key: 'attack' })
     log.value = combo.value >= 2
       ? `Correct! Combo x${combo.value} — you attack for ${damage} damage.`
       : `Correct. You attack for ${damage} damage.`
@@ -266,6 +284,7 @@ function support() {
 }
 
 function usePotion() {
+  if (enc.noPotion) { log.value = 'Dry Run: potions are sealed inside this Rift.'; return }
   locked.value = true
   const item = (player.inventory.potion_m ?? 0) > 0 ? 'potion_m' : 'potion_s'
   player.useConsumable(item)
@@ -299,6 +318,7 @@ function escape() {
 }
 
 function monsterAttack(multiplier = 1) {
+  if (!active.value) return
   feedback.visible = false
   feedback.chosen = -1
   const spec = MONSTER_INTENTS_ENABLED ? MONSTER_INTENTS[intent.value] : null
@@ -318,6 +338,7 @@ function monsterAttack(multiplier = 1) {
     : monsterDamage(monster.atk, multiplier * intentMult)
   player.takeDamage(damage)
   pulse(playerHit)
+  gameEvents.emit('audio:sfx', { key: 'hit' })
   if (player.hp <= 0) {
     player.addLog(`Knocked out by ${monster.name} on Floor ${floor.value}.`)
     return finish('defeat')
@@ -335,7 +356,13 @@ function monsterAttack(multiplier = 1) {
 function winBattle() {
   // บอสดรอปเพชร: บอสธรรมดา 1 เม็ด / world boss (ทุก 10 ชั้น) 3 เม็ด — สูตรใน combat domain
   const gems = gemsForEncounter(enc.isBoss, config.value.isMilestone)
-  const drops = rollLoot(floor.value, enc.isBoss)
+  const ownedItemIds = [...Object.entries(player.inventory).filter(([, qty]) => qty > 0).map(([id]) => id), ...Object.values(player.equipment).filter((id): id is string => !!id)]
+  const drops = rollLoot(floor.value, enc.isBoss, {
+    monsterId: enc.monsterId, elite: enc.elite, rare: enc.rare,
+    setPityCount: enc.monsterId ? player.setDropPity[enc.monsterId] ?? 0 : 0,
+    ownedItemIds,
+  })
+  const pityDrop = drops.find((drop) => drop.guaranteed)
   const reward = buildRewardRequest({
     encounterId: encounterId.value,
     exp: enc.expReward,
@@ -349,6 +376,11 @@ function winBattle() {
     player.recordDefeat()
     for (const drop of reward.loot) player.addItem(drop.itemId, drop.qty)
   }
+  gameEvents.emit('audio:sfx', { key: 'victory' })
+  if (reward.loot.some((drop) => drop.itemId.startsWith('set_')) || enc.rare) {
+    setTimeout(() => gameEvents.emit('audio:sfx', { key: 'rare_drop' }), 220)
+  }
+  if (pityDrop) player.addLog(`Pity guarantee activated: ${pityDrop.name}.`)
   const dropText = reward.loot.length ? ` Dropped: ${reward.loot.map((d) => `${d.name} x${d.qty}`).join(', ')}.` : ''
   const gemText = reward.gems ? ` +${reward.gems} Gems.` : ''
   log.value = `Victory. +${reward.exp} EXP, +${reward.gold} gold.${gemText}${dropText}`
