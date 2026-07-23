@@ -1,13 +1,10 @@
 <template>
-  <div class="ornate-hud mb-3">
+  <div class="ornate-hud mb-3 max-[560px]:mb-2">
     <!-- แถวบน: แผงตัวละคร (ซ้าย) / แถบชื่อเกม (กลาง) / แผงระบบ (ขวา) — จัดวางตามภาพ mockup -->
     <div class="hud-top">
       <section class="glass-panel char-panel">
         <div class="char-head">
-          <div class="char-avatar-frame" :style="{ borderColor: player.gearAuraColor, boxShadow: `0 0 0 1px #050302, 0 0 10px ${player.gearAuraColor}55, inset 0 0 10px rgba(0,0,0,0.6)` }">
-            <img :src="avatar" class="char-avatar pixelated" alt="hero" @error="onImgError">
-            <img v-if="weaponIcon" :src="weaponIcon" class="char-weapon" alt="weapon" @error="onImgError">
-          </div>
+          <GameGearPaperdoll compact />
           <div class="char-id">
             <div class="char-name gold-text">{{ player.displayName }}</div>
             <div class="char-sub">Lv. {{ player.level }} · {{ player.heroClass.name }}</div>
@@ -19,9 +16,9 @@
           <GameStatBar variant="exp" label="EXP" :value="player.exp" :max="player.expNeeded" />
         </div>
         <div class="char-stats">
-          <div class="char-stat"><span class="char-stat-key">⚔ ATK</span><span class="char-stat-val">{{ player.atk }}</span></div>
-          <div class="char-stat"><span class="char-stat-key">🛡 DEF</span><span class="char-stat-val">{{ player.def }}</span></div>
-          <div class="char-stat"><span class="char-stat-key">✦ SPD</span><span class="char-stat-val">{{ player.speed }}</span></div>
+          <div class="char-stat"><span class="char-stat-key"><b>V</b> ATK</span><span class="char-stat-val">{{ player.atk }}</span></div>
+          <div class="char-stat"><span class="char-stat-key"><b>A</b> DEF</span><span class="char-stat-val">{{ player.def }}</span></div>
+          <div class="char-stat"><span class="char-stat-key"><b>S</b> SPD</span><span class="char-stat-val">{{ player.speed }}</span></div>
         </div>
       </section>
 
@@ -56,10 +53,10 @@
 
       <section class="glass-panel sys-panel">
         <div class="sys-icons">
-          <button class="icon-btn" title="Settings" aria-label="Settings" @click="$emit('open-system', 'settings')">⚙</button>
-          <button class="icon-btn" title="Leaderboard" aria-label="Leaderboard" @click="$emit('open-system', 'leaderboard')">🏆</button>
-          <button class="icon-btn" title="How to Play" aria-label="How to Play" @click="$emit('open-system', 'guide')">📖</button>
-          <button class="icon-btn" title="News" aria-label="News" @click="$emit('open-system', 'news')">✉</button>
+          <button class="icon-btn" title="Settings" aria-label="Settings" @click="$emit('open-system', 'settings')"><img :src="assetUrl('skill-icons/ward.png')" alt=""></button>
+          <button class="icon-btn" title="Leaderboard" aria-label="Leaderboard" @click="$emit('open-system', 'leaderboard')"><img :src="assetUrl('skill-icons/swords.png')" alt=""></button>
+          <button class="icon-btn" title="How to Play" aria-label="How to Play" @click="$emit('open-system', 'guide')"><img :src="assetUrl('skill-icons/book.png')" alt=""></button>
+          <button class="icon-btn" title="News" aria-label="News" @click="$emit('open-system', 'news')"><img :src="assetUrl('skill-icons/scroll.png')" alt=""></button>
         </div>
         <div class="sys-title">Character</div>
         <div class="sys-line">Base: {{ player.gender }} / {{ player.heroClass.name }}</div>
@@ -77,7 +74,7 @@
 import { computed } from 'vue'
 import { GAME_TAGLINE, GAME_TITLE_EN, GAME_TITLE_TH } from '~/data/branding'
 import { getWorldState } from '~/data/world'
-import { getItemById, itemIconPath } from '~/data/equipment'
+import { getItemById } from '~/data/equipment'
 import { usePlayerStore } from '~/stores/player'
 
 const props = defineProps<{ avatar: string }>()
@@ -101,12 +98,10 @@ const equippedSummary = computed(() => {
   return names.length ? names.join(', ') : 'starter gear'
 })
 
-const weaponIcon = computed(() => {
-  const w = player.equippedWeapon
-  if (!w) return ''
+function assetUrl(path: string) {
   const base = config.app.baseURL.endsWith('/') ? config.app.baseURL : `${config.app.baseURL}/`
-  return `${base}${itemIconPath(w.id).replace(/^\/+/, '')}`
-})
+  return `${base}${path.replace(/^\/+/, '') }`
+}
 
 function onImgError(event: Event) { (event.target as HTMLImageElement).style.visibility = 'hidden' }
 </script>
@@ -195,6 +190,7 @@ function onImgError(event: Event) { (event.target as HTMLImageElement).style.vis
   background: rgba(0, 0, 0, 0.32);
 }
 .char-stat-key { font-size: 9px; color: #cdb27a; letter-spacing: 0.04em; }
+.char-stat-key b { display: inline-grid; place-items: center; width: 14px; height: 14px; margin-right: 2px; border: 1px solid #8a6a2f; border-radius: 50%; color: #f2c14e; font-family: Cinzel, serif; font-size: 7px; }
 .char-stat-val { font-size: 13px; font-weight: 800; color: #f2c14e; text-shadow: 0 1px 0 #5c3a10; }
 
 /* --- แถบชื่อเกม กลางบน --- */
@@ -278,6 +274,7 @@ function onImgError(event: Event) { (event.target as HTMLImageElement).style.vis
   gap: 6px;
   margin-bottom: 4px;
 }
+.sys-icons img { width: 18px; height: 18px; object-fit: contain; }
 .sys-title {
   font-size: 12px;
   font-weight: 800;
@@ -306,7 +303,22 @@ function onImgError(event: Event) { (event.target as HTMLImageElement).style.vis
   .hud-top { grid-template-columns: 1fr 1fr; }
   .hud-banner { grid-column: 1 / -1; order: -1; }
 }
+/* มือถือแนวตั้ง (MAP_SCALE_DECISION S0 ปัญหา #1): HUD ต้องเหลือแถบบางๆ — จอส่วนใหญ่เป็นของ canvas
+   ชื่อเกมเต็มมีบนหน้า title อยู่แล้ว; ATK/DEF/SPD ดูได้ใน Status modal (ปุ่ม Status ยังอยู่);
+   ปุ่มทุกปุ่ม (ไอคอนระบบ + Recreate/Reset) ยังมองเห็น-กดได้ — ห้ามมี hidden interaction */
 @media (max-width: 560px) {
-  .hud-top { grid-template-columns: 1fr; }
+  .hud-top { grid-template-columns: 1fr; gap: 6px; }
+  .hud-banner { display: none; }
+  .char-panel { flex-direction: row; align-items: center; gap: 8px; padding: 6px 8px; }
+  .char-head { flex-shrink: 0; gap: 8px; }
+  .char-avatar-frame { width: 40px; height: 40px; }
+  .char-avatar { width: 34px; height: 34px; }
+  .char-weapon { width: 18px; height: 18px; }
+  .char-bars { flex: 1; min-width: 0; gap: 2px; }
+  .char-stats { display: none; }
+  .sys-panel { flex-direction: row; align-items: center; gap: 8px; padding: 6px 8px; }
+  .sys-icons { margin-bottom: 0; }
+  .sys-title, .sys-line { display: none; }
+  .sys-actions { margin-top: 0; margin-left: auto; padding-top: 0; }
 }
 </style>

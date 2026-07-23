@@ -13,6 +13,14 @@ export interface Question {
   prompt: string
   choices: string[]
   answerIndex: number
+  /** คำอธิบายเฉลย (ไทย, เหมาะกับ ป.6) — แสดงหลังตอบเพื่อให้ทุกข้อเป็นการเรียนรู้ */
+  explanation?: string
+  /** เหตุผลว่าทำไมตัวเลือกผิดแต่ละข้อจึงผิด (key = choice index) */
+  distractorReasoning?: Record<string, string>
+  /** taxonomy subskill id (app/data/curriculum/taxonomy.ts) — ระบุชัดเมื่อรู้แน่ */
+  subskillId?: string
+  /** knowledge/ pattern id สำหรับข้อที่ generate จาก pattern (provenance) */
+  patternId?: string
 }
 
 export const QUESTIONS: Question[] = questionsData as Question[]

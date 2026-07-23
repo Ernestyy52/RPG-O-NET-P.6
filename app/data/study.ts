@@ -208,7 +208,7 @@ export const STUDY_LESSONS: StudyLesson[] = [
   },
   // ---------- STRATEGY (question_type_catalog + answer_logic + distractor) ----------
   {
-    id: 's_reading', category: 'strategy', title: 'Reading Passages', titleTh: 'กลยุทธ์อ่านเรื่อง', cefr: 'A2',
+    id: 's_reading', category: 'reading', title: 'Reading Passages', titleTh: 'กลยุทธ์อ่านเรื่อง', cefr: 'A2',
     summary: 'ข้อสอบอ่านมักต้อง "รวม 2 เบาะแส" (เช่น การกระทำ + เวลา) ไม่ใช่หาคำตรงๆ',
     points: [
       'อ่านคำถามก่อน แล้วค่อยกวาดหาข้อมูลในเรื่อง',

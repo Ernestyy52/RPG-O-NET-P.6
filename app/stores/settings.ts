@@ -4,6 +4,8 @@ import { defineStore } from 'pinia'
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
     sound: true,
+    musicVolume: 0.7,
+    sfxVolume: 0.8,
     reducedMotion: false,
     language: 'en' as 'en' | 'th',
   }),

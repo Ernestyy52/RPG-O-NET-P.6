@@ -1,3 +1,8 @@
+import { SET_EQUIPMENT, SET_ITEM_IDS } from './equipmentSets'
+import { OCCUPATION_EQUIPMENT } from './occupations'
+import type { HeroClassId } from './classes'
+import type { JobId } from './combat/skillDefs'
+
 // ================================================================================================
 // Item & weapon catalog (200+) + crafting system
 //
@@ -28,7 +33,11 @@ export interface EquipmentItem {
   stats: StatBlock
   icon: string            // ไอคอน PNG ที่ใช้ร่วม (weapon_t1.. / armor_t1.. / trinket_t1..)
   visual: string
-  craftable?: boolean     // true = คราฟเท่านั้น (ไม่มีขายในร้าน) ต้องใช้วัสดุ
+  craftable?: boolean
+  setId?: string          // farmable collection; bonuses activate at 2/3 equipped pieces
+  dropOnly?: boolean      // never sold or auto-crafted
+  classId?: HeroClassId   // signature gear restriction
+  advancedJobId?: JobId   // optional advanced-job restriction
 }
 
 export interface ConsumableItem {
@@ -166,7 +175,7 @@ function buildCatalog(): EquipmentItem[] {
   return items
 }
 
-export const ALL_EQUIPMENT: EquipmentItem[] = buildCatalog()
+export const ALL_EQUIPMENT: EquipmentItem[] = [...buildCatalog(), ...SET_EQUIPMENT, ...OCCUPATION_EQUIPMENT]
 
 // ---- consumables ----
 export const CONSUMABLES: ConsumableItem[] = [
@@ -250,7 +259,7 @@ export function rarityColor(rarity: Rarity): string { return RARITIES[rarity].co
 export function shopInventoryForFloor(floor: number): InventoryItem[] {
   const tier = equipmentTierForFloor(floor)
   const equip = ALL_EQUIPMENT.filter((it) =>
-    !it.craftable && it.minFloor <= floor && it.tier >= tier - 1 && it.tier <= tier)
+    !it.craftable && !it.dropOnly && !SET_ITEM_IDS.has(it.id) && it.minFloor <= floor && it.tier >= tier - 1 && it.tier <= tier)
   const consumables = CONSUMABLES.filter((it) => it.minFloor <= floor)
   return [...equip, ...consumables]
 }

@@ -1,11 +1,54 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
-    <div class="pixel-window w-full max-w-lg">
+  <div v-if="open" class="modal-backdrop">
+    <div class="pixel-window anime-window w-full max-w-lg">
       <div class="pixel-titlebar">
-        <h2 class="gold-text text-lg font-bold">Quests — Floor {{ player.currentFloor }}</h2>
+        <h2 class="gold-text text-lg font-bold">Adventure Journal · {{ currentRegion.name }}</h2>
         <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
       </div>
       <div class="pixel-window-body space-y-3 p-4">
+        <!-- World-1 main quest (Inc 4) -->
+        <div class="glass-panel p-3">
+          <div class="mb-1 flex items-center justify-between">
+            <h3 class="gold-text text-sm font-bold">Main Quest — The Verdant Slimes</h3>
+            <span class="quest-state" :class="mainQuestDone ? 'quest-state-done' : ''">{{ mainQuestDone ? 'COMPLETE' : `STEP ${player.mainQuest.step + 1}/${mainSteps.length}` }}</span>
+          </div>
+          <template v-if="mainStep">
+            <p class="text-sm font-bold text-[#f2c14e]">{{ mainStep.title }} <span class="text-[11px] font-normal opacity-70">{{ mainStep.titleTh }}</span></p>
+            <p v-if="giverName" class="text-[11px] text-[#cdb27a]">Given by {{ giverName }}</p>
+            <p class="mb-2 text-xs opacity-80">{{ mainStep.summary }}</p>
+            <div v-if="mainProgress.target > 1" class="mb-2">
+              <div class="h-2 overflow-hidden rounded bg-black/40"><div class="h-full bg-amber-500 transition-all" :style="{ width: `${Math.round((mainProgress.current / mainProgress.target) * 100)}%` }" /></div>
+              <div class="mt-0.5 text-[10px] opacity-70">{{ mainProgress.current }}/{{ mainProgress.target }}</div>
+            </div>
+          </template>
+          <p v-else class="text-xs text-emerald-300">You have freed the forest from the Myco Colossus. The Verdant Slimes rest at last.</p>
+          <details class="mt-1">
+            <summary class="cursor-pointer text-[11px] text-[#cdb27a]">Quest log</summary>
+            <ul class="mt-1 space-y-1 text-[11px]">
+              <li v-for="s in mainSteps" :key="s.id" class="flex items-center gap-2" :class="{ 'opacity-50': !s.done && !s.active }">
+                <span class="quest-check" :class="{ 'quest-check-done': s.done }">{{ s.done ? '✓' : s.active ? '➤' : '•' }}</span>
+                <span :class="{ 'font-bold text-[#f2c14e]': s.active }">{{ s.title }}</span>
+              </li>
+            </ul>
+          </details>
+        </div>
+
+        <!-- Side quests (Inc 4) -->
+        <div v-if="sideQuests.length" class="glass-panel p-3">
+          <h3 class="gold-text mb-2 text-sm font-bold">Side Quests</h3>
+          <div class="space-y-2">
+            <div v-for="s in sideQuests" :key="s.quest.id" class="flex items-center gap-3" :class="{ 'opacity-55': s.claimed }">
+              <div class="flex-1">
+                <div class="text-xs font-bold">{{ s.quest.title }} <span class="text-[10px] font-normal uppercase tracking-wide text-[#cdb27a]">{{ s.quest.kind }}</span></div>
+                <div class="mt-0.5 h-1.5 overflow-hidden rounded bg-black/40"><div class="h-full bg-emerald-500 transition-all" :style="{ width: `${Math.round((s.progress / s.target) * 100)}%` }" /></div>
+                <div class="mt-0.5 text-[10px] opacity-70">{{ Math.min(s.progress, s.target) }}/{{ s.target }} · <span class="gold-text">{{ s.quest.reward.gold }}g</span> · {{ s.quest.reward.exp }} EXP<span v-if="s.quest.reward.gems" class="text-cyan-200"> · {{ s.quest.reward.gems }}💎</span></div>
+              </div>
+              <span class="quest-state" :class="{ 'quest-state-done': s.claimed }">{{ s.claimed ? 'CLAIMED' : !s.accepted ? `MEET ${s.npcName}` : s.done ? `RETURN TO ${s.npcName}` : 'ACTIVE' }}</span>
+              <small v-if="!s.accepted || (s.done && !s.claimed)" class="text-[9px] text-amber-200">{{ !s.accepted ? 'เดินไปพบ NPC เพื่อรับเควส' : 'เดินกลับไปพบ NPC เพื่อรับรางวัล' }}</small>
+            </div>
+          </div>
+        </div>
+
         <div class="glass-panel p-3">
           <div class="mb-1 flex items-center justify-between">
             <h3 class="gold-text text-sm font-bold">{{ isMilestone ? 'World Boss Gate' : 'Boss Room Gate' }}</h3>
@@ -29,7 +72,7 @@
             <span>⭐ {{ bossReward.expReward }} EXP</span>
             <span class="gold-text">🪙 {{ bossReward.goldReward }} Gold</span>
             <span class="text-cyan-200">💎 {{ isMilestone ? 3 : 1 }} Gems</span>
-            <span>🚪 Advance to Floor {{ player.currentFloor + 1 }}</span>
+            <span>🚪 Unlock Adventure Rank {{ player.currentFloor + 1 }}</span>
           </div>
         </div>
       </div>
@@ -41,12 +84,32 @@
 import { computed } from 'vue'
 import { getBossRequirement } from '~/data/bossRequirements'
 import { getBossStats } from '~/data/floors'
+import { regionForFloor } from '~/data/adventureRegions'
+import { WORLD1_MAIN_QUEST } from '~/data/world1/quests'
+import { getTownNpc } from '~/data/world1/npcs'
 import { usePlayerStore } from '~/stores/player'
 
 defineProps<{ open: boolean }>()
 defineEmits<{ (e: 'close'): void }>()
 
 const player = usePlayerStore()
+const currentRegion = computed(() => regionForFloor(player.currentFloor))
+
+// World-1 main quest tracker (Inc 4)
+const mainStep = computed(() => player.mainQuestStep)
+const mainProgress = computed(() => player.mainQuestProgress)
+const mainQuestDone = computed(() => player.mainQuest.step >= WORLD1_MAIN_QUEST.length)
+const mainSteps = computed(() => WORLD1_MAIN_QUEST.map((s, i) => ({
+  id: s.id, title: s.title, titleTh: s.titleTh,
+  done: player.mainQuest.step > i,
+  active: player.mainQuest.step === i,
+})))
+const sideQuests = computed(() => player.sideQuests.map((entry) => ({ ...entry, npcName: getTownNpc(entry.quest.npc)?.name ?? 'NPC' })))
+const giverName = computed(() => {
+  const g = player.mainQuestStep?.giver
+  const npc = g ? getTownNpc(g) : undefined
+  return npc ? `${npc.name}, the ${npc.title}` : ''
+})
 const requirement = computed(() => getBossRequirement(player.currentFloor))
 const bossReward = computed(() => getBossStats(player.currentFloor))
 const isMilestone = computed(() => player.currentFloor % 10 === 0)

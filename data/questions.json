@@ -1,75 +1,3233 @@
 [
-  { "id": "v001", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 1, "prompt": "Choose the word that means school.", "choices": ["Hospital", "School", "Market", "Airport"], "answerIndex": 1 },
-  { "id": "v002", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 1, "prompt": "What is the opposite of big?", "choices": ["Small", "Tall", "Long", "Fast"], "answerIndex": 0 },
-  { "id": "c001", "category": "conversation", "cefr": "Pre-A1", "difficulty": 1, "prompt": "A: How are you? B: ______", "choices": ["I am ten.", "I am fine, thank you.", "It is Monday.", "Yes, I do."], "answerIndex": 1 },
-  { "id": "g001", "category": "grammar", "cefr": "A1", "difficulty": 1, "prompt": "She ______ to school every day.", "choices": ["go", "goes", "going", "gone"], "answerIndex": 1 },
-  { "id": "v003", "category": "vocabulary", "cefr": "A1", "difficulty": 2, "prompt": "A person who teaches students is a ______.", "choices": ["doctor", "teacher", "farmer", "driver"], "answerIndex": 1 },
-  { "id": "g002", "category": "grammar", "cefr": "A1", "difficulty": 2, "prompt": "There ______ two cats under the table.", "choices": ["is", "are", "am", "be"], "answerIndex": 1 },
-  { "id": "c002", "category": "conversation", "cefr": "A1", "difficulty": 2, "prompt": "A: What time is it? B: ______", "choices": ["It is red.", "It is three o clock.", "It is my book.", "It is far."], "answerIndex": 1 },
-  { "id": "r001", "category": "reading", "cefr": "A1", "difficulty": 2, "prompt": "Tom has a small brown dog. What color is the dog?", "choices": ["Black", "White", "Brown", "Grey"], "answerIndex": 2 },
-  { "id": "g003", "category": "grammar", "cefr": "A2", "difficulty": 3, "prompt": "I ______ my homework already.", "choices": ["finish", "finished", "have finished", "finishing"], "answerIndex": 2 },
-  { "id": "r002", "category": "reading", "cefr": "A2", "difficulty": 3, "prompt": "Mali wakes up at 6 a.m. She eats breakfast and goes to school by bus. How does Mali go to school?", "choices": ["By car", "By bus", "By bike", "On foot"], "answerIndex": 1 },
-  { "id": "g004", "category": "grammar", "cefr": "A2", "difficulty": 4, "prompt": "If it rains tomorrow, we ______ at home.", "choices": ["stay", "stayed", "will stay", "staying"], "answerIndex": 2 },
-  { "id": "r003", "category": "reading", "cefr": "B1", "difficulty": 5, "prompt": "Nina saved money for weeks because she wanted to buy a dictionary. Why did Nina save money?", "choices": ["To buy food", "To buy a dictionary", "To travel", "To pay a fine"], "answerIndex": 1 },
-
-  { "id": "v004", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 1, "prompt": "Choose the word that means a place where you buy food.", "choices": ["Market", "Hospital", "School", "Airport"], "answerIndex": 0 },
-  { "id": "v005", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 1, "prompt": "What is the opposite of hot?", "choices": ["Cold", "Big", "Fast", "Loud"], "answerIndex": 0 },
-  { "id": "v006", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 2, "prompt": "A baby dog is called a ______.", "choices": ["kitten", "puppy", "cub", "chick"], "answerIndex": 1 },
-  { "id": "v007", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 1, "prompt": "Which word means a place where you sleep?", "choices": ["Kitchen", "Bedroom", "Garage", "Garden"], "answerIndex": 1 },
-  { "id": "v008", "category": "vocabulary", "cefr": "Pre-A1", "difficulty": 2, "prompt": "Choose the word that means very happy.", "choices": ["Sad", "Angry", "Delighted", "Tired"], "answerIndex": 2 },
-  { "id": "g005", "category": "grammar", "cefr": "Pre-A1", "difficulty": 1, "prompt": "He ______ a red bicycle.", "choices": ["have", "has", "having", "haves"], "answerIndex": 1 },
-  { "id": "g006", "category": "grammar", "cefr": "Pre-A1", "difficulty": 1, "prompt": "They ______ playing football now.", "choices": ["is", "am", "are", "be"], "answerIndex": 2 },
-  { "id": "g007", "category": "grammar", "cefr": "Pre-A1", "difficulty": 2, "prompt": "This is ______ apple.", "choices": ["a", "an", "the", "some"], "answerIndex": 1 },
-  { "id": "g008", "category": "grammar", "cefr": "Pre-A1", "difficulty": 2, "prompt": "My sister ______ like spicy food.", "choices": ["don't", "doesn't", "isn't", "aren't"], "answerIndex": 1 },
-  { "id": "c003", "category": "conversation", "cefr": "Pre-A1", "difficulty": 1, "prompt": "A: What is your name? B: ______", "choices": ["I am ten years old.", "My name is Fon.", "It is Monday.", "I like dogs."], "answerIndex": 1 },
-  { "id": "c004", "category": "conversation", "cefr": "Pre-A1", "difficulty": 1, "prompt": "A: Nice to meet you. B: ______", "choices": ["Nice to meet you, too.", "I am fine.", "It is red.", "Yes, I do."], "answerIndex": 0 },
-  { "id": "c005", "category": "conversation", "cefr": "Pre-A1", "difficulty": 2, "prompt": "A: How old are you? B: ______", "choices": ["I am eleven years old.", "I am from Thailand.", "I like reading.", "It is sunny."], "answerIndex": 0 },
-  { "id": "c006", "category": "conversation", "cefr": "Pre-A1", "difficulty": 2, "prompt": "A: Where do you live? B: ______", "choices": ["I live in Chiang Mai.", "I am seven.", "It is blue.", "I like it."], "answerIndex": 0 },
-  { "id": "r004", "category": "reading", "cefr": "Pre-A1", "difficulty": 1, "prompt": "Ben has a yellow ball. He plays with it every day. What color is Ben's ball?", "choices": ["Red", "Yellow", "Blue", "Green"], "answerIndex": 1 },
-  { "id": "r005", "category": "reading", "cefr": "Pre-A1", "difficulty": 2, "prompt": "Mali has three cats. Two cats are white and one is black. How many white cats does Mali have?", "choices": ["One", "Two", "Three", "Four"], "answerIndex": 1 },
-
-  { "id": "v009", "category": "vocabulary", "cefr": "A1", "difficulty": 2, "prompt": "A person who flies an airplane is called a ______.", "choices": ["pilot", "sailor", "driver", "farmer"], "answerIndex": 0 },
-  { "id": "v010", "category": "vocabulary", "cefr": "A1", "difficulty": 2, "prompt": "Choose the word that means a place where you borrow books.", "choices": ["Library", "Bakery", "Bank", "Zoo"], "answerIndex": 0 },
-  { "id": "v011", "category": "vocabulary", "cefr": "A1", "difficulty": 3, "prompt": "The opposite of 'expensive' is ______.", "choices": ["cheap", "heavy", "old", "dirty"], "answerIndex": 0 },
-  { "id": "v012", "category": "vocabulary", "cefr": "A1", "difficulty": 2, "prompt": "A ______ is a place where wild animals are kept for people to see.", "choices": ["zoo", "farm", "garden", "market"], "answerIndex": 0 },
-  { "id": "v013", "category": "vocabulary", "cefr": "A1", "difficulty": 3, "prompt": "Which word means 'to look for something'?", "choices": ["Search", "Sell", "Show", "Stay"], "answerIndex": 0 },
-  { "id": "g009", "category": "grammar", "cefr": "A1", "difficulty": 2, "prompt": "We ______ to the beach last weekend.", "choices": ["go", "goes", "went", "going"], "answerIndex": 2 },
-  { "id": "g010", "category": "grammar", "cefr": "A1", "difficulty": 2, "prompt": "There ______ many books on the shelf.", "choices": ["is", "are", "was", "be"], "answerIndex": 1 },
-  { "id": "g011", "category": "grammar", "cefr": "A1", "difficulty": 3, "prompt": "She is ______ than her brother.", "choices": ["tall", "taller", "tallest", "more tall"], "answerIndex": 1 },
-  { "id": "g012", "category": "grammar", "cefr": "A1", "difficulty": 3, "prompt": "You ______ eat in the library.", "choices": ["should", "should not", "can", "will"], "answerIndex": 1 },
-  { "id": "g013", "category": "grammar", "cefr": "A1", "difficulty": 2, "prompt": "I ______ my homework every evening.", "choices": ["do", "does", "doing", "did"], "answerIndex": 0 },
-  { "id": "c007", "category": "conversation", "cefr": "A1", "difficulty": 2, "prompt": "A: Would you like some juice? B: ______", "choices": ["Yes, please.", "I am ten.", "It is Tuesday.", "She is my friend."], "answerIndex": 0 },
-  { "id": "c008", "category": "conversation", "cefr": "A1", "difficulty": 2, "prompt": "A: Can you help me carry this box? B: ______", "choices": ["Sure, no problem.", "I am not here.", "It is heavy.", "You are welcome."], "answerIndex": 0 },
-  { "id": "c009", "category": "conversation", "cefr": "A1", "difficulty": 3, "prompt": "A: Why are you late? B: ______", "choices": ["I missed the bus.", "I am fine.", "It is red.", "I like it."], "answerIndex": 0 },
-  { "id": "c010", "category": "conversation", "cefr": "A1", "difficulty": 3, "prompt": "A: How was your trip? B: ______", "choices": ["It was great, thanks.", "I am going tomorrow.", "It is far.", "I have two bags."], "answerIndex": 0 },
-  { "id": "r006", "category": "reading", "cefr": "A1", "difficulty": 2, "prompt": "Anan wakes up at 6 a.m., brushes his teeth, and eats breakfast before school. What does Anan do first in the morning?", "choices": ["Eats breakfast", "Wakes up", "Goes to school", "Brushes his teeth"], "answerIndex": 1 },
-  { "id": "r007", "category": "reading", "cefr": "A1", "difficulty": 3, "prompt": "Fah's family is going to the beach this weekend. They will pack swimsuits, sunscreen, and a beach ball. What are they NOT bringing?", "choices": ["Swimsuits", "Sunscreen", "A beach ball", "A tent"], "answerIndex": 3 },
-  { "id": "r008", "category": "reading", "cefr": "A1", "difficulty": 3, "prompt": "Read the notice: 'School Library Hours: Monday-Friday, 8 a.m. to 4 p.m. Closed on weekends.' Can students borrow books on Saturday?", "choices": ["Yes, any time", "No, the library is closed", "Yes, only in the morning", "No, only teachers can"], "answerIndex": 1 },
-
-  { "id": "v014", "category": "vocabulary", "cefr": "A2", "difficulty": 3, "prompt": "Choose the word that best completes: The detective looked for ______ at the crime scene.", "choices": ["clues", "clouds", "cloves", "clefs"], "answerIndex": 0 },
-  { "id": "v015", "category": "vocabulary", "cefr": "A2", "difficulty": 3, "prompt": "'Reduce, reuse, and recycle' are actions that help protect the ______.", "choices": ["environment", "economy", "government", "community"], "answerIndex": 0 },
-  { "id": "v016", "category": "vocabulary", "cefr": "A2", "difficulty": 4, "prompt": "Which word means 'happening at the same time'?", "choices": ["simultaneous", "occasional", "sequential", "eventual"], "answerIndex": 0 },
-  { "id": "v017", "category": "vocabulary", "cefr": "A2", "difficulty": 3, "prompt": "A place where sick people go for treatment is a ______.", "choices": ["hospital", "hotel", "hallway", "harbor"], "answerIndex": 0 },
-  { "id": "g014", "category": "grammar", "cefr": "A2", "difficulty": 3, "prompt": "By the time we arrived, the movie had already ______.", "choices": ["start", "started", "starting", "starts"], "answerIndex": 1 },
-  { "id": "g015", "category": "grammar", "cefr": "A2", "difficulty": 3, "prompt": "If she studies hard, she ______ the exam.", "choices": ["pass", "passed", "will pass", "passing"], "answerIndex": 2 },
-  { "id": "g016", "category": "grammar", "cefr": "A2", "difficulty": 4, "prompt": "The cake ______ by my mother yesterday.", "choices": ["made", "was made", "is made", "has made"], "answerIndex": 1 },
-  { "id": "g017", "category": "grammar", "cefr": "A2", "difficulty": 4, "prompt": "This is the book ______ I told you about.", "choices": ["who", "which", "whose", "where"], "answerIndex": 1 },
-  { "id": "c011", "category": "conversation", "cefr": "A2", "difficulty": 3, "prompt": "A: Did Somchai pass the exam? B: ______ He studied really hard.", "choices": ["Not really.", "Of course he did.", "I don't know him.", "He is my brother."], "answerIndex": 1 },
-  { "id": "c012", "category": "conversation", "cefr": "A2", "difficulty": 3, "prompt": "A: The restaurant is fully booked tonight. B: ______", "choices": ["Oh no, let's try another place.", "Great, let's eat there.", "I already ate.", "It is closed on Mondays."], "answerIndex": 0 },
-  { "id": "c013", "category": "conversation", "cefr": "A2", "difficulty": 4, "prompt": "A: ______? B: I've been learning English for six years.", "choices": ["How long have you been learning English?", "Where do you learn English?", "Do you like English?", "What is your favorite subject?"], "answerIndex": 0 },
-  { "id": "r009", "category": "reading", "cefr": "A2", "difficulty": 3, "prompt": "Read the passage: 'Plastic bags take hundreds of years to break down in the environment. Many countries now charge a small fee for plastic bags to encourage shoppers to bring reusable bags instead.' Why do some countries charge a fee for plastic bags?", "choices": ["To make more profit", "To encourage people to use reusable bags", "To reduce store hours", "To increase plastic production"], "answerIndex": 1 },
-  { "id": "r010", "category": "reading", "cefr": "A2", "difficulty": 4, "prompt": "Read the passage: 'In the UK, people drive on the left side of the road. In the US, people drive on the right side.' According to the passage, which is TRUE?", "choices": ["The UK and the US drive on the same side.", "Driving rules can differ between countries.", "The US drives on the left.", "The UK has no driving rules."], "answerIndex": 1 },
-  { "id": "r011", "category": "reading", "cefr": "A2", "difficulty": 4, "prompt": "Read the notice: 'Museum Ticket: Adults 100 baht, Students 50 baht with student ID, Children under 5 free.' A family of two adults and one 3-year-old child visits. How much do they pay in total?", "choices": ["150 baht", "200 baht", "250 baht", "100 baht"], "answerIndex": 1 },
-
-  { "id": "v018", "category": "vocabulary", "cefr": "B1", "difficulty": 4, "prompt": "Choose the word closest in meaning to 'reluctant'.", "choices": ["unwilling", "excited", "confident", "curious"], "answerIndex": 0 },
-  { "id": "v019", "category": "vocabulary", "cefr": "B1", "difficulty": 4, "prompt": "The scientist's theory was later ______ by new evidence.", "choices": ["confirmed", "confused", "consumed", "concealed"], "answerIndex": 0 },
-  { "id": "v020", "category": "vocabulary", "cefr": "B1", "difficulty": 5, "prompt": "Which word means 'to state something is true without proof'?", "choices": ["claim", "clarify", "classify", "collapse"], "answerIndex": 0 },
-  { "id": "g018", "category": "grammar", "cefr": "B1", "difficulty": 4, "prompt": "If I ______ known about the traffic, I would have left earlier.", "choices": ["have", "had", "has", "having"], "answerIndex": 1 },
-  { "id": "g019", "category": "grammar", "cefr": "B1", "difficulty": 5, "prompt": "Not only ______ the exam, but she also received the highest score.", "choices": ["she passed", "did she pass", "she did pass", "passed she"], "answerIndex": 1 },
-  { "id": "g020", "category": "grammar", "cefr": "B1", "difficulty": 4, "prompt": "The report, ______ was submitted late, contained several errors.", "choices": ["that", "which", "who", "whose"], "answerIndex": 1 },
-  { "id": "c014", "category": "conversation", "cefr": "B1", "difficulty": 4, "prompt": "A: I heard the flight was delayed. B: ______", "choices": ["Yes, we'll have to wait another two hours.", "Yes, it left on time.", "No, I have never flown.", "I don't like flying."], "answerIndex": 0 },
-  { "id": "c015", "category": "conversation", "cefr": "B1", "difficulty": 5, "prompt": "A: ______? B: I'd rather stay home and read a book than go to the party.", "choices": ["What would you prefer to do tonight?", "Where is the party?", "Who is going to the party?", "When does the party start?"], "answerIndex": 0 },
-  { "id": "r012", "category": "reading", "cefr": "B1", "difficulty": 4, "prompt": "Read the passage: 'Bees play a crucial role in pollinating crops, but their populations have declined due to pesticide use and habitat loss. Some farmers now plant wildflower borders to support local bee populations.' Why do some farmers plant wildflower borders?", "choices": ["To sell flowers for extra income", "To support declining bee populations", "To reduce the need for pesticides entirely", "To attract tourists to their farms"], "answerIndex": 1 },
-  { "id": "r013", "category": "reading", "cefr": "B1", "difficulty": 5, "prompt": "Read the passage: 'In many East Asian cultures, giving a gift with both hands is considered more respectful than giving it with one hand. In contrast, this gesture carries no special meaning in most Western cultures.' According to the passage, which is TRUE?", "choices": ["Giving gifts with one hand is rude everywhere.", "The meaning of a two-handed gift varies by culture.", "Western cultures always use both hands for gifts.", "East Asian cultures never give gifts with one hand."], "answerIndex": 1 },
-  { "id": "r014", "category": "reading", "cefr": "B1", "difficulty": 5, "prompt": "Read the passage: 'The company's profits rose by 12% in the first quarter, but supply chain delays are expected to slow growth in the second quarter.' What does the passage suggest about the second quarter?", "choices": ["Profits will keep rising at the same rate.", "Growth may be slower due to supply issues.", "The company will close some stores.", "Supply chain delays have already been solved."], "answerIndex": 1 }
+  {
+    "id": "v001",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Choose the word that means school.",
+    "choices": [
+      "Hospital",
+      "School",
+      "Market",
+      "Airport"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "School แปลว่า โรงเรียน — สถานที่ที่นักเรียนไปเรียนหนังสือ",
+    "distractorReasoning": {
+      "0": "Hospital = โรงพยาบาล",
+      "2": "Market = ตลาด",
+      "3": "Airport = สนามบิน"
+    }
+  },
+  {
+    "id": "v002",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "What is the opposite of big?",
+    "choices": [
+      "Tall",
+      "Long",
+      "Small",
+      "Fast"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.adjectives",
+    "explanation": "big = ใหญ่ คำตรงข้ามคือ small = เล็ก",
+    "distractorReasoning": {
+      "0": "Tall = สูง (ตรงข้ามคือ short)",
+      "1": "Long = ยาว (ตรงข้ามคือ short)",
+      "3": "Fast = เร็ว (ตรงข้ามคือ slow)"
+    }
+  },
+  {
+    "id": "c001",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "A: How are you? B: ______",
+    "choices": [
+      "I am fine, thank you.",
+      "I am ten.",
+      "It is Monday.",
+      "Yes, I do."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.greetings-politeness",
+    "explanation": "How are you? ถามสารทุกข์สุกดิบ ต้องตอบความรู้สึก/สภาพ เช่น I am fine, thank you.",
+    "distractorReasoning": {
+      "1": "I am ten. ใช้ตอบ How old are you? (ถามอายุ)",
+      "2": "It is Monday. ใช้ตอบ What day is it? (ถามวัน)",
+      "3": "Yes, I do. ใช้ตอบคำถามที่ขึ้นต้นด้วย Do you...?"
+    }
+  },
+  {
+    "id": "g001",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 1,
+    "prompt": "She ______ to school every day.",
+    "choices": [
+      "go",
+      "going",
+      "gone",
+      "goes"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.present-simple",
+    "explanation": "ประธานเอกพจน์บุรุษที่ 3 (She) ใน present simple ต้องเติม -es ที่กริยา → goes (every day บอกว่าเป็นกิจวัตร)",
+    "distractorReasoning": {
+      "0": "go ใช้กับ I/You/We/They ไม่ใช่ She",
+      "1": "going ต้องมี is นำหน้า (is going)",
+      "2": "gone เป็นกริยาช่อง 3 ต้องใช้กับ have/has"
+    }
+  },
+  {
+    "id": "v003",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A person who teaches students is a ______.",
+    "choices": [
+      "doctor",
+      "farmer",
+      "driver",
+      "teacher"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "คนที่สอนนักเรียนคือ teacher = ครู",
+    "distractorReasoning": {
+      "0": "doctor = หมอ รักษาคนป่วย",
+      "1": "farmer = ชาวนา/เกษตรกร",
+      "2": "driver = คนขับรถ"
+    }
+  },
+  {
+    "id": "g002",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "There ______ two cats under the table.",
+    "choices": [
+      "are",
+      "is",
+      "am",
+      "be"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.present-simple",
+    "explanation": "two cats เป็นพหูพจน์ (2 ตัว) จึงต้องใช้ There are",
+    "distractorReasoning": {
+      "1": "is ใช้กับนามเอกพจน์ (There is a cat)",
+      "2": "am ใช้กับ I เท่านั้น",
+      "3": "be ไม่ผันรูป ใช้ตรงนี้ไม่ได้"
+    }
+  },
+  {
+    "id": "c002",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A: What time is it? B: ______",
+    "choices": [
+      "It is red.",
+      "It is three o clock.",
+      "It is my book.",
+      "It is far."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.requests-responses",
+    "explanation": "What time is it? ถามเวลา ต้องตอบด้วยเวลา → It is three o'clock.",
+    "distractorReasoning": {
+      "0": "It is red. ตอบเรื่องสี",
+      "2": "It is my book. ตอบเรื่องความเป็นเจ้าของ",
+      "3": "It is far. ตอบเรื่องระยะทาง"
+    }
+  },
+  {
+    "id": "r001",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Tom has a small brown dog. What color is the dog?",
+    "choices": [
+      "Black",
+      "White",
+      "Grey",
+      "Brown"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.detail",
+    "explanation": "โจทย์บอกตรง ๆ ว่า 'a small brown dog' — สุนัขสีน้ำตาล (brown)",
+    "distractorReasoning": {
+      "0": "สีดำไม่ได้ถูกกล่าวถึงในเรื่อง",
+      "1": "สีขาวไม่ได้ถูกกล่าวถึงในเรื่อง",
+      "2": "สีเทาไม่ได้ถูกกล่าวถึงในเรื่อง"
+    }
+  },
+  {
+    "id": "g003",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "I ______ my homework already.",
+    "choices": [
+      "finish",
+      "have finished",
+      "finished",
+      "finishing"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.perfect-tenses",
+    "explanation": "already เป็นสัญญาณของ present perfect → have + กริยาช่อง 3 (have finished)",
+    "distractorReasoning": {
+      "0": "finish รูปปัจจุบันเฉย ๆ ใช้กับ already ไม่ได้",
+      "2": "finished เป็น past simple ปกติไม่ใช้คู่กับ already ในแบบทดสอบ",
+      "3": "finishing ต้องมีกริยาช่วยนำหน้า"
+    }
+  },
+  {
+    "id": "r002",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Mali wakes up at 6 a.m. She eats breakfast and goes to school by bus. How does Mali go to school?",
+    "choices": [
+      "By bus",
+      "By car",
+      "By bike",
+      "On foot"
+    ],
+    "answerIndex": 0,
+    "subskillId": "reading.detail",
+    "explanation": "เรื่องบอกตรง ๆ ว่า 'goes to school by bus' — มะลิไปโรงเรียนโดยรถบัส",
+    "distractorReasoning": {
+      "1": "รถยนต์ไม่ได้ถูกกล่าวถึง",
+      "2": "จักรยานไม่ได้ถูกกล่าวถึง",
+      "3": "การเดินไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "g004",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "If it rains tomorrow, we ______ at home.",
+    "choices": [
+      "stay",
+      "stayed",
+      "will stay",
+      "staying"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.conditionals",
+    "explanation": "First conditional: If + present simple (rains), ประโยคหลักใช้ will + กริยาช่อง 1 → will stay",
+    "distractorReasoning": {
+      "0": "stay ขาด will ที่บอกอนาคต",
+      "1": "stayed เป็นอดีต ขัดกับ tomorrow",
+      "3": "staying ต้องมีกริยาช่วยนำหน้า"
+    }
+  },
+  {
+    "id": "r003",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Nina saved money for weeks because she wanted to buy a dictionary. Why did Nina save money?",
+    "choices": [
+      "To buy food",
+      "To buy a dictionary",
+      "To travel",
+      "To pay a fine"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.detail",
+    "explanation": "เรื่องบอกเหตุผลตรง ๆ: 'because she wanted to buy a dictionary' — นีน่าเก็บเงินเพื่อซื้อพจนานุกรม",
+    "distractorReasoning": {
+      "0": "อาหารไม่ได้ถูกกล่าวถึง",
+      "2": "การท่องเที่ยวไม่ได้ถูกกล่าวถึง",
+      "3": "ค่าปรับไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "v004",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Choose the word that means a place where you buy food.",
+    "choices": [
+      "Market",
+      "Hospital",
+      "School",
+      "Airport"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "สถานที่ที่ซื้ออาหารได้คือ market = ตลาด",
+    "distractorReasoning": {
+      "1": "Hospital = โรงพยาบาล",
+      "2": "School = โรงเรียน",
+      "3": "Airport = สนามบิน"
+    }
+  },
+  {
+    "id": "v005",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "What is the opposite of hot?",
+    "choices": [
+      "Big",
+      "Cold",
+      "Fast",
+      "Loud"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.adjectives",
+    "explanation": "hot = ร้อน คำตรงข้ามคือ cold = เย็น/หนาว",
+    "distractorReasoning": {
+      "0": "Big = ใหญ่",
+      "2": "Fast = เร็ว",
+      "3": "Loud = เสียงดัง"
+    }
+  },
+  {
+    "id": "v006",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "A baby dog is called a ______.",
+    "choices": [
+      "kitten",
+      "cub",
+      "puppy",
+      "chick"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "ลูกสุนัขเรียกว่า puppy",
+    "distractorReasoning": {
+      "0": "kitten = ลูกแมว",
+      "1": "cub = ลูกหมี/ลูกสิงโต",
+      "3": "chick = ลูกไก่"
+    }
+  },
+  {
+    "id": "v007",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Which word means a place where you sleep?",
+    "choices": [
+      "Kitchen",
+      "Garage",
+      "Garden",
+      "Bedroom"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "ห้องที่ใช้นอนคือ bedroom = ห้องนอน",
+    "distractorReasoning": {
+      "0": "Kitchen = ห้องครัว",
+      "1": "Garage = โรงรถ",
+      "2": "Garden = สวน"
+    }
+  },
+  {
+    "id": "v008",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "Choose the word that means very happy.",
+    "choices": [
+      "Delighted",
+      "Sad",
+      "Angry",
+      "Tired"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.adjectives",
+    "explanation": "delighted = ดีใจมาก มีความสุขมาก",
+    "distractorReasoning": {
+      "1": "Sad = เศร้า",
+      "2": "Angry = โกรธ",
+      "3": "Tired = เหนื่อย"
+    }
+  },
+  {
+    "id": "g005",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "He ______ a red bicycle.",
+    "choices": [
+      "have",
+      "having",
+      "haves",
+      "has"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.present-simple",
+    "explanation": "He เป็นประธานเอกพจน์บุรุษที่ 3 → ใช้ has",
+    "distractorReasoning": {
+      "0": "have ใช้กับ I/You/We/They",
+      "1": "having ต้องมีกริยาช่วยนำหน้า",
+      "2": "haves ไม่มีรูปนี้ในภาษาอังกฤษ"
+    }
+  },
+  {
+    "id": "g006",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "They ______ playing football now.",
+    "choices": [
+      "are",
+      "is",
+      "am",
+      "be"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.present-simple",
+    "explanation": "They เป็นพหูพจน์ + กำลังทำอยู่ตอนนี้ (now) → are playing",
+    "distractorReasoning": {
+      "1": "is ใช้กับเอกพจน์",
+      "2": "am ใช้กับ I เท่านั้น",
+      "3": "be ไม่ผันรูป ใช้ตรงนี้ไม่ได้"
+    }
+  },
+  {
+    "id": "g007",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "This is ______ apple.",
+    "choices": [
+      "a",
+      "an",
+      "the",
+      "some"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.articles-prepositions",
+    "explanation": "apple ขึ้นต้นด้วยเสียงสระ (แอ-) จึงใช้ an",
+    "distractorReasoning": {
+      "0": "a ใช้หน้าคำที่ขึ้นต้นด้วยเสียงพยัญชนะ",
+      "2": "the ใช้ชี้เฉพาะสิ่งที่รู้กันอยู่แล้ว",
+      "3": "some ใช้กับนามพหูพจน์หรือนามนับไม่ได้"
+    }
+  },
+  {
+    "id": "g008",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "My sister ______ like spicy food.",
+    "choices": [
+      "don't",
+      "isn't",
+      "doesn't",
+      "aren't"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.questions-negatives",
+    "explanation": "My sister เป็นเอกพจน์บุรุษที่ 3 → ปฏิเสธใน present simple ใช้ doesn't + กริยาช่อง 1",
+    "distractorReasoning": {
+      "0": "don't ใช้กับ I/You/We/They",
+      "1": "isn't ใช้กับ verb to be ไม่ใช้กับ like",
+      "3": "aren't ใช้กับพหูพจน์และเป็น verb to be"
+    }
+  },
+  {
+    "id": "c003",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "A: What is your name? B: ______",
+    "choices": [
+      "I am ten years old.",
+      "It is Monday.",
+      "My name is Fon.",
+      "I like dogs."
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.greetings-politeness",
+    "explanation": "What is your name? ถามชื่อ → ตอบชื่อ My name is Fon.",
+    "distractorReasoning": {
+      "0": "ตอบอายุ (How old are you?)",
+      "1": "ตอบวัน (What day is it?)",
+      "3": "ตอบสิ่งที่ชอบ (What do you like?)"
+    }
+  },
+  {
+    "id": "c004",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "A: Nice to meet you. B: ______",
+    "choices": [
+      "I am fine.",
+      "It is red.",
+      "Yes, I do.",
+      "Nice to meet you, too."
+    ],
+    "answerIndex": 3,
+    "subskillId": "convo.greetings-politeness",
+    "explanation": "Nice to meet you. (ยินดีที่ได้รู้จัก) ตอบรับด้วย Nice to meet you, too. (เช่นกัน)",
+    "distractorReasoning": {
+      "0": "I am fine. ใช้ตอบ How are you?",
+      "1": "It is red. ตอบเรื่องสี ไม่เกี่ยวกับการทักทาย",
+      "2": "Yes, I do. ใช้ตอบคำถาม Do you...?"
+    }
+  },
+  {
+    "id": "c005",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "A: How old are you? B: ______",
+    "choices": [
+      "I am eleven years old.",
+      "I am from Thailand.",
+      "I like reading.",
+      "It is sunny."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.greetings-politeness",
+    "explanation": "How old are you? ถามอายุ → ตอบอายุ I am eleven years old.",
+    "distractorReasoning": {
+      "1": "ตอบประเทศ (Where are you from?)",
+      "2": "ตอบงานอดิเรก (What do you like doing?)",
+      "3": "ตอบสภาพอากาศ (What's the weather like?)"
+    }
+  },
+  {
+    "id": "c006",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "A: Where do you live? B: ______",
+    "choices": [
+      "I am seven.",
+      "I live in Chiang Mai.",
+      "It is blue.",
+      "I like it."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.greetings-politeness",
+    "explanation": "Where do you live? ถามที่อยู่ → ตอบสถานที่ I live in Chiang Mai.",
+    "distractorReasoning": {
+      "0": "ตอบอายุ ไม่ตรงคำถาม",
+      "2": "ตอบเรื่องสี ไม่ตรงคำถาม",
+      "3": "I like it. ไม่ได้ตอบว่าอยู่ที่ไหน"
+    }
+  },
+  {
+    "id": "r004",
+    "category": "reading",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Ben has a yellow ball. He plays with it every day. What color is Ben's ball?",
+    "choices": [
+      "Red",
+      "Blue",
+      "Yellow",
+      "Green"
+    ],
+    "answerIndex": 2,
+    "subskillId": "reading.detail",
+    "explanation": "เรื่องบอกตรง ๆ ว่า 'Ben has a yellow ball' — ลูกบอลสีเหลือง",
+    "distractorReasoning": {
+      "0": "สีแดงไม่ได้ถูกกล่าวถึง",
+      "1": "สีน้ำเงินไม่ได้ถูกกล่าวถึง",
+      "3": "สีเขียวไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "r005",
+    "category": "reading",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "Mali has three cats. Two cats are white and one is black. How many white cats does Mali have?",
+    "choices": [
+      "One",
+      "Three",
+      "Four",
+      "Two"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.detail",
+    "explanation": "เรื่องบอกว่า 'Two cats are white' — แมวสีขาวมี 2 ตัว ระวังอย่าหยิบตัวเลขผิดตัวจากเรื่อง",
+    "distractorReasoning": {
+      "0": "One คือจำนวนแมวสีดำ ไม่ใช่สีขาว",
+      "1": "Three คือจำนวนแมวทั้งหมด",
+      "2": "Four ไม่มีในเรื่อง"
+    }
+  },
+  {
+    "id": "v009",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A person who flies an airplane is called a ______.",
+    "choices": [
+      "sailor",
+      "pilot",
+      "driver",
+      "farmer"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "คนขับเครื่องบินคือ pilot = นักบิน",
+    "distractorReasoning": {
+      "0": "sailor = กะลาสีเรือ",
+      "2": "driver = คนขับรถ",
+      "3": "farmer = ชาวนา"
+    }
+  },
+  {
+    "id": "v010",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Choose the word that means a place where you borrow books.",
+    "choices": [
+      "Bakery",
+      "Bank",
+      "Library",
+      "Zoo"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "สถานที่ที่ยืมหนังสือได้คือ library = ห้องสมุด",
+    "distractorReasoning": {
+      "0": "Bakery = ร้านขนมปัง",
+      "1": "Bank = ธนาคาร",
+      "3": "Zoo = สวนสัตว์"
+    }
+  },
+  {
+    "id": "v011",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "The opposite of 'expensive' is ______.",
+    "choices": [
+      "heavy",
+      "old",
+      "dirty",
+      "cheap"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.adjectives",
+    "explanation": "expensive = แพง คำตรงข้ามคือ cheap = ถูก",
+    "distractorReasoning": {
+      "0": "heavy = หนัก",
+      "1": "old = เก่า",
+      "2": "dirty = สกปรก"
+    }
+  },
+  {
+    "id": "v012",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A ______ is a place where wild animals are kept for people to see.",
+    "choices": [
+      "zoo",
+      "farm",
+      "garden",
+      "market"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "สถานที่เลี้ยงสัตว์ป่าให้คนมาดูคือ zoo = สวนสัตว์",
+    "distractorReasoning": {
+      "1": "farm = ฟาร์ม เลี้ยงสัตว์เพื่อการเกษตร ไม่ใช่สัตว์ป่าให้ชม",
+      "2": "garden = สวน (ปลูกต้นไม้)",
+      "3": "market = ตลาด"
+    }
+  },
+  {
+    "id": "v013",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "Which word means 'to look for something'?",
+    "choices": [
+      "Sell",
+      "Search",
+      "Show",
+      "Stay"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.verbs-actions",
+    "explanation": "search = ค้นหา มองหาบางสิ่ง",
+    "distractorReasoning": {
+      "0": "Sell = ขาย",
+      "2": "Show = แสดง/โชว์",
+      "3": "Stay = พัก/อยู่"
+    }
+  },
+  {
+    "id": "g009",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "We ______ to the beach last weekend.",
+    "choices": [
+      "go",
+      "goes",
+      "going",
+      "went"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.tense-past",
+    "explanation": "last weekend เป็นตัวชี้อดีต → past simple ของ go คือ went (กริยาอปกติ)",
+    "distractorReasoning": {
+      "0": "go เป็นปัจจุบัน ไม่ตรงกับ last weekend",
+      "1": "goes เป็นปัจจุบันเอกพจน์",
+      "2": "going ต้องมีกริยาช่วยนำหน้า"
+    }
+  },
+  {
+    "id": "g010",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "There ______ many books on the shelf.",
+    "choices": [
+      "are",
+      "is",
+      "was",
+      "be"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.present-simple",
+    "explanation": "many books เป็นพหูพจน์ → There are",
+    "distractorReasoning": {
+      "1": "is ใช้กับเอกพจน์",
+      "2": "was เป็นอดีตและเอกพจน์",
+      "3": "be ไม่ผันรูป ใช้ตรงนี้ไม่ได้"
+    }
+  },
+  {
+    "id": "g011",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "She is ______ than her brother.",
+    "choices": [
+      "tall",
+      "taller",
+      "tallest",
+      "more tall"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.comparatives",
+    "explanation": "เปรียบเทียบคน 2 คนและมี than → ใช้ขั้นกว่า: tall → taller",
+    "distractorReasoning": {
+      "0": "tall เป็นขั้นปกติ ใช้กับ than ไม่ได้",
+      "2": "tallest เป็นขั้นสูงสุด ใช้กับ the ไม่ใช้กับ than",
+      "3": "more tall ผิด — คำคุณศัพท์พยางค์เดียวเติม -er"
+    }
+  },
+  {
+    "id": "g012",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "You ______ eat in the library.",
+    "choices": [
+      "should",
+      "can",
+      "should not",
+      "will"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.modals",
+    "explanation": "ห้องสมุดห้ามกินอาหาร ต้องเลือกคำที่ทำให้ความหมายถูกต้อง → should not eat (ไม่ควรกิน)",
+    "distractorReasoning": {
+      "0": "should = ควรกิน ผิดความหมาย",
+      "1": "can = กินได้ ผิดความหมาย",
+      "3": "will บอกอนาคต ไม่ได้บอกการห้าม"
+    }
+  },
+  {
+    "id": "g013",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "I ______ my homework every evening.",
+    "choices": [
+      "does",
+      "doing",
+      "did",
+      "do"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.present-simple",
+    "explanation": "ประธาน I ใน present simple (every evening = กิจวัตร) → ใช้ do",
+    "distractorReasoning": {
+      "0": "does ใช้กับเอกพจน์บุรุษที่ 3",
+      "1": "doing ต้องมีกริยาช่วยนำหน้า",
+      "2": "did เป็นอดีต ขัดกับ every evening"
+    }
+  },
+  {
+    "id": "c007",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A: Would you like some juice? B: ______",
+    "choices": [
+      "I am ten.",
+      "It is Tuesday.",
+      "Yes, please.",
+      "She is my friend."
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.requests-responses",
+    "explanation": "Would you like...? เป็นคำเสนอ → ตอบรับอย่างสุภาพ Yes, please. (หรือปฏิเสธ No, thank you.)",
+    "distractorReasoning": {
+      "0": "ตอบอายุ ไม่ตรงคำถาม",
+      "1": "ตอบวัน ไม่ตรงคำถาม",
+      "3": "พูดถึงเพื่อน ไม่เกี่ยวกับคำเสนอ"
+    }
+  },
+  {
+    "id": "c008",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A: Can you help me carry this box? B: ______",
+    "choices": [
+      "I am not here.",
+      "It is heavy.",
+      "You are welcome.",
+      "Sure, no problem."
+    ],
+    "answerIndex": 3,
+    "subskillId": "convo.requests-responses",
+    "explanation": "ขอความช่วยเหลือ → ตอบรับว่าช่วยได้: Sure, no problem.",
+    "distractorReasoning": {
+      "0": "I am not here. ไม่สมเหตุสมผล",
+      "1": "It is heavy. พูดถึงกล่องแต่ไม่ตอบว่าจะช่วยไหม (กับดักสะท้อนคำถาม)",
+      "2": "You are welcome. ใช้ตอบ Thank you."
+    }
+  },
+  {
+    "id": "c009",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "A: Why are you late? B: ______",
+    "choices": [
+      "I missed the bus.",
+      "I am fine.",
+      "It is red.",
+      "I like it."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.requests-responses",
+    "explanation": "Why...? ถามเหตุผล → ตอบด้วยสาเหตุ: I missed the bus. (ตกรถบัสเลยมาสาย)",
+    "distractorReasoning": {
+      "1": "ตอบสารทุกข์ (How are you?)",
+      "2": "ตอบเรื่องสี ไม่เกี่ยว",
+      "3": "I like it. ไม่ใช่เหตุผลของการมาสาย"
+    }
+  },
+  {
+    "id": "c010",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "A: How was your trip? B: ______",
+    "choices": [
+      "I am going tomorrow.",
+      "It was great, thanks.",
+      "It is far.",
+      "I have two bags."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.requests-responses",
+    "explanation": "How was your trip? ถามความรู้สึกต่อทริปที่ผ่านมา (อดีต) → It was great, thanks.",
+    "distractorReasoning": {
+      "0": "พูดถึงอนาคต ขัดกับคำถามที่เป็นอดีต",
+      "2": "ตอบระยะทาง ไม่ตรงคำถาม",
+      "3": "ตอบจำนวนกระเป๋า ไม่ตรงคำถาม"
+    }
+  },
+  {
+    "id": "r006",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Anan wakes up at 6 a.m., brushes his teeth, and eats breakfast before school. What does Anan do first in the morning?",
+    "choices": [
+      "Wakes up",
+      "Eats breakfast",
+      "Goes to school",
+      "Brushes his teeth"
+    ],
+    "answerIndex": 0,
+    "subskillId": "reading.detail",
+    "explanation": "ลำดับเหตุการณ์ในเรื่อง: ตื่นนอน (wakes up) → แปรงฟัน → กินข้าวเช้า → ไปโรงเรียน สิ่งแรกคือตื่นนอน",
+    "distractorReasoning": {
+      "1": "กินข้าวเช้าเกิดหลังแปรงฟัน",
+      "2": "ไปโรงเรียนคือเหตุการณ์สุดท้าย",
+      "3": "แปรงฟันเกิดหลังตื่นนอน"
+    }
+  },
+  {
+    "id": "r007",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "Fah's family is going to the beach this weekend. They will pack swimsuits, sunscreen, and a beach ball. What are they NOT bringing?",
+    "choices": [
+      "Swimsuits",
+      "A tent",
+      "Sunscreen",
+      "A beach ball"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.detail",
+    "explanation": "คำถามแบบ NOT — สิ่งที่ 'ไม่ได้' เอาไป คือเต็นท์ (a tent) เพราะรายการมีแค่ชุดว่ายน้ำ ครีมกันแดด และลูกบอลชายหาด",
+    "distractorReasoning": {
+      "0": "ชุดว่ายน้ำถูกกล่าวถึงว่าจะเอาไป",
+      "2": "ครีมกันแดดถูกกล่าวถึงว่าจะเอาไป",
+      "3": "ลูกบอลชายหาดถูกกล่าวถึงว่าจะเอาไป"
+    }
+  },
+  {
+    "id": "r008",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "Read the notice: 'School Library Hours: Monday-Friday, 8 a.m. to 4 p.m. Closed on weekends.' Can students borrow books on Saturday?",
+    "choices": [
+      "Yes, any time",
+      "Yes, only in the morning",
+      "No, the library is closed",
+      "No, only teachers can"
+    ],
+    "answerIndex": 2,
+    "subskillId": "reading.signs-notices",
+    "explanation": "ประกาศบอกว่า 'Closed on weekends' — ปิดวันเสาร์-อาทิตย์ ดังนั้นวันเสาร์ยืมหนังสือไม่ได้",
+    "distractorReasoning": {
+      "0": "ขัดกับประกาศที่บอกว่าปิดวันหยุดสุดสัปดาห์",
+      "1": "ประกาศไม่ได้บอกว่าเปิดเช้าวันเสาร์",
+      "3": "ประกาศไม่ได้พูดถึงสิทธิพิเศษของครู"
+    }
+  },
+  {
+    "id": "v014",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Choose the word that best completes: The detective looked for ______ at the crime scene.",
+    "choices": [
+      "clouds",
+      "cloves",
+      "clues",
+      "clefs"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.in-context",
+    "explanation": "นักสืบ (detective) มองหา 'เบาะแส' ที่จุดเกิดเหตุ = clues",
+    "distractorReasoning": {
+      "0": "clouds = เมฆ",
+      "1": "cloves = กานพลู",
+      "3": "clefs = กุญแจประจำหลักดนตรี — คำหน้าตาคล้ายกันแต่ความหมายไม่เข้าบริบท"
+    }
+  },
+  {
+    "id": "v015",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "'Reduce, reuse, and recycle' are actions that help protect the ______.",
+    "choices": [
+      "economy",
+      "government",
+      "community",
+      "environment"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.in-context",
+    "explanation": "ลดใช้-ใช้ซ้ำ-รีไซเคิล (3R) ช่วยปกป้อง 'สิ่งแวดล้อม' = environment",
+    "distractorReasoning": {
+      "0": "economy = เศรษฐกิจ",
+      "1": "government = รัฐบาล",
+      "2": "community = ชุมชน — ดูเข้าเรื่องแต่ไม่ใช่สิ่งที่ 3R ปกป้องโดยตรง"
+    }
+  },
+  {
+    "id": "v016",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "Which word means 'happening at the same time'?",
+    "choices": [
+      "simultaneous",
+      "occasional",
+      "sequential",
+      "eventual"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.adjectives",
+    "explanation": "simultaneous = เกิดขึ้นพร้อมกัน ในเวลาเดียวกัน",
+    "distractorReasoning": {
+      "1": "occasional = เป็นครั้งคราว",
+      "2": "sequential = ตามลำดับทีละอย่าง",
+      "3": "eventual = ในท้ายที่สุด"
+    }
+  },
+  {
+    "id": "v017",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "A place where sick people go for treatment is a ______.",
+    "choices": [
+      "hotel",
+      "hospital",
+      "hallway",
+      "harbor"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "explanation": "สถานที่ที่คนป่วยไปรักษาคือ hospital = โรงพยาบาล",
+    "distractorReasoning": {
+      "0": "hotel = โรงแรม",
+      "2": "hallway = ทางเดินในอาคาร",
+      "3": "harbor = ท่าเรือ — คำขึ้นต้น h คล้ายกันเป็นกับดัก"
+    }
+  },
+  {
+    "id": "g014",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "By the time we arrived, the movie had already ______.",
+    "choices": [
+      "started",
+      "start",
+      "starting",
+      "starts"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.perfect-tenses",
+    "explanation": "By the time + อดีต → เหตุการณ์ที่เกิดก่อนใช้ past perfect: had already + กริยาช่อง 3 (started)",
+    "distractorReasoning": {
+      "1": "start เป็นช่อง 1 ใช้หลัง had ไม่ได้",
+      "2": "starting เป็น -ing ใช้หลัง had ไม่ได้",
+      "3": "starts เป็นปัจจุบัน ใช้หลัง had ไม่ได้"
+    }
+  },
+  {
+    "id": "g015",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "If she studies hard, she ______ the exam.",
+    "choices": [
+      "pass",
+      "will pass",
+      "passed",
+      "passing"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.conditionals",
+    "explanation": "First conditional: If + present simple (studies), ประโยคหลักใช้ will + กริยาช่อง 1 → will pass",
+    "distractorReasoning": {
+      "0": "pass ขาด will",
+      "2": "passed เป็นอดีต",
+      "3": "passing ต้องมีกริยาช่วยนำหน้า"
+    }
+  },
+  {
+    "id": "g016",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "The cake ______ by my mother yesterday.",
+    "choices": [
+      "made",
+      "is made",
+      "was made",
+      "has made"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.clauses-passive",
+    "explanation": "เค้ก 'ถูกทำ' โดยแม่ → passive voice อดีต (yesterday): was + กริยาช่อง 3 = was made",
+    "distractorReasoning": {
+      "0": "made เฉย ๆ เป็น active แปลว่าเค้กเป็นผู้ทำเอง",
+      "1": "is made เป็นปัจจุบัน ขัดกับ yesterday",
+      "3": "has made เป็น active present perfect"
+    }
+  },
+  {
+    "id": "g017",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "This is the book ______ I told you about.",
+    "choices": [
+      "who",
+      "whose",
+      "where",
+      "which"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.clauses-passive",
+    "explanation": "ขยายคำนามที่เป็นสิ่งของ (the book) → ใช้ relative pronoun 'which'",
+    "distractorReasoning": {
+      "0": "who ใช้กับคน",
+      "1": "whose แสดงความเป็นเจ้าของ",
+      "2": "where ใช้กับสถานที่"
+    }
+  },
+  {
+    "id": "c011",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "A: Did Somchai pass the exam? B: ______ He studied really hard.",
+    "choices": [
+      "Not really.",
+      "I don't know him.",
+      "Of course he did.",
+      "He is my brother."
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.requests-responses",
+    "explanation": "บริบทบอกว่า 'He studied really hard' สนับสนุนว่าเขาสอบผ่านแน่นอน → Of course he did.",
+    "distractorReasoning": {
+      "0": "Not really. ขัดกับบริบทที่บอกว่าเขาขยันมาก",
+      "1": "ขัดกับบริบท — ผู้พูดรู้ว่าเขาขยันแค่ไหน แสดงว่ารู้จักเขา",
+      "3": "He is my brother. ไม่ได้ตอบคำถามว่าผ่านหรือไม่"
+    }
+  },
+  {
+    "id": "c012",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "A: The restaurant is fully booked tonight. B: ______",
+    "choices": [
+      "Great, let's eat there.",
+      "I already ate.",
+      "It is closed on Mondays.",
+      "Oh no, let's try another place."
+    ],
+    "answerIndex": 3,
+    "subskillId": "convo.requests-responses",
+    "explanation": "ร้านถูกจองเต็มแล้วคืนนี้ → คำตอบที่สมเหตุสมผลคือเสนอไปร้านอื่น: Oh no, let's try another place.",
+    "distractorReasoning": {
+      "0": "ขัดแย้ง — ร้านเต็มแล้วกินที่นั่นไม่ได้",
+      "1": "I already ate. ไม่ตอบสถานการณ์ที่ร้านเต็ม",
+      "2": "พูดข้อมูลร้านแต่ไม่ตอบว่าจะทำอย่างไรต่อ (กับดักสะท้อนหัวข้อ)"
+    }
+  },
+  {
+    "id": "c013",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "A: ______? B: I've been learning English for six years.",
+    "choices": [
+      "How long have you been learning English?",
+      "Where do you learn English?",
+      "Do you like English?",
+      "What is your favorite subject?"
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.reverse-question",
+    "explanation": "โจทย์ให้คำตอบมา (reverse completion): คำตอบบอกระยะเวลา 'for six years' → คำถามต้องถามระยะเวลา How long have you been learning English?",
+    "distractorReasoning": {
+      "1": "ถามสถานที่เรียน — คำตอบจะเป็นสถานที่ ไม่ใช่ระยะเวลา",
+      "2": "ถาม yes/no — คำตอบจะเป็น Yes/No",
+      "3": "ถามวิชาโปรด — คำตอบจะเป็นชื่อวิชา"
+    }
+  },
+  {
+    "id": "r009",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Read the passage: 'Plastic bags take hundreds of years to break down in the environment. Many countries now charge a small fee for plastic bags to encourage shoppers to bring reusable bags instead.' Why do some countries charge a fee for plastic bags?",
+    "choices": [
+      "To make more profit",
+      "To reduce store hours",
+      "To increase plastic production",
+      "To encourage people to use reusable bags"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.detail",
+    "explanation": "เหตุผลถูกระบุในเรื่อง: 'to encourage shoppers to bring reusable bags' — เพื่อจูงใจให้ใช้ถุงแบบใช้ซ้ำ",
+    "distractorReasoning": {
+      "0": "เรื่องไม่ได้บอกว่าทำเพื่อกำไร",
+      "1": "เวลาเปิดร้านไม่ได้ถูกกล่าวถึง",
+      "2": "ขัดกับเนื้อเรื่องที่ต้องการลดพลาสติก"
+    }
+  },
+  {
+    "id": "r010",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "Read the passage: 'In the UK, people drive on the left side of the road. In the US, people drive on the right side.' According to the passage, which is TRUE?",
+    "choices": [
+      "Driving rules can differ between countries.",
+      "The UK and the US drive on the same side.",
+      "The US drives on the left.",
+      "The UK has no driving rules."
+    ],
+    "answerIndex": 0,
+    "subskillId": "reading.inference",
+    "explanation": "สังเคราะห์จากสองประโยค: อังกฤษขับซ้าย อเมริกาขับขวา → สรุปได้ว่ากฎการขับรถต่างกันในแต่ละประเทศ",
+    "distractorReasoning": {
+      "1": "ขัดกับข้อความ — สองประเทศขับคนละข้าง",
+      "2": "สลับข้าง — อเมริกาขับขวา (กับดักทิศทางกลับด้าน)",
+      "3": "เรื่องไม่ได้บอกว่าอังกฤษไม่มีกฎ"
+    }
+  },
+  {
+    "id": "r011",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "Read the notice: 'Museum Ticket: Adults 100 baht, Students 50 baht with student ID, Children under 5 free.' A family of two adults and one 3-year-old child visits. How much do they pay in total?",
+    "choices": [
+      "150 baht",
+      "200 baht",
+      "250 baht",
+      "100 baht"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.data-interpretation",
+    "explanation": "ผู้ใหญ่ 2 คน × 100 = 200 บาท เด็ก 3 ขวบต่ำกว่า 5 ขวบเข้าฟรี → รวม 200 บาท",
+    "distractorReasoning": {
+      "0": "150 คิดราคาผู้ใหญ่ผิดหรือคิดเด็กเป็นครึ่งราคา",
+      "2": "250 เผลอคิดค่าเด็กเป็น 50 บาท (เด็กต่ำกว่า 5 ขวบฟรี)",
+      "3": "100 นับผู้ใหญ่แค่คนเดียว"
+    }
+  },
+  {
+    "id": "v018",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Choose the word closest in meaning to 'reluctant'.",
+    "choices": [
+      "excited",
+      "confident",
+      "unwilling",
+      "curious"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.adjectives",
+    "explanation": "reluctant = ไม่เต็มใจ ลังเลที่จะทำ ≈ unwilling",
+    "distractorReasoning": {
+      "0": "excited = ตื่นเต้น",
+      "1": "confident = มั่นใจ",
+      "3": "curious = อยากรู้อยากเห็น"
+    }
+  },
+  {
+    "id": "v019",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "The scientist's theory was later ______ by new evidence.",
+    "choices": [
+      "confused",
+      "consumed",
+      "concealed",
+      "confirmed"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.in-context",
+    "explanation": "ทฤษฎีถูก 'ยืนยัน' ด้วยหลักฐานใหม่ → confirmed",
+    "distractorReasoning": {
+      "0": "confused = สับสน",
+      "1": "consumed = บริโภค/ใช้หมด",
+      "2": "concealed = ปกปิด — คำขึ้นต้น con- คล้ายกันเป็นกับดัก"
+    }
+  },
+  {
+    "id": "v020",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Which word means 'to state something is true without proof'?",
+    "choices": [
+      "claim",
+      "clarify",
+      "classify",
+      "collapse"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.verbs-actions",
+    "explanation": "claim = กล่าวอ้างว่าเป็นจริงโดยไม่มีหลักฐานพิสูจน์",
+    "distractorReasoning": {
+      "1": "clarify = อธิบายให้ชัดเจน",
+      "2": "classify = จัดหมวดหมู่",
+      "3": "collapse = พังทลาย"
+    }
+  },
+  {
+    "id": "g018",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "If I ______ known about the traffic, I would have left earlier.",
+    "choices": [
+      "had",
+      "have",
+      "has",
+      "having"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.conditionals",
+    "explanation": "Third conditional (สมมติสิ่งที่ไม่เกิดขึ้นในอดีต): If + had + ช่อง 3, would have + ช่อง 3 → If I had known",
+    "distractorReasoning": {
+      "1": "have ต้องเป็นรูปอดีต had ใน third conditional",
+      "2": "has เป็นปัจจุบันเอกพจน์ ใช้ไม่ได้",
+      "3": "having เป็น -ing ใช้ในโครงสร้างนี้ไม่ได้"
+    }
+  },
+  {
+    "id": "g019",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Not only ______ the exam, but she also received the highest score.",
+    "choices": [
+      "she passed",
+      "did she pass",
+      "she did pass",
+      "passed she"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.clauses-passive",
+    "explanation": "Not only ขึ้นต้นประโยค → ต้องสลับกริยาช่วยกับประธาน (inversion): Not only did she pass...",
+    "distractorReasoning": {
+      "0": "she passed ไม่สลับ — ผิดกฎ inversion",
+      "2": "she did pass ไม่สลับตำแหน่ง did",
+      "3": "passed she สลับผิดรูป ขาดกริยาช่วย"
+    }
+  },
+  {
+    "id": "g020",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "The report, ______ was submitted late, contained several errors.",
+    "choices": [
+      "that",
+      "who",
+      "which",
+      "whose"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.clauses-passive",
+    "explanation": "มี comma คั่น (non-defining clause) ขยาย the report ซึ่งเป็นสิ่งของ → ใช้ which",
+    "distractorReasoning": {
+      "0": "that ใช้ใน non-defining clause (มี comma) ไม่ได้",
+      "1": "who ใช้กับคน",
+      "3": "whose แสดงความเป็นเจ้าของ"
+    }
+  },
+  {
+    "id": "c014",
+    "category": "conversation",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "A: I heard the flight was delayed. B: ______",
+    "choices": [
+      "Yes, it left on time.",
+      "Yes, we'll have to wait another two hours.",
+      "No, I have never flown.",
+      "I don't like flying."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.requests-responses",
+    "explanation": "เครื่องบินดีเลย์ → คำตอบที่สอดคล้องคือยืนยันและบอกผล: ต้องรออีกสองชั่วโมง",
+    "distractorReasoning": {
+      "0": "Yes แต่บอกว่าออกตรงเวลา — ขัดแย้งกันเอง",
+      "2": "ไม่ตอบประเด็นเรื่องเที่ยวบินดีเลย์",
+      "3": "บอกความชอบส่วนตัว ไม่ตอบประเด็น"
+    }
+  },
+  {
+    "id": "c015",
+    "category": "conversation",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "A: ______? B: I'd rather stay home and read a book than go to the party.",
+    "choices": [
+      "Where is the party?",
+      "Who is going to the party?",
+      "What would you prefer to do tonight?",
+      "When does the party start?"
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.reverse-question",
+    "explanation": "Reverse completion: คำตอบเป็นการบอกความชอบ (I'd rather stay home...) → คำถามต้องถามว่าอยากทำอะไร: What would you prefer to do tonight?",
+    "distractorReasoning": {
+      "0": "ถามสถานที่ — คำตอบจะเป็นสถานที่จัดปาร์ตี้",
+      "1": "ถามบุคคล — คำตอบจะเป็นรายชื่อคน",
+      "3": "ถามเวลา — คำตอบจะเป็นเวลาเริ่มงาน"
+    }
+  },
+  {
+    "id": "r012",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Read the passage: 'Bees play a crucial role in pollinating crops, but their populations have declined due to pesticide use and habitat loss. Some farmers now plant wildflower borders to support local bee populations.' Why do some farmers plant wildflower borders?",
+    "choices": [
+      "To sell flowers for extra income",
+      "To reduce the need for pesticides entirely",
+      "To support declining bee populations",
+      "To attract tourists to their farms"
+    ],
+    "answerIndex": 2,
+    "subskillId": "reading.detail",
+    "explanation": "เรื่องระบุตรง ๆ: ชาวนาปลูกแนวดอกไม้ป่า 'to support local bee populations' — เพื่อช่วยประชากรผึ้งที่ลดลง",
+    "distractorReasoning": {
+      "0": "การขายดอกไม้ไม่ได้ถูกกล่าวถึง",
+      "1": "เรื่องไม่ได้บอกว่าจะเลิกใช้ยาฆ่าแมลง 'ทั้งหมด' (เกินจากที่เรื่องพูด)",
+      "3": "นักท่องเที่ยวไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "r013",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Read the passage: 'In many East Asian cultures, giving a gift with both hands is considered more respectful than giving it with one hand. In contrast, this gesture carries no special meaning in most Western cultures.' According to the passage, which is TRUE?",
+    "choices": [
+      "Giving gifts with one hand is rude everywhere.",
+      "Western cultures always use both hands for gifts.",
+      "East Asian cultures never give gifts with one hand.",
+      "The meaning of a two-handed gift varies by culture."
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.inference",
+    "explanation": "สองวัฒนธรรมให้ความหมายท่าทางส่งของสองมือต่างกัน → สรุปว่า ความหมายขึ้นอยู่กับวัฒนธรรม",
+    "distractorReasoning": {
+      "0": "ใช้คำว่า 'ทุกที่' — เกินจากข้อความ (over-generalization)",
+      "1": "ใช้คำว่า 'always' — ข้อความบอกตรงกันข้าม",
+      "2": "ใช้คำว่า 'never' — ข้อความไม่ได้บอกเช่นนั้น"
+    }
+  },
+  {
+    "id": "r014",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Read the passage: 'The company's profits rose by 12% in the first quarter, but supply chain delays are expected to slow growth in the second quarter.' What does the passage suggest about the second quarter?",
+    "choices": [
+      "Growth may be slower due to supply issues.",
+      "Profits will keep rising at the same rate.",
+      "The company will close some stores.",
+      "Supply chain delays have already been solved."
+    ],
+    "answerIndex": 0,
+    "subskillId": "reading.inference",
+    "explanation": "'supply chain delays are expected to slow growth' → คาดว่าไตรมาส 2 จะเติบโตช้าลงเพราะปัญหาซัพพลายเชน",
+    "distractorReasoning": {
+      "1": "ขัดกับข้อความที่บอกว่าการเติบโตจะช้าลง",
+      "2": "การปิดสาขาไม่ได้ถูกกล่าวถึง",
+      "3": "ขัดกับข้อความ — ปัญหายังไม่ถูกแก้ไข"
+    }
+  },
+  {
+    "id": "v021",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "Which word has a different vowel sound?",
+    "choices": [
+      "cat",
+      "hat",
+      "cake",
+      "map"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.phonics-sounds",
+    "patternId": "question_type_catalog.phonics-odd-one-out",
+    "explanation": "cake ออกเสียงสระ /เอ/ (เคก) ส่วน cat, hat, map ออกเสียง /แอะ/ เหมือนกัน อย่าตัดสินจากตัวสะกด ให้ลองออกเสียงดู",
+    "distractorReasoning": {
+      "0": "cat ออกเสียง /แอะ/ กลุ่มเดียวกับ hat และ map",
+      "1": "hat ออกเสียง /แอะ/ กลุ่มเดียวกับ cat และ map",
+      "3": "map ออกเสียง /แอะ/ กลุ่มเดียวกับ cat และ hat"
+    }
+  },
+  {
+    "id": "v022",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Which one can you ride to school?",
+    "choices": [
+      "A bicycle",
+      "A table",
+      "A pencil",
+      "A ball"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.school_and_classroom",
+    "explanation": "bicycle = จักรยาน เป็นสิ่งเดียวในตัวเลือกที่ขี่ (ride) ไปโรงเรียนได้",
+    "distractorReasoning": {
+      "1": "table = โต๊ะ ขี่ไม่ได้",
+      "2": "pencil = ดินสอ ขี่ไม่ได้",
+      "3": "ball = ลูกบอล ขี่ไม่ได้"
+    }
+  },
+  {
+    "id": "v023",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Which day comes after Monday?",
+    "choices": [
+      "Sunday",
+      "Tuesday",
+      "Friday",
+      "Saturday"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.school_and_classroom",
+    "explanation": "ลำดับวัน: Monday (จันทร์) → Tuesday (อังคาร)",
+    "distractorReasoning": {
+      "0": "Sunday มาก่อน Monday",
+      "2": "Friday คือศุกร์ อยู่หลัง Thursday",
+      "3": "Saturday คือเสาร์ อยู่หลัง Friday"
+    }
+  },
+  {
+    "id": "v024",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "You wear shoes on your ______.",
+    "choices": [
+      "hands",
+      "ears",
+      "feet",
+      "nose"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.health_and_body",
+    "explanation": "รองเท้า (shoes) ใส่ที่เท้า = feet (พหูพจน์ของ foot)",
+    "distractorReasoning": {
+      "0": "hands = มือ ใส่ถุงมือ (gloves)",
+      "1": "ears = หู ใส่ต่างหู (earrings)",
+      "3": "nose = จมูก"
+    }
+  },
+  {
+    "id": "v025",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Which animal can fly?",
+    "choices": [
+      "A fish",
+      "A bird",
+      "A cat",
+      "A dog"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.science_facts_and_diagrams",
+    "explanation": "bird = นก บินได้ (fly)",
+    "distractorReasoning": {
+      "0": "fish = ปลา ว่ายน้ำ (swim)",
+      "2": "cat = แมว บินไม่ได้",
+      "3": "dog = สุนัข บินไม่ได้"
+    }
+  },
+  {
+    "id": "v026",
+    "category": "vocabulary",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "What is the opposite of fast?",
+    "choices": [
+      "Slow",
+      "Tall",
+      "Happy",
+      "New"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.adjectives",
+    "patternId": "question_type_catalog.vocabulary-opposites",
+    "explanation": "fast = เร็ว คำตรงข้ามคือ slow = ช้า",
+    "distractorReasoning": {
+      "1": "Tall = สูง (ตรงข้ามคือ short)",
+      "2": "Happy = มีความสุข (ตรงข้ามคือ sad)",
+      "3": "New = ใหม่ (ตรงข้ามคือ old)"
+    }
+  },
+  {
+    "id": "g021",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "I ______ a student.",
+    "choices": [
+      "is",
+      "are",
+      "am",
+      "be"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.present-simple",
+    "patternId": "grammar_frequency.present_simple",
+    "explanation": "ประธาน I ใช้กับ am เสมอ → I am a student.",
+    "distractorReasoning": {
+      "0": "is ใช้กับ He/She/It",
+      "1": "are ใช้กับ You/We/They",
+      "3": "be ไม่ผันรูป ใช้ตรงนี้ไม่ได้"
+    }
+  },
+  {
+    "id": "g022",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "______ you like ice cream?",
+    "choices": [
+      "Does",
+      "Is",
+      "Are",
+      "Do"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.questions-negatives",
+    "patternId": "grammar_frequency.question_words_wh_questions",
+    "explanation": "คำถาม yes/no กับกริยา like และประธาน you → ใช้ Do: Do you like ice cream?",
+    "distractorReasoning": {
+      "0": "Does ใช้กับ He/She/It",
+      "1": "Is เป็น verb to be ใช้กับ like ไม่ได้",
+      "2": "Are เป็น verb to be ใช้กับ like ไม่ได้"
+    }
+  },
+  {
+    "id": "g023",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "The fish swims ______ the water.",
+    "choices": [
+      "on",
+      "in",
+      "at",
+      "by"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.articles-prepositions",
+    "patternId": "grammar_frequency.prepositions_of_place",
+    "explanation": "ปลาว่ายอยู่ 'ใน' น้ำ → in the water (in = ข้างใน)",
+    "distractorReasoning": {
+      "0": "on = บนผิว เช่น on the table",
+      "2": "at = ที่จุดหนึ่ง เช่น at school",
+      "3": "by = ข้าง ๆ / โดย"
+    }
+  },
+  {
+    "id": "g024",
+    "category": "grammar",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Look! The baby ______ sleeping.",
+    "choices": [
+      "is",
+      "are",
+      "am",
+      "be"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.present-simple",
+    "patternId": "grammar_frequency.present_continuous",
+    "explanation": "The baby เป็นเอกพจน์ + กำลังหลับอยู่ตอนนี้ (Look!) → is sleeping",
+    "distractorReasoning": {
+      "1": "are ใช้กับพหูพจน์",
+      "2": "am ใช้กับ I เท่านั้น",
+      "3": "be ไม่ผันรูป ใช้ตรงนี้ไม่ได้"
+    }
+  },
+  {
+    "id": "c016",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "A: Good morning, Somsak. B: ______",
+    "choices": [
+      "Good night.",
+      "Good morning, Malee.",
+      "Goodbye.",
+      "I am nine."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.greetings-politeness",
+    "patternId": "dialogue_patterns.greeting-reply",
+    "explanation": "ทักทายตอนเช้าด้วย Good morning → ตอบกลับด้วย Good morning เช่นกัน",
+    "distractorReasoning": {
+      "0": "Good night. ใช้ก่อนนอน/ลาตอนกลางคืน",
+      "2": "Goodbye. ใช้ตอนลาจาก ไม่ใช่ตอบคำทักทาย",
+      "3": "I am nine. ตอบอายุ ไม่ตรงกับการทักทาย"
+    }
+  },
+  {
+    "id": "c017",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "A: Thank you for your help. B: ______",
+    "choices": [
+      "You're welcome.",
+      "Yes, I am.",
+      "It is Monday.",
+      "I don't know."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.greetings-politeness",
+    "patternId": "dialogue_patterns.greeting-reply",
+    "explanation": "เมื่อมีคนขอบคุณ ตอบรับอย่างสุภาพด้วย You're welcome. (ด้วยความยินดี)",
+    "distractorReasoning": {
+      "1": "Yes, I am. ใช้ตอบคำถาม Are you...?",
+      "2": "It is Monday. ตอบเรื่องวัน ไม่เกี่ยว",
+      "3": "I don't know. ไม่ใช่คำตอบรับคำขอบคุณ"
+    }
+  },
+  {
+    "id": "c018",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "A: Goodbye! See you tomorrow. B: ______",
+    "choices": [
+      "Nice to meet you.",
+      "I am fine.",
+      "See you!",
+      "Yes, please."
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.greetings-politeness",
+    "patternId": "dialogue_patterns.greeting-reply",
+    "explanation": "การลาจาก → ตอบกลับด้วยคำลา See you! (แล้วเจอกัน)",
+    "distractorReasoning": {
+      "0": "Nice to meet you. ใช้ตอนเพิ่งรู้จักกัน",
+      "1": "I am fine. ใช้ตอบ How are you?",
+      "3": "Yes, please. ใช้ตอบรับคำเสนอ"
+    }
+  },
+  {
+    "id": "c019",
+    "category": "conversation",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "A: I'm sorry I broke your pencil. B: ______",
+    "choices": [
+      "That's OK.",
+      "Good idea!",
+      "Yes, I do.",
+      "Happy birthday!"
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.greetings-politeness",
+    "patternId": "dialogue_patterns.problem-sharing-sympathy",
+    "explanation": "เมื่อมีคนขอโทษ ตอบให้อภัยด้วย That's OK. (ไม่เป็นไร)",
+    "distractorReasoning": {
+      "1": "Good idea! ใช้ตอบข้อเสนอ ไม่ใช่คำขอโทษ",
+      "2": "Yes, I do. ใช้ตอบคำถาม Do you...?",
+      "3": "Happy birthday! เป็นคำอวยพรวันเกิด"
+    }
+  },
+  {
+    "id": "r015",
+    "category": "reading",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "You see this sign in the library: 'NO FOOD OR DRINK'. What does it mean?",
+    "choices": [
+      "You can eat here.",
+      "You must not eat or drink here.",
+      "You can drink water only.",
+      "You must buy food here."
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.signs-notices",
+    "patternId": "question_type_catalog.sign-meaning",
+    "explanation": "ป้าย 'NO FOOD OR DRINK' = ห้ามนำอาหารและเครื่องดื่มเข้ามา ดังนั้นห้ามกินหรือดื่มที่นี่",
+    "distractorReasoning": {
+      "0": "ตรงข้ามกับป้ายที่ห้ามอาหาร",
+      "2": "ป้ายห้ามเครื่องดื่มทุกชนิด รวมถึงน้ำ",
+      "3": "ป้ายไม่ได้บอกให้ซื้ออาหาร"
+    }
+  },
+  {
+    "id": "r016",
+    "category": "reading",
+    "cefr": "Pre-A1",
+    "difficulty": 1,
+    "prompt": "Lek gets up at seven o'clock. She goes to school at eight o'clock. What time does Lek go to school?",
+    "choices": [
+      "At seven o'clock",
+      "At six o'clock",
+      "At nine o'clock",
+      "At eight o'clock"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.detail",
+    "patternId": "reading_patterns.daily-routine-recount",
+    "explanation": "เรื่องบอกตรง ๆ ว่า 'goes to school at eight o'clock' — ไปโรงเรียนตอนแปดโมง",
+    "distractorReasoning": {
+      "0": "เจ็ดโมงคือเวลาตื่นนอน ไม่ใช่เวลาไปโรงเรียน (กับดักหยิบเลขผิดตัว)",
+      "1": "หกโมงไม่ได้ถูกกล่าวถึง",
+      "2": "เก้าโมงไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "r017",
+    "category": "reading",
+    "cefr": "Pre-A1",
+    "difficulty": 2,
+    "prompt": "Dan likes apples and bananas. He does not like grapes. Which fruit does Dan NOT like?",
+    "choices": [
+      "Apples",
+      "Grapes",
+      "Bananas",
+      "Mangoes"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.detail",
+    "patternId": "question_type_catalog.not-mentioned",
+    "explanation": "คำถามแบบ NOT: เรื่องบอกว่า 'He does not like grapes' — แดนไม่ชอบองุ่น",
+    "distractorReasoning": {
+      "0": "แอปเปิลคือผลไม้ที่แดนชอบ",
+      "2": "กล้วยคือผลไม้ที่แดนชอบ",
+      "3": "มะม่วงไม่ได้ถูกกล่าวถึงในเรื่อง"
+    }
+  },
+  {
+    "id": "v027",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Choose the word with a different vowel sound.",
+    "choices": [
+      "see",
+      "tree",
+      "bed",
+      "bee"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.phonics-sounds",
+    "patternId": "question_type_catalog.phonics-odd-one-out",
+    "explanation": "bed ออกเสียงสระ /เอะ/ ส่วน see, tree, bee ออกเสียง /อี/ ยาวเหมือนกัน",
+    "distractorReasoning": {
+      "0": "see ออกเสียง /อี/ กลุ่มเดียวกับ tree และ bee",
+      "1": "tree ออกเสียง /อี/ กลุ่มเดียวกับ see และ bee",
+      "3": "bee ออกเสียง /อี/ กลุ่มเดียวกับ see และ tree"
+    }
+  },
+  {
+    "id": "v028",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "It is raining. You need an ______ to stay dry.",
+    "choices": [
+      "umbrella",
+      "orange",
+      "egg",
+      "ant"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.weather",
+    "explanation": "ฝนตกต้องใช้ร่ม (umbrella) เพื่อไม่ให้เปียก",
+    "distractorReasoning": {
+      "1": "orange = ส้ม กันฝนไม่ได้",
+      "2": "egg = ไข่ กันฝนไม่ได้",
+      "3": "ant = มด กันฝนไม่ได้"
+    }
+  },
+  {
+    "id": "v029",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A person who takes care of sick people in a hospital is a ______.",
+    "choices": [
+      "farmer",
+      "singer",
+      "nurse",
+      "waiter"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.occupations",
+    "explanation": "คนที่ดูแลผู้ป่วยในโรงพยาบาลคือ nurse = พยาบาล",
+    "distractorReasoning": {
+      "0": "farmer = ชาวนา ทำงานในไร่นา",
+      "1": "singer = นักร้อง",
+      "3": "waiter = พนักงานเสิร์ฟในร้านอาหาร"
+    }
+  },
+  {
+    "id": "v030",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "It is cold. Please ______ the window.",
+    "choices": [
+      "close",
+      "eat",
+      "read",
+      "sing"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.verbs-actions",
+    "patternId": "vocabulary_topics_frequency.weather",
+    "explanation": "อากาศหนาว จึงขอให้ 'ปิด' หน้าต่าง → close the window",
+    "distractorReasoning": {
+      "1": "eat = กิน ใช้กับหน้าต่างไม่ได้",
+      "2": "read = อ่าน ใช้กับหน้าต่างไม่ได้",
+      "3": "sing = ร้องเพลง ใช้กับหน้าต่างไม่ได้"
+    }
+  },
+  {
+    "id": "v031",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Which month comes between March and May?",
+    "choices": [
+      "January",
+      "April",
+      "June",
+      "August"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.festivals_and_holidays",
+    "explanation": "ลำดับเดือน: March (มีนาคม) → April (เมษายน) → May (พฤษภาคม)",
+    "distractorReasoning": {
+      "0": "January = มกราคม เป็นเดือนแรกของปี",
+      "2": "June = มิถุนายน อยู่หลัง May",
+      "3": "August = สิงหาคม อยู่หลัง July"
+    }
+  },
+  {
+    "id": "v032",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "During Songkran festival, Thai people splash ______ on each other.",
+    "choices": [
+      "sand",
+      "paint",
+      "milk",
+      "water"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.culture-holidays",
+    "patternId": "vocabulary_topics_frequency.festivals_and_holidays",
+    "explanation": "เทศกาลสงกรานต์ คนไทยเล่นสาดน้ำ (splash water) ใส่กัน",
+    "distractorReasoning": {
+      "0": "sand = ทราย ใช้ก่อเจดีย์ทรายแต่ไม่ใช่สิ่งที่สาดใส่กัน",
+      "1": "paint = สี ไม่ใช่ประเพณีสงกรานต์",
+      "2": "milk = นม ไม่ใช่ประเพณีสงกรานต์"
+    }
+  },
+  {
+    "id": "v033",
+    "category": "vocabulary",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "You use ______ to cut paper.",
+    "choices": [
+      "a spoon",
+      "scissors",
+      "a pillow",
+      "a plate"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.everyday-nouns",
+    "patternId": "vocabulary_topics_frequency.school_and_classroom",
+    "explanation": "ใช้กรรไกร (scissors) ตัดกระดาษ",
+    "distractorReasoning": {
+      "0": "spoon = ช้อน ใช้กินอาหาร",
+      "2": "pillow = หมอน ใช้หนุนนอน",
+      "3": "plate = จาน ใช้ใส่อาหาร"
+    }
+  },
+  {
+    "id": "g025",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Tim ______ football with his friends yesterday.",
+    "choices": [
+      "plays",
+      "play",
+      "played",
+      "playing"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.tense-past",
+    "patternId": "grammar_frequency.tense_time_marker_agreement",
+    "explanation": "yesterday เป็นตัวชี้อดีต → ใช้ past simple: played",
+    "distractorReasoning": {
+      "0": "plays เป็นปัจจุบัน ขัดกับ yesterday",
+      "1": "play เป็นปัจจุบัน ขัดกับ yesterday",
+      "3": "playing ต้องมีกริยาช่วยนำหน้า"
+    }
+  },
+  {
+    "id": "g026",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A cheetah can ______ very fast.",
+    "choices": [
+      "runs",
+      "ran",
+      "running",
+      "run"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.modals",
+    "patternId": "grammar_frequency.modal_verbs_should_could_would_may_can",
+    "explanation": "หลัง modal verb (can) ต้องใช้กริยาช่อง 1 ไม่ผันรูป → can run",
+    "distractorReasoning": {
+      "0": "runs เติม -s ใช้หลัง can ไม่ได้",
+      "1": "ran เป็นช่อง 2 ใช้หลัง can ไม่ได้",
+      "2": "running เป็น -ing ใช้หลัง can ไม่ได้"
+    }
+  },
+  {
+    "id": "g027",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "My birthday is ______ June.",
+    "choices": [
+      "on",
+      "at",
+      "in",
+      "for"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.articles-prepositions",
+    "patternId": "grammar_frequency.prepositions_of_place",
+    "explanation": "เดือนใช้ in → in June (in + เดือน/ปี, on + วันที่, at + เวลา)",
+    "distractorReasoning": {
+      "0": "on ใช้กับวันที่/วัน เช่น on Monday, on 5 June",
+      "1": "at ใช้กับเวลา เช่น at six o'clock",
+      "3": "for ใช้บอกระยะเวลา เช่น for two hours"
+    }
+  },
+  {
+    "id": "g028",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "The school bus arrives ______ eight o'clock.",
+    "choices": [
+      "in",
+      "on",
+      "at",
+      "of"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.articles-prepositions",
+    "patternId": "grammar_frequency.prepositions_of_place",
+    "explanation": "เวลา (o'clock) ใช้ at → at eight o'clock",
+    "distractorReasoning": {
+      "0": "in ใช้กับเดือน/ปี/ช่วงเวลา เช่น in June, in the morning",
+      "1": "on ใช้กับวัน/วันที่ เช่น on Sunday",
+      "3": "of ไม่ใช้บอกเวลา"
+    }
+  },
+  {
+    "id": "g029",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "______ is your favorite color?",
+    "choices": [
+      "Who",
+      "What",
+      "Where",
+      "When"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.questions-negatives",
+    "patternId": "grammar_frequency.question_words_wh_questions",
+    "explanation": "ถามว่าสีโปรดคือ 'อะไร' → What is your favorite color?",
+    "distractorReasoning": {
+      "0": "Who ถามบุคคล (ใคร)",
+      "2": "Where ถามสถานที่ (ที่ไหน)",
+      "3": "When ถามเวลา (เมื่อไร)"
+    }
+  },
+  {
+    "id": "g030",
+    "category": "grammar",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "How ______ apples are there in the basket?",
+    "choices": [
+      "much",
+      "long",
+      "old",
+      "many"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.questions-negatives",
+    "patternId": "grammar_frequency.fractions_quantifiers",
+    "explanation": "apples เป็นนามนับได้พหูพจน์ → ถามจำนวนด้วย How many",
+    "distractorReasoning": {
+      "0": "much ใช้กับนามนับไม่ได้ เช่น How much water",
+      "1": "How long ถามระยะเวลา/ความยาว",
+      "2": "How old ถามอายุ"
+    }
+  },
+  {
+    "id": "c020",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A: May I borrow your pencil? B: ______",
+    "choices": [
+      "Sure, here you are.",
+      "I am ten years old.",
+      "It is a pencil.",
+      "Goodbye."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.family-classroom-permission",
+    "explanation": "ขอยืมดินสอ → ตอบรับพร้อมยื่นให้: Sure, here you are. (ได้เลย นี่ครับ/ค่ะ)",
+    "distractorReasoning": {
+      "1": "ตอบอายุ ไม่ตรงคำถาม",
+      "2": "It is a pencil. พูดซ้ำสิ่งที่ถาม ไม่ได้ตอบว่าให้ยืมไหม (กับดักสะท้อนคำถาม)",
+      "3": "Goodbye. เป็นคำลา"
+    }
+  },
+  {
+    "id": "c021",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "A: What's the weather like today? B: ______",
+    "choices": [
+      "I like summer.",
+      "It's sunny and hot.",
+      "It is five o'clock.",
+      "Yes, it is."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.requests-responses",
+    "patternId": "vocabulary_topics_frequency.weather",
+    "explanation": "What's the weather like? ถามสภาพอากาศ → ตอบสภาพอากาศ: It's sunny and hot. (แดดออกและร้อน)",
+    "distractorReasoning": {
+      "0": "I like summer. บอกความชอบ ไม่ได้บอกอากาศวันนี้ (กับดักคำว่า like)",
+      "2": "ตอบเวลา ไม่ตรงคำถาม",
+      "3": "Yes, it is. ใช้ตอบคำถาม yes/no"
+    }
+  },
+  {
+    "id": "c022",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "A: Excuse me, where is the post office? B: ______",
+    "choices": [
+      "It's next to the bank.",
+      "It's ten baht.",
+      "At seven o'clock.",
+      "By bus."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.directions",
+    "patternId": "question_type_catalog.map-direction",
+    "explanation": "Where...? ถามสถานที่ → ตอบตำแหน่ง: It's next to the bank. (อยู่ข้างธนาคาร)",
+    "distractorReasoning": {
+      "1": "ตอบราคา (How much...?)",
+      "2": "ตอบเวลา (What time...?)",
+      "3": "ตอบวิธีเดินทาง (How do you go...?)"
+    }
+  },
+  {
+    "id": "c023",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "A: Hello. May I speak to Nida, please? B: ______",
+    "choices": [
+      "Yes, I like it.",
+      "Just a moment, please.",
+      "She is tall.",
+      "No, thank you."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.phone-call-etiquette",
+    "explanation": "มารยาททางโทรศัพท์: ขอสายคุยกับนิดา → ตอบว่ารอสักครู่: Just a moment, please.",
+    "distractorReasoning": {
+      "0": "Yes, I like it. ไม่เกี่ยวกับการขอสาย",
+      "2": "She is tall. บอกรูปร่าง ไม่ตอบคำขอ",
+      "3": "No, thank you. ใช้ปฏิเสธคำเสนอ ไม่ใช่คำขอสาย"
+    }
+  },
+  {
+    "id": "c024",
+    "category": "conversation",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "A: ______? B: I go to school by bicycle.",
+    "choices": [
+      "Where is your school",
+      "What time do you go to school",
+      "How do you go to school",
+      "Why do you like your school"
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.reverse-question",
+    "patternId": "dialogue_patterns.reverse-completion",
+    "explanation": "โจทย์ให้คำตอบมา (reverse): คำตอบบอกวิธีเดินทาง (by bicycle) → คำถามต้องถามวิธีเดินทาง: How do you go to school?",
+    "distractorReasoning": {
+      "0": "ถามสถานที่ — คำตอบจะเป็นที่ตั้งโรงเรียน",
+      "1": "ถามเวลา — คำตอบจะเป็นเวลา",
+      "3": "ถามเหตุผล — คำตอบจะขึ้นต้นด้วย Because"
+    }
+  },
+  {
+    "id": "r018",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Read the notice: 'ART CLUB — Every Wednesday, 3:30-4:30 p.m., Room 12. Bring your own paintbrush.' What must students bring to the club?",
+    "choices": [
+      "A paintbrush",
+      "A dictionary",
+      "A football",
+      "Paper"
+    ],
+    "answerIndex": 0,
+    "subskillId": "reading.signs-notices",
+    "patternId": "reading_patterns.informational-poster",
+    "explanation": "ประกาศบอกว่า 'Bring your own paintbrush' — ต้องนำพู่กันมาเอง",
+    "distractorReasoning": {
+      "1": "พจนานุกรมไม่ได้ถูกกล่าวถึง",
+      "2": "ลูกฟุตบอลไม่ได้ถูกกล่าวถึง",
+      "3": "กระดาษไม่ได้ถูกกล่าวถึงว่าต้องนำมา"
+    }
+  },
+  {
+    "id": "r019",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "You see this sign in a park: 'PLEASE KEEP OFF THE GRASS'. What does it mean?",
+    "choices": [
+      "Water the grass every day.",
+      "Do not walk on the grass.",
+      "Cut the grass short.",
+      "Sit on the grass quietly."
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.signs-notices",
+    "patternId": "question_type_catalog.sign-meaning",
+    "explanation": "'KEEP OFF THE GRASS' = ห้ามเหยียบ/เดินบนสนามหญ้า",
+    "distractorReasoning": {
+      "0": "ป้ายไม่ได้สั่งให้รดน้ำ",
+      "2": "ป้ายไม่ได้สั่งให้ตัดหญ้า",
+      "3": "การนั่งบนหญ้าก็คือการเหยียบหญ้า — ขัดกับป้าย"
+    }
+  },
+  {
+    "id": "r020",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 2,
+    "prompt": "Read the postcard: 'Dear Mim, I am in Phuket with my family. We swim in the sea every morning. See you soon. — Nan' Who wrote the postcard?",
+    "choices": [
+      "Mim",
+      "Phuket",
+      "Nan",
+      "Mim's family"
+    ],
+    "answerIndex": 2,
+    "subskillId": "reading.detail",
+    "patternId": "reading_patterns.personal-letter-postcard",
+    "explanation": "ชื่อผู้เขียนอยู่ท้ายโปสการ์ด (— Nan) ส่วน 'Dear Mim' คือผู้รับ",
+    "distractorReasoning": {
+      "0": "Mim คือผู้รับ (Dear Mim)",
+      "1": "Phuket คือสถานที่ ไม่ใช่คน",
+      "3": "ครอบครัวที่ไปด้วยคือครอบครัวของ Nan ไม่ใช่ผู้เขียน"
+    }
+  },
+  {
+    "id": "r021",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "Aom is wearing a raincoat and boots. She is carrying an umbrella. What is the weather probably like?",
+    "choices": [
+      "Sunny",
+      "Snowy",
+      "Windy",
+      "Rainy"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.inference",
+    "patternId": "question_type_catalog.picture-inference",
+    "explanation": "เสื้อกันฝน รองเท้าบูต และร่ม เป็นของใช้กันฝน → อนุมานได้ว่าฝนตก (rainy)",
+    "distractorReasoning": {
+      "0": "แดดออกไม่จำเป็นต้องใส่เสื้อกันฝน",
+      "1": "หิมะตกต้องใส่เสื้อกันหนาว ไม่ใช่เสื้อกันฝน",
+      "2": "ลมแรงอย่างเดียวไม่ต้องใช้เสื้อกันฝนกับร่ม"
+    }
+  },
+  {
+    "id": "r022",
+    "category": "reading",
+    "cefr": "A1",
+    "difficulty": 3,
+    "prompt": "At Ploy's fruit shop, apples cost 10 baht, oranges cost 8 baht, and mangoes cost 15 baht. Which fruit is the cheapest?",
+    "choices": [
+      "Apples",
+      "Oranges",
+      "Mangoes",
+      "They cost the same"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.data-interpretation",
+    "patternId": "question_type_catalog.data-comparison",
+    "explanation": "เทียบราคา: ส้ม 8 บาท < แอปเปิล 10 บาท < มะม่วง 15 บาท → ส้มถูกที่สุด (cheapest)",
+    "distractorReasoning": {
+      "0": "แอปเปิล 10 บาท แพงกว่าส้ม",
+      "2": "มะม่วง 15 บาท แพงที่สุด (ระวังอ่านทิศทางการเปรียบเทียบกลับด้าน)",
+      "3": "ราคาไม่เท่ากัน"
+    }
+  },
+  {
+    "id": "v034",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "Which word has a different 'oo' sound?",
+    "choices": [
+      "food",
+      "moon",
+      "school",
+      "book"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.phonics-sounds",
+    "patternId": "question_type_catalog.phonics-odd-one-out",
+    "explanation": "book ออกเสียง /อุ/ สั้น ส่วน food, moon, school ออกเสียง /อู/ ยาว — สะกด oo เหมือนกันแต่เสียงต่างกัน",
+    "distractorReasoning": {
+      "0": "food ออกเสียง /อู/ ยาว",
+      "1": "moon ออกเสียง /อู/ ยาว",
+      "2": "school ออกเสียง /อู/ ยาว"
+    }
+  },
+  {
+    "id": "v035",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "The library is very quiet. You must not make any ______.",
+    "choices": [
+      "noise",
+      "noodles",
+      "notes",
+      "nurses"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.in-context",
+    "patternId": "question_type_catalog.cloze-passage",
+    "explanation": "ห้องสมุดเงียบ จึงห้ามส่งเสียงดัง → make noise = ส่งเสียงดัง",
+    "distractorReasoning": {
+      "1": "noodles = ก๋วยเตี๋ยว ไม่เข้าบริบท (คำหน้าตาคล้าย)",
+      "2": "notes = โน้ต/บันทึก — ในห้องสมุดจดโน้ตได้ ไม่ถูกห้าม",
+      "3": "nurses = พยาบาล ไม่เข้าบริบท"
+    }
+  },
+  {
+    "id": "v036",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Don't forget to ______ your teeth before you go to bed.",
+    "choices": [
+      "wash",
+      "brush",
+      "comb",
+      "cut"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.verbs-actions",
+    "patternId": "vocabulary_topics_frequency.health_and_body",
+    "explanation": "แปรงฟันใช้คำว่า brush your teeth (collocation ที่ถูกต้อง)",
+    "distractorReasoning": {
+      "0": "wash ใช้กับมือ/หน้า (wash your hands)",
+      "2": "comb ใช้กับผม (comb your hair)",
+      "3": "cut = ตัด ไม่ใช้กับฟัน"
+    }
+  },
+  {
+    "id": "v037",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "We should ______ plastic bottles instead of throwing them away.",
+    "choices": [
+      "burn",
+      "hide",
+      "recycle",
+      "break"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.in-context",
+    "patternId": "vocabulary_topics_frequency.environment_and_nature",
+    "explanation": "ควรนำขวดพลาสติกไป 'รีไซเคิล' (recycle) แทนการทิ้ง เพื่อช่วยสิ่งแวดล้อม",
+    "distractorReasoning": {
+      "0": "burn = เผา ทำให้เกิดมลพิษ",
+      "1": "hide = ซ่อน ไม่ช่วยสิ่งแวดล้อม",
+      "3": "break = ทำแตก ไม่ช่วยสิ่งแวดล้อม"
+    }
+  },
+  {
+    "id": "v038",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "On Loy Krathong night, Thai people float their krathongs on the ______.",
+    "choices": [
+      "road",
+      "river",
+      "roof",
+      "rice field"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.culture-holidays",
+    "patternId": "vocabulary_topics_frequency.festivals_and_holidays",
+    "explanation": "ลอยกระทงลอยบนแม่น้ำ/สายน้ำ → float on the river",
+    "distractorReasoning": {
+      "0": "road = ถนน ลอยกระทงไม่ได้",
+      "2": "roof = หลังคา ลอยกระทงไม่ได้",
+      "3": "rice field = นาข้าว ไม่ใช่ที่ลอยกระทง"
+    }
+  },
+  {
+    "id": "v039",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Christmas is celebrated in ______.",
+    "choices": [
+      "October",
+      "November",
+      "January",
+      "December"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.culture-holidays",
+    "patternId": "question_type_catalog.culture-holiday",
+    "explanation": "คริสต์มาสตรงกับวันที่ 25 ธันวาคม → December",
+    "distractorReasoning": {
+      "0": "October มีวันฮาโลวีน (31 ต.ค.)",
+      "1": "November มีวันขอบคุณพระเจ้าในอเมริกา",
+      "2": "January มีวันปีใหม่ (1 ม.ค.)"
+    }
+  },
+  {
+    "id": "v040",
+    "category": "vocabulary",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "I have a headache. The doctor gave me some ______.",
+    "choices": [
+      "medicine",
+      "furniture",
+      "homework",
+      "luggage"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.in-context",
+    "patternId": "vocabulary_topics_frequency.health_and_body",
+    "explanation": "ปวดหัวไปหาหมอ หมอให้ 'ยา' → medicine",
+    "distractorReasoning": {
+      "1": "furniture = เฟอร์นิเจอร์ ไม่เข้าบริบท",
+      "2": "homework = การบ้าน หมอไม่ได้ให้",
+      "3": "luggage = กระเป๋าเดินทาง ไม่เข้าบริบท"
+    }
+  },
+  {
+    "id": "g031",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Somsri is the ______ student in our class.",
+    "choices": [
+      "tall",
+      "taller",
+      "most tall",
+      "tallest"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.comparatives",
+    "patternId": "grammar_frequency.comparatives_superlatives",
+    "explanation": "มี the และเทียบกับทั้งห้อง (in our class) → ใช้ขั้นสูงสุด: the tallest",
+    "distractorReasoning": {
+      "0": "tall ขั้นปกติ ใช้กับ the ... in our class ไม่ได้",
+      "1": "taller ขั้นกว่า ใช้กับ than",
+      "2": "most tall ผิด — คำพยางค์เดียวเติม -est"
+    }
+  },
+  {
+    "id": "g032",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "You ______ wear a helmet when you ride a motorcycle. It's the law.",
+    "choices": [
+      "must",
+      "must not",
+      "would not",
+      "may not"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.modals",
+    "patternId": "grammar_frequency.modal_verbs_should_could_would_may_can",
+    "explanation": "กฎหมายบังคับให้สวมหมวกกันน็อก → must = ต้อง (ข้อบังคับ)",
+    "distractorReasoning": {
+      "1": "must not = ห้าม ผิดความหมาย (กับดักขั้วตรงข้าม)",
+      "2": "would not = จะไม่ ไม่ใช่ข้อบังคับ",
+      "3": "may not = ไม่อนุญาต ผิดความหมาย"
+    }
+  },
+  {
+    "id": "g033",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "We have lived in Bangkok ______ 2015.",
+    "choices": [
+      "for",
+      "from",
+      "since",
+      "at"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.perfect-tenses",
+    "patternId": "grammar_frequency.present_simple",
+    "explanation": "present perfect + จุดเริ่มต้นของเวลา (ปี 2015) → ใช้ since (since + จุดเวลา, for + ระยะเวลา)",
+    "distractorReasoning": {
+      "0": "for ใช้กับระยะเวลา เช่น for ten years (กับดัก since/for)",
+      "1": "from มักคู่กับ to (from 2015 to 2020)",
+      "3": "at ใช้กับเวลา เช่น at six o'clock"
+    }
+  },
+  {
+    "id": "g034",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "While I ______ dinner, the phone rang.",
+    "choices": [
+      "cook",
+      "cooked",
+      "am cooking",
+      "was cooking"
+    ],
+    "answerIndex": 3,
+    "subskillId": "grammar.tense-past",
+    "patternId": "grammar_frequency.past_simple",
+    "explanation": "While + เหตุการณ์ที่กำลังดำเนินอยู่ในอดีต ถูกขัดจังหวะด้วย past simple (rang) → was cooking (past continuous)",
+    "distractorReasoning": {
+      "0": "cook เป็นปัจจุบัน ขัดกับ rang ที่เป็นอดีต",
+      "1": "cooked เป็น past simple ธรรมดา ไม่สื่อว่า 'กำลังทำอยู่'",
+      "2": "am cooking เป็นปัจจุบัน ขัดกับเหตุการณ์อดีต"
+    }
+  },
+  {
+    "id": "g035",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "English ______ in many countries around the world.",
+    "choices": [
+      "speaks",
+      "is spoken",
+      "is speaking",
+      "spoke"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.clauses-passive",
+    "patternId": "grammar_frequency.present_simple",
+    "explanation": "ภาษาอังกฤษ 'ถูกพูด' ในหลายประเทศ → passive voice: is + กริยาช่อง 3 = is spoken",
+    "distractorReasoning": {
+      "0": "speaks เป็น active แปลว่าภาษาอังกฤษเป็นผู้พูดเอง",
+      "2": "is speaking เป็น active กำลังพูด",
+      "3": "spoke เป็น active อดีต"
+    }
+  },
+  {
+    "id": "g036",
+    "category": "grammar",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Which sentence has the correct punctuation?",
+    "choices": [
+      "what a beautiful day it is.",
+      "Where do you live?",
+      "Are you hungry.",
+      "she is my sister"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.punctuation-intonation",
+    "patternId": "question_type_catalog.punctuation-check",
+    "explanation": "ประโยคที่ถูกต้องคือ 'Where do you live?' — ขึ้นต้นด้วยตัวพิมพ์ใหญ่และประโยคคำถามจบด้วยเครื่องหมายคำถาม (?)",
+    "distractorReasoning": {
+      "0": "ประโยคอุทานควรขึ้นต้นตัวพิมพ์ใหญ่และจบด้วย ! ไม่ใช่จุด",
+      "2": "เป็นประโยคคำถาม ต้องจบด้วย ? ไม่ใช่จุด",
+      "3": "ไม่ขึ้นต้นด้วยตัวพิมพ์ใหญ่และไม่มีเครื่องหมายจบประโยค"
+    }
+  },
+  {
+    "id": "c025",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "At a clothes shop — A: Can I help you? B: ______",
+    "choices": [
+      "Yes, I'm looking for a T-shirt.",
+      "No, I can't help you.",
+      "Yes, you can shop.",
+      "I wear a uniform to school."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.service-context",
+    "explanation": "พนักงานถามว่าให้ช่วยอะไรไหม → ลูกค้าบอกสิ่งที่ต้องการ: Yes, I'm looking for a T-shirt.",
+    "distractorReasoning": {
+      "1": "สลับบทบาท — ลูกค้าไม่ใช่คนช่วย (กับดักสะท้อนคำถาม)",
+      "2": "Yes, you can shop. ไม่ใช่คำตอบของลูกค้า",
+      "3": "พูดเรื่องชุดนักเรียน ไม่ตอบคำถามในร้าน"
+    }
+  },
+  {
+    "id": "c026",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "At a restaurant — A: Are you ready to order? B: ______",
+    "choices": [
+      "Yes, I ordered you to go.",
+      "Yes, I'd like fried rice, please.",
+      "No, the food is delicious.",
+      "Yes, the bill, please."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.service-context",
+    "explanation": "พร้อมสั่งอาหาร → สั่งเมนู: Yes, I'd like fried rice, please. (ขอข้าวผัดค่ะ/ครับ)",
+    "distractorReasoning": {
+      "0": "order ในที่นี้คือสั่งอาหาร ไม่ใช่ออกคำสั่ง (กับดักคำพ้อง)",
+      "2": "ชมอาหารทั้งที่ยังไม่ได้กิน — ขัดบริบทและขัดกับ No",
+      "3": "ขอบิลคือขั้นตอนหลังกินเสร็จ ไม่ใช่ตอนสั่ง (ผิดลำดับ)"
+    }
+  },
+  {
+    "id": "c027",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "A: I failed my math test. B: ______",
+    "choices": [
+      "Congratulations!",
+      "Lucky you!",
+      "That's funny!",
+      "Don't worry. You can do better next time."
+    ],
+    "answerIndex": 3,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.problem-sharing-sympathy",
+    "explanation": "เพื่อนสอบตก ต้องปลอบใจให้กำลังใจ: Don't worry. You can do better next time. (โทนความรู้สึกต้องตรงกับสถานการณ์)",
+    "distractorReasoning": {
+      "0": "Congratulations! ใช้แสดงความยินดี — ขั้วอารมณ์ตรงข้าม",
+      "1": "Lucky you! = โชคดีจัง — ขั้วอารมณ์ตรงข้าม",
+      "2": "That's funny! = ตลกดี — ไม่เห็นใจเพื่อน"
+    }
+  },
+  {
+    "id": "c028",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "A: ______? B: It's fifty baht.",
+    "choices": [
+      "How much is this notebook",
+      "How many notebooks are there",
+      "What time does the shop open",
+      "Where did you buy this notebook"
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.reverse-question",
+    "patternId": "dialogue_patterns.reverse-completion",
+    "explanation": "Reverse completion: คำตอบบอกราคา (fifty baht) → คำถามต้องถามราคา: How much is this notebook?",
+    "distractorReasoning": {
+      "1": "How many ถามจำนวน — คำตอบจะเป็นจำนวนเล่ม",
+      "2": "ถามเวลาเปิดร้าน — คำตอบจะเป็นเวลา",
+      "3": "ถามสถานที่ซื้อ — คำตอบจะเป็นชื่อร้าน/สถานที่"
+    }
+  },
+  {
+    "id": "c029",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "A: How do I get to the hospital from here? B: ______",
+    "choices": [
+      "It opens at nine o'clock.",
+      "Go straight and turn left at the corner. It's on your right.",
+      "The doctor is very kind.",
+      "I went there last week."
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.directions",
+    "patternId": "question_type_catalog.map-direction",
+    "explanation": "How do I get to...? ถามเส้นทาง → ตอบวิธีเดินทาง: ตรงไป เลี้ยวซ้ายตรงหัวมุม อยู่ทางขวามือ",
+    "distractorReasoning": {
+      "0": "ตอบเวลาเปิด ไม่ใช่เส้นทาง",
+      "2": "ชมหมอ ไม่ตอบเส้นทาง",
+      "3": "เล่าว่าเคยไป ไม่บอกเส้นทาง"
+    }
+  },
+  {
+    "id": "c030",
+    "category": "conversation",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "A: Would you like some more cake? B: No, thanks. I'm full. What does B mean?",
+    "choices": [
+      "B wants more cake.",
+      "B doesn't like cake at all.",
+      "B has had enough to eat.",
+      "B will bake a cake."
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.pragmatic-inference",
+    "explanation": "I'm full = อิ่มแล้ว → B กินพอแล้วจึงไม่รับเค้กเพิ่ม (ตีความความหมายที่ซ่อนอยู่)",
+    "distractorReasoning": {
+      "0": "B ปฏิเสธ (No, thanks) จึงไม่ได้อยากได้เพิ่ม",
+      "1": "B แค่อิ่ม ไม่ได้บอกว่าไม่ชอบเค้ก (ตีความเกินข้อความ)",
+      "3": "การอบเค้กไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "r023",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "Read the pool rules: 'Children under 10 must swim with an adult. No diving in the shallow end.' Fon is 8 years old. What must she do at the pool?",
+    "choices": [
+      "Dive in the shallow end",
+      "Swim with an adult",
+      "Swim alone in the deep end",
+      "Stay out of the pool all day"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.signs-notices",
+    "patternId": "reading_patterns.instructional-rule-text",
+    "explanation": "ฝน อายุ 8 ขวบ ต่ำกว่า 10 → เข้าเงื่อนไข 'Children under 10 must swim with an adult' ต้องว่ายน้ำกับผู้ใหญ่",
+    "distractorReasoning": {
+      "0": "กฎห้ามกระโดดน้ำฝั่งตื้น",
+      "2": "เด็กต่ำกว่า 10 ห้ามว่ายคนเดียว",
+      "3": "กฎไม่ได้ห้ามลงสระ แค่ต้องมีผู้ใหญ่"
+    }
+  },
+  {
+    "id": "r024",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 4,
+    "prompt": "A ruler costs 12 baht. A notebook costs twice as much as the ruler. A pen costs 5 baht less than the notebook. How much does the pen cost?",
+    "choices": [
+      "12 baht",
+      "24 baht",
+      "29 baht",
+      "19 baht"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.data-interpretation",
+    "patternId": "question_type_catalog.arithmetic-word-problem",
+    "explanation": "ไม้บรรทัด 12 บาท → สมุด = 2 × 12 = 24 บาท → ปากกา = 24 − 5 = 19 บาท (ต้องคิดทีละขั้น)",
+    "distractorReasoning": {
+      "0": "12 บาท คือราคาไม้บรรทัด",
+      "1": "24 บาท คือราคาสมุด (หยุดคิดกลางทาง)",
+      "2": "29 บาท คือ 24 + 5 — บวกแทนที่จะลบ"
+    }
+  },
+  {
+    "id": "r025",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "School clubs: Music has 25 members, Art has 18, Science has 12, and Sports has 30. Which club has the most members?",
+    "choices": [
+      "Music",
+      "Art",
+      "Science",
+      "Sports"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.data-interpretation",
+    "patternId": "question_type_catalog.data-comparison",
+    "explanation": "เทียบจำนวนสมาชิก: Sports 30 > Music 25 > Art 18 > Science 12 → ชมรมกีฬามีสมาชิกมากที่สุด",
+    "distractorReasoning": {
+      "0": "Music 25 คน เป็นอันดับสอง",
+      "1": "Art 18 คน",
+      "2": "Science 12 คน น้อยที่สุด (ระวังอ่านโจทย์ most/fewest สลับกัน)"
+    }
+  },
+  {
+    "id": "r026",
+    "category": "reading",
+    "cefr": "A2",
+    "difficulty": 3,
+    "prompt": "Read: 'The school fair starts at 9 a.m. There are food stalls, games, and a music show. Tickets cost 20 baht.' Which activity is NOT mentioned at the fair?",
+    "choices": [
+      "Food stalls",
+      "Games",
+      "A music show",
+      "A football match"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.detail",
+    "patternId": "question_type_catalog.not-mentioned",
+    "explanation": "คำถามแบบ NOT: กิจกรรมที่กล่าวถึงคือร้านอาหาร เกม และการแสดงดนตรี — การแข่งฟุตบอลไม่ได้ถูกกล่าวถึง",
+    "distractorReasoning": {
+      "0": "ร้านอาหารถูกกล่าวถึงในเรื่อง",
+      "1": "เกมถูกกล่าวถึงในเรื่อง",
+      "2": "การแสดงดนตรีถูกกล่าวถึงในเรื่อง"
+    }
+  },
+  {
+    "id": "v041",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Choose the word closest in meaning to 'purchase'.",
+    "choices": [
+      "sell",
+      "buy",
+      "borrow",
+      "carry"
+    ],
+    "answerIndex": 1,
+    "subskillId": "vocab.verbs-actions",
+    "patternId": "question_type_catalog.synonym",
+    "explanation": "purchase = ซื้อ มีความหมายเดียวกับ buy",
+    "distractorReasoning": {
+      "0": "sell = ขาย เป็นคำตรงข้าม",
+      "2": "borrow = ยืม ไม่ได้จ่ายเงินซื้อ",
+      "3": "carry = ถือ/แบก"
+    }
+  },
+  {
+    "id": "v042",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Air pollution has become a serious ______ to people's health in big cities.",
+    "choices": [
+      "treat",
+      "thread",
+      "threat",
+      "throne"
+    ],
+    "answerIndex": 2,
+    "subskillId": "vocab.in-context",
+    "patternId": "vocabulary_topics_frequency.environment_and_nature",
+    "explanation": "มลพิษทางอากาศเป็น 'ภัยคุกคาม' ต่อสุขภาพ → threat (a threat to = ภัยต่อ)",
+    "distractorReasoning": {
+      "0": "treat = เลี้ยง/ของขวัญ — สะกดคล้าย threat แต่ความหมายต่าง",
+      "1": "thread = เส้นด้าย",
+      "3": "throne = บัลลังก์"
+    }
+  },
+  {
+    "id": "v043",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Students who sleep well can ______ better in class.",
+    "choices": [
+      "concentrate",
+      "celebrate",
+      "complain",
+      "compete"
+    ],
+    "answerIndex": 0,
+    "subskillId": "vocab.in-context",
+    "patternId": "vocabulary_topics_frequency.health_and_body",
+    "explanation": "นอนหลับเพียงพอช่วยให้ 'มีสมาธิ' ในห้องเรียนดีขึ้น → concentrate",
+    "distractorReasoning": {
+      "1": "celebrate = เฉลิมฉลอง ไม่เข้าบริบท",
+      "2": "complain = บ่น ไม่เข้าบริบท",
+      "3": "compete = แข่งขัน — ดูใกล้เคียงแต่การนอนหลับเชื่อมกับสมาธิ ไม่ใช่การแข่ง"
+    }
+  },
+  {
+    "id": "v044",
+    "category": "vocabulary",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Choose the word closest in meaning to 'enormous'.",
+    "choices": [
+      "very small",
+      "very old",
+      "very loud",
+      "very large"
+    ],
+    "answerIndex": 3,
+    "subskillId": "vocab.adjectives",
+    "patternId": "question_type_catalog.synonym",
+    "explanation": "enormous = ใหญ่โตมหึมา = very large",
+    "distractorReasoning": {
+      "0": "very small = เล็กมาก เป็นคำตรงข้าม",
+      "1": "very old = เก่ามาก",
+      "2": "very loud = เสียงดังมาก"
+    }
+  },
+  {
+    "id": "g037",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "The teacher asked us ______ quiet during the test.",
+    "choices": [
+      "being",
+      "to be",
+      "be",
+      "been"
+    ],
+    "answerIndex": 1,
+    "subskillId": "grammar.clauses-passive",
+    "patternId": "grammar_frequency.word_order_adjective_and_ditransitive",
+    "explanation": "โครงสร้าง ask + กรรม + to-infinitive: asked us to be quiet",
+    "distractorReasoning": {
+      "0": "being ใช้ในโครงสร้าง ask...to ไม่ได้",
+      "2": "be เฉย ๆ ขาด to",
+      "3": "been เป็นช่อง 3 ต้องใช้กับ have/has"
+    }
+  },
+  {
+    "id": "g038",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "______ it was raining heavily, they continued the football match.",
+    "choices": [
+      "Because",
+      "So",
+      "Although",
+      "Unless"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.clauses-passive",
+    "patternId": "grammar_frequency.conditionals_basic",
+    "explanation": "สองเหตุการณ์ขัดแย้งกัน (ฝนตกหนัก แต่ยังแข่งต่อ) → ใช้ Although = แม้ว่า",
+    "distractorReasoning": {
+      "0": "Because = เพราะ — ฝนตกไม่ใช่เหตุผลที่แข่งต่อ",
+      "1": "So = ดังนั้น ใช้ขึ้นต้นอนุประโยคแบบนี้ไม่ได้",
+      "3": "Unless = ถ้า...ไม่ ผิดความหมาย"
+    }
+  },
+  {
+    "id": "g039",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "By next year, my brother ______ his studies at university.",
+    "choices": [
+      "will have finished",
+      "finishes",
+      "has finished",
+      "is finishing"
+    ],
+    "answerIndex": 0,
+    "subskillId": "grammar.perfect-tenses",
+    "patternId": "grammar_frequency.past_perfect",
+    "explanation": "By + เวลาในอนาคต (next year) บอกว่าเหตุการณ์จะเสร็จสิ้นก่อนเวลานั้น → future perfect: will have finished",
+    "distractorReasoning": {
+      "1": "finishes เป็นปัจจุบันธรรมดา ไม่สื่อ 'เสร็จก่อนเวลานั้น'",
+      "2": "has finished เป็นปัจจุบันสมบูรณ์ ใช้กับอนาคตไม่ได้",
+      "3": "is finishing เป็นกำลังทำ ไม่สื่อว่าจะเสร็จ"
+    }
+  },
+  {
+    "id": "g040",
+    "category": "grammar",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "The student ______ science project won first prize is my best friend.",
+    "choices": [
+      "who",
+      "which",
+      "whose",
+      "whom"
+    ],
+    "answerIndex": 2,
+    "subskillId": "grammar.clauses-passive",
+    "patternId": "grammar_frequency.word_order_adjective_and_ditransitive",
+    "explanation": "แสดงความเป็นเจ้าของ (โปรเจกต์ 'ของ' นักเรียนคนนั้น) → whose: The student whose science project...",
+    "distractorReasoning": {
+      "0": "who ใช้เป็นประธานของ clause ไม่แสดงความเป็นเจ้าของ",
+      "1": "which ใช้กับสิ่งของ",
+      "3": "whom ใช้เป็นกรรม ไม่แสดงความเป็นเจ้าของ"
+    }
+  },
+  {
+    "id": "c031",
+    "category": "conversation",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "A: I'm thinking of joining the science club. B: ______ You will learn how to do experiments.",
+    "choices": [
+      "That's a good idea!",
+      "Never mind.",
+      "It doesn't matter.",
+      "What a pity!"
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.proposal-plus-justification",
+    "explanation": "B เห็นด้วยแล้วตามด้วยเหตุผลสนับสนุน (จะได้เรียนรู้การทดลอง) → ประโยคเห็นด้วย: That's a good idea!",
+    "distractorReasoning": {
+      "1": "Never mind. = ช่างเถอะ ไม่เข้ากับประโยคสนับสนุนที่ตามมา",
+      "2": "It doesn't matter. = ไม่เป็นไร ไม่เข้าบริบท",
+      "3": "What a pity! = น่าเสียดาย — ขั้วอารมณ์ตรงข้ามกับประโยคที่ตามมา"
+    }
+  },
+  {
+    "id": "c032",
+    "category": "conversation",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "A: ______? B: I'd rather walk because it's good for my health.",
+    "choices": [
+      "How far is your school",
+      "Why do you prefer walking to taking the bus",
+      "When do you walk to school",
+      "Who walks to school with you"
+    ],
+    "answerIndex": 1,
+    "subskillId": "convo.reverse-question",
+    "patternId": "dialogue_patterns.reverse-completion",
+    "explanation": "Reverse completion: คำตอบบอกความชอบพร้อมเหตุผล (I'd rather walk because...) → คำถามต้องถามเหตุผลของความชอบ: Why do you prefer walking...?",
+    "distractorReasoning": {
+      "0": "ถามระยะทาง — คำตอบจะเป็นระยะทาง",
+      "2": "ถามเวลา — คำตอบจะเป็นเวลา",
+      "3": "ถามบุคคล — คำตอบจะเป็นชื่อคน"
+    }
+  },
+  {
+    "id": "c033",
+    "category": "conversation",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "A: Can you come to my party on Saturday? B: I have to visit my grandmother this weekend. What does B mean?",
+    "choices": [
+      "B will come to the party.",
+      "B doesn't like parties.",
+      "B probably cannot come to the party.",
+      "B wants A to visit her grandmother too."
+    ],
+    "answerIndex": 2,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.pragmatic-inference",
+    "explanation": "B ไม่ได้ตอบตรง ๆ แต่การบอกว่าต้องไปเยี่ยมยายสุดสัปดาห์นี้ สื่อโดยนัยว่าไปงานปาร์ตี้ไม่ได้ (pragmatic inference)",
+    "distractorReasoning": {
+      "0": "ตรงข้ามกับความหมายโดยนัยของ B",
+      "1": "B ไม่ได้บอกว่าไม่ชอบปาร์ตี้ (ตีความเกินข้อความ)",
+      "3": "B ไม่ได้ชวน A ไปด้วย"
+    }
+  },
+  {
+    "id": "c034",
+    "category": "conversation",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "At a shop — A: I'd like to return this shirt. It has a hole in it. B: ______",
+    "choices": [
+      "Certainly. Would you like a refund or a new one?",
+      "No, you look good in it.",
+      "The hole is very small.",
+      "You should wash it first."
+    ],
+    "answerIndex": 0,
+    "subskillId": "convo.requests-responses",
+    "patternId": "dialogue_patterns.service-context",
+    "explanation": "ลูกค้าขอคืนเสื้อที่ชำรุด → พนักงานที่ดีตอบรับและเสนอทางเลือก: คืนเงินหรือเปลี่ยนตัวใหม่",
+    "distractorReasoning": {
+      "1": "ชมลูกค้าแทนที่จะแก้ปัญหา — ผิดมารยาทบริการ",
+      "2": "เถียงว่ารูเล็ก — ไม่แก้ปัญหาให้ลูกค้า",
+      "3": "แนะนำให้ซักก่อน — ไม่เกี่ยวกับการคืนสินค้า"
+    }
+  },
+  {
+    "id": "r027",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Read: 'In Thailand, students wear uniforms to school. In the United States, most students at public schools can wear their own clothes.' Which statement is TRUE?",
+    "choices": [
+      "Students in both countries wear the same clothes to school.",
+      "American students must wear uniforms.",
+      "Thai students can wear their own clothes.",
+      "School clothing rules are different in the two countries."
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.inference",
+    "patternId": "reading_patterns.cross-cultural-comparison",
+    "explanation": "เทียบสองประเทศ: ไทยใส่ชุดนักเรียน อเมริกาส่วนใหญ่ใส่ชุดไปรเวทได้ → กฎการแต่งกายต่างกัน (ต้องเช็คข้อความกับทั้งสองฝั่ง)",
+    "distractorReasoning": {
+      "0": "อ้างว่าเหมือนกันทั้งสองประเทศ — ขัดกับข้อความที่เปรียบต่าง (กับดัก universally-equating)",
+      "1": "สลับฝั่ง — อเมริกาส่วนใหญ่ไม่บังคับชุดนักเรียน",
+      "2": "สลับฝั่ง — นักเรียนไทยใส่ชุดนักเรียน"
+    }
+  },
+  {
+    "id": "r028",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Mind has 100 baht. She must buy a notebook for 25 baht and a pen for 15 baht. Sandwiches cost 30 baht each. What is the largest number of sandwiches she can buy?",
+    "choices": [
+      "One",
+      "Two",
+      "Three",
+      "Four"
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.data-interpretation",
+    "patternId": "question_type_catalog.arithmetic-word-problem",
+    "explanation": "เงื่อนไขบังคับ: ต้องซื้อสมุด 25 + ปากกา 15 = 40 บาทก่อน เหลือ 100 − 40 = 60 บาท → ซื้อแซนด์วิชชิ้นละ 30 ได้ 2 ชิ้น (ต้องทำตามทุกเงื่อนไข ไม่ใช่แค่คิดเลข)",
+    "distractorReasoning": {
+      "0": "One น้อยเกินไป — เงิน 60 บาทซื้อได้ 2 ชิ้น",
+      "2": "Three = 90 บาท เกินเงินที่เหลือ (ลืมหักค่าสมุด/ปากกา)",
+      "3": "Four = 120 บาท เกินเงินทั้งหมดที่มีตั้งแต่ยังไม่หักค่าสมุดและปากกา"
+    }
+  },
+  {
+    "id": "r029",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Read: 'Many students spend hours looking at their phone screens. Doctors suggest resting your eyes every hour and going outside to play. Your eyes and your body will thank you.' What is the main idea?",
+    "choices": [
+      "Phones are too expensive for students.",
+      "Taking breaks from screens is good for your health.",
+      "Doctors use phones for many hours.",
+      "Students should play games outside at night."
+    ],
+    "answerIndex": 1,
+    "subskillId": "reading.main-idea",
+    "patternId": "reading_patterns.instructional-rule-text",
+    "explanation": "ใจความหลัก: การพักสายตาจากหน้าจอและออกไปเล่นข้างนอกดีต่อสุขภาพ (สรุปทั้งเรื่อง ไม่ใช่หยิบรายละเอียดเดียว)",
+    "distractorReasoning": {
+      "0": "ราคาโทรศัพท์ไม่ได้ถูกกล่าวถึง",
+      "2": "หมอเป็นผู้แนะนำ ไม่ใช่ผู้ใช้โทรศัพท์นาน",
+      "3": "เรื่องไม่ได้พูดถึงการเล่นตอนกลางคืน (รายละเอียดบิดเบือน)"
+    }
+  },
+  {
+    "id": "r030",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 5,
+    "prompt": "Read: 'The hummingbird is the only bird that can fly backwards.' According to the passage, which is TRUE?",
+    "choices": [
+      "All small birds can fly backwards.",
+      "Hummingbirds cannot fly forwards.",
+      "No other bird can fly backwards.",
+      "Hummingbirds are the fastest birds."
+    ],
+    "answerIndex": 2,
+    "subskillId": "reading.inference",
+    "patternId": "reading_patterns.fact-negation-passage",
+    "explanation": "'the only bird that can fly backwards' = นกฮัมมิงเบิร์ดเป็นนกชนิดเดียวที่บินถอยหลังได้ → นกชนิดอื่นบินถอยหลังไม่ได้ (ต้องจับคู่การปฏิเสธอย่างแม่นยำ)",
+    "distractorReasoning": {
+      "0": "เหมารวมเกินข้อความ — นกเล็กอื่นบินถอยหลังไม่ได้",
+      "1": "เรื่องไม่ได้บอกว่าบินไปข้างหน้าไม่ได้",
+      "3": "ความเร็วไม่ได้ถูกกล่าวถึง"
+    }
+  },
+  {
+    "id": "r031",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Read: 'Somchai missed the bus, so he arrived at school after the first lesson had started.' Which statement is TRUE?",
+    "choices": [
+      "Somchai was late for school.",
+      "Somchai skipped the first lesson on purpose.",
+      "The first lesson was cancelled.",
+      "Somchai went to school by bus."
+    ],
+    "answerIndex": 0,
+    "subskillId": "reading.inference",
+    "patternId": "reading_patterns.short-narrative-recount",
+    "explanation": "มาถึงหลังคาบแรกเริ่มแล้ว = มาสาย → 'Somchai was late for school.' เป็นการถอดความ (paraphrase) ที่ตรงกับข้อความ",
+    "distractorReasoning": {
+      "1": "เขาตกรถบัส ไม่ได้ตั้งใจโดดเรียน",
+      "2": "คาบแรกเริ่มไปแล้ว ไม่ได้ถูกยกเลิก",
+      "3": "เขาตกรถบัส แสดงว่าไม่ได้ไปโดยรถบัส (กับดักคำว่า bus)"
+    }
+  },
+  {
+    "id": "r032",
+    "category": "reading",
+    "cefr": "B1",
+    "difficulty": 4,
+    "prompt": "Read the poster: 'ENGLISH CAMP 2026 — 20-22 March at Khao Yai. Fee: 1,500 baht. Sign up at the school office by 10 March.' What is the last day to sign up?",
+    "choices": [
+      "22 March",
+      "20 March",
+      "1 March",
+      "10 March"
+    ],
+    "answerIndex": 3,
+    "subskillId": "reading.signs-notices",
+    "patternId": "reading_patterns.informational-poster",
+    "explanation": "'Sign up ... by 10 March' — by แปลว่า 'ภายใน' → วันสุดท้ายที่สมัครได้คือ 10 มีนาคม",
+    "distractorReasoning": {
+      "0": "22 March คือวันจบค่าย ไม่ใช่วันปิดรับสมัคร (กับดักหยิบเลขผิดตัว)",
+      "1": "20 March คือวันเริ่มค่าย",
+      "2": "1 March ไม่ได้ถูกกล่าวถึง"
+    }
+  }
 ]

@@ -1,6 +1,6 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
-    <div class="pixel-window w-full max-w-lg">
+  <div v-if="open" class="modal-backdrop">
+    <div class="pixel-window anime-window w-full max-w-lg">
       <div class="pixel-titlebar">
         <h2 class="gold-text text-lg font-bold">{{ tabTitle }}</h2>
         <button class="icon-btn-close" aria-label="Close" @click="$emit('close')">✕</button>
@@ -13,6 +13,12 @@
       <div class="pixel-window-body p-4 text-sm">
         <div v-if="tab === 'settings'" class="space-y-3">
           <label class="flex items-center justify-between gap-3">Sound <input v-model="settings.sound" type="checkbox" class="title-toggle"></label>
+          <label class="block">Music <span class="float-right text-xs opacity-70">{{ Math.round(settings.musicVolume * 100) }}%</span>
+            <input v-model.number="settings.musicVolume" type="range" min="0" max="1" step="0.05" class="mt-1 w-full accent-amber-400">
+          </label>
+          <label class="block">Effects <span class="float-right text-xs opacity-70">{{ Math.round(settings.sfxVolume * 100) }}%</span>
+            <input v-model.number="settings.sfxVolume" type="range" min="0" max="1" step="0.05" class="mt-1 w-full accent-amber-400">
+          </label>
           <label class="flex items-center justify-between gap-3">Reduce animation <input v-model="settings.reducedMotion" type="checkbox" class="title-toggle"></label>
           <label>Language
             <select v-model="settings.language" class="field mt-1 py-1 text-xs">

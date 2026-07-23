@@ -1,0 +1,73 @@
+{
+  "generatedBy": "scripts/map-rebuild/crop-interiors.cjs",
+  "rooms": [
+    {
+      "id": "guild",
+      "sourceFile": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interiors-core.png",
+      "outputFile": "public/interior-maps/guild.png",
+      "crop": [
+        10,
+        8,
+        494,
+        470
+      ],
+      "outputSize": [
+        494,
+        470
+      ],
+      "transform": "1:1 crop; no resampling",
+      "sha256": "6d934bc8f1bc95a7436265467c421921fabcf11e06e8ba05a042a400d02aedd4"
+    },
+    {
+      "id": "hospital",
+      "sourceFile": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interiors-core.png",
+      "outputFile": "public/interior-maps/hospital.png",
+      "crop": [
+        523,
+        8,
+        495,
+        479
+      ],
+      "outputSize": [
+        495,
+        479
+      ],
+      "transform": "1:1 crop; no resampling",
+      "sha256": "2e506fc8b6ca88edc9e850bc7e1f06d0200226efc05345779cae497692771627"
+    },
+    {
+      "id": "item-shop",
+      "sourceFile": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interiors-core.png",
+      "outputFile": "public/interior-maps/item-shop.png",
+      "crop": [
+        1037,
+        8,
+        490,
+        479
+      ],
+      "outputSize": [
+        490,
+        479
+      ],
+      "transform": "1:1 crop; no resampling",
+      "sha256": "7291358ac45a39efdf661f3a48eec2fec845ec0393db5464ae23de9fba02d32f"
+    },
+    {
+      "id": "equipment-shop",
+      "sourceFile": "docs/mockups/region-01-everbloom/aethergate-town/aethergate-interiors-core.png",
+      "outputFile": "public/interior-maps/equipment-shop.png",
+      "crop": [
+        10,
+        508,
+        494,
+        504
+      ],
+      "outputSize": [
+        494,
+        504
+      ],
+      "transform": "1:1 crop; no resampling",
+      "sha256": "84af487514fffd44c78e6f8e7488c0bc675b2525cd6d5a747e5e7b6a3827da28"
+    }
+  ]
+}

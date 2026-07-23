@@ -1,5 +1,5 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3" @click.self="$emit('close')">
+  <div v-if="open" class="modal-backdrop" @click.self="$emit('close')">
     <div class="portal-window w-full max-w-lg">
       <div class="flex items-stretch gap-3 p-4">
         <img :src="assetPath('npc/portal_guardian.png')" class="portal-portrait h-28 w-28 shrink-0 object-cover pixelated" alt="Portal Guardian">
@@ -12,7 +12,7 @@
       </div>
       <div class="grid gap-2 px-4 pb-4">
         <button class="portal-btn portal-btn-go" @click="enter">
-          <span class="mr-2">▶</span>1. เข้าดันเจี้ยน (Floor {{ floor }})
+          <span class="mr-2">▶</span>1. ออกสำรวจ Whisperleaf Meadow
         </button>
         <button class="portal-btn" @click="$emit('close')">
           <span class="mr-2 opacity-0">▶</span>2. ถอยออกไป

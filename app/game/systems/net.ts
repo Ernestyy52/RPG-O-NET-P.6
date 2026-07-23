@@ -5,6 +5,7 @@
 // ================================================================================================
 import { Client, Room } from 'colyseus.js'
 import { gameEvents } from './eventBus'
+import { COOP_ENABLED, COOP_MSG } from '~/data/coop'
 
 export interface NetPlayer {
   x: number
@@ -139,6 +140,22 @@ export function requestBattle(id: string): Promise<boolean> {
 /** แจ้งผลศึกให้ server: ชนะ = มอนสเตอร์ตายทั้งห้อง / แพ้-หนี = ปลดล็อกให้คนอื่นสู้ต่อ */
 export function sendBattleResult(id: string, won: boolean) {
   room?.send('battle:result', { id, won })
+}
+
+// ---- Safe co-op (Phase 15): the SERVER owns shared-encounter HP + reward claims. These are the client
+// side of the coop protocol, DORMANT behind COOP_ENABLED so offline/flag-off is byte-identical (no send).
+// Unlike the legacy client-trusted `battle:result`, victory + reward are decided server-side.
+
+/** Report a validated hit on a shared co-op encounter; the server clamps + accumulates the real HP. */
+export function sendCoopDamage(id: string, amount: number) {
+  if (!COOP_ENABLED || !room) return
+  room.send(COOP_MSG.damage, { id, amount })
+}
+
+/** Ask the server to grant this player's reward for a defeated co-op encounter (server checks the ledger). */
+export function sendCoopClaim(id: string) {
+  if (!COOP_ENABLED || !room) return
+  room.send(COOP_MSG.claim, { id })
 }
 
 // สถานะต่อสู้ sync อัตโนมัติ: เพื่อนเห็นไอคอน ⚔ เหนือหัวเราตอนเราติดศึก

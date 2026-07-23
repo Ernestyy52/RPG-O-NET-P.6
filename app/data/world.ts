@@ -1,5 +1,15 @@
 ﻿export type WeatherId = 'clear' | 'rain' | 'wind' | 'storm'
 
+/**
+ * World 1 = floors 1–10 (forest biome, "Verdant Slimes", boss Myco Colossus on floor 10). Single
+ * source of truth for the Phase-14 per-zone gate: real-time combat, Knowledge Break, and dungeon
+ * routing apply ONLY here; floors 11+ stay on the legacy TowerScene + BattleModal path in BOTH flag
+ * states (PHASE_14_PLAN §3). Pure + unit-tested so the gate boundary can't silently drift.
+ */
+export function isWorld1Floor(floor: number): boolean {
+  return Number.isFinite(floor) && floor >= 1 && floor <= 10
+}
+
 export interface WorldState {
   phase: 'Dawn' | 'Day' | 'Dusk' | 'Night'
   weather: WeatherId

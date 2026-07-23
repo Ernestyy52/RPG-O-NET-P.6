@@ -1,0 +1,23 @@
+{
+  "generatedBy": "scripts/build-procedural-audio.mjs",
+  "license": "project-owned procedural audio",
+  "sampleRate": 22050,
+  "files": [
+    "sfx_footstep.wav",
+    "sfx_attack.wav",
+    "sfx_hit.wav",
+    "sfx_ui.wav",
+    "sfx_portal.wav",
+    "sfx_battle_start.wav",
+    "sfx_elite_spawn.wav",
+    "sfx_victory.wav",
+    "sfx_rare_drop.wav",
+    "bgm_boss.ogg",
+    "bgm_dungeon.ogg"
+  ],
+  "sourceFiles": [
+    "assets/generated/audio-sources/bgm_boss.wav",
+    "assets/generated/audio-sources/bgm_dungeon.wav"
+  ],
+  "mobileCodec": "Ogg Vorbis q4"
+}

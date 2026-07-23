@@ -1,0 +1,47 @@
+{
+  "source": "assets/generated/paperdoll-outfits-source.png",
+  "generatedWith": "OpenAI image generation",
+  "license": "project-owned generated asset",
+  "cells": [
+    {
+      "id": "robe",
+      "file": "outfit-robe.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "leather",
+      "file": "outfit-leather.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "chain",
+      "file": "outfit-chain.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "plate",
+      "file": "outfit-plate.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    {
+      "id": "dragon",
+      "file": "outfit-dragon.png",
+      "size": [
+        128,
+        128
+      ]
+    }
+  ]
+}

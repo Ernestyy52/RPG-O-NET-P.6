@@ -1,0 +1,123 @@
+{
+  "generatedWith": "OpenAI image generation; mechanically chroma-keyed and aligned with Sharp",
+  "license": "project-owned generated assets",
+  "frameSize": [
+    64,
+    96
+  ],
+  "layout": {
+    "columns": [
+      "neutral",
+      "left-step",
+      "right-step"
+    ],
+    "rows": [
+      "down",
+      "left",
+      "right",
+      "up"
+    ]
+  },
+  "files": [
+    {
+      "id": "head-chain",
+      "source": "assets/generated/paperdoll-accessory-sources/head-chain-source.png",
+      "runtime": "paperdoll/accessories/head-chain-sheet.png"
+    },
+    {
+      "id": "head-dragon",
+      "source": "assets/generated/paperdoll-accessory-sources/head-dragon-source.png",
+      "runtime": "paperdoll/accessories/head-dragon-sheet.png"
+    },
+    {
+      "id": "head-leather",
+      "source": "assets/generated/paperdoll-accessory-sources/head-leather-source.png",
+      "runtime": "paperdoll/accessories/head-leather-sheet.png"
+    },
+    {
+      "id": "head-plate",
+      "source": "assets/generated/paperdoll-accessory-sources/head-plate-source.png",
+      "runtime": "paperdoll/accessories/head-plate-sheet.png"
+    },
+    {
+      "id": "head-robe",
+      "source": "assets/generated/paperdoll-accessory-sources/head-robe-source.png",
+      "runtime": "paperdoll/accessories/head-robe-sheet.png"
+    },
+    {
+      "id": "shield-arcane",
+      "source": "assets/generated/paperdoll-accessory-sources/shield-arcane-source.png",
+      "runtime": "paperdoll/accessories/shield-arcane-sheet.png"
+    },
+    {
+      "id": "shield-kite",
+      "source": "assets/generated/paperdoll-accessory-sources/shield-kite-source.png",
+      "runtime": "paperdoll/accessories/shield-kite-sheet.png"
+    },
+    {
+      "id": "shield-round",
+      "source": "assets/generated/paperdoll-accessory-sources/shield-round-source.png",
+      "runtime": "paperdoll/accessories/shield-round-sheet.png"
+    },
+    {
+      "id": "weapon-axe",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-axe-source.png",
+      "runtime": "paperdoll/accessories/weapon-axe-sheet.png"
+    },
+    {
+      "id": "weapon-bow",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-bow-source.png",
+      "runtime": "paperdoll/accessories/weapon-bow-sheet.png"
+    },
+    {
+      "id": "weapon-crossbow",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-crossbow-source.png",
+      "runtime": "paperdoll/accessories/weapon-crossbow-sheet.png"
+    },
+    {
+      "id": "weapon-dagger",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-dagger-source.png",
+      "runtime": "paperdoll/accessories/weapon-dagger-sheet.png"
+    },
+    {
+      "id": "weapon-greatsword",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-greatsword-source.png",
+      "runtime": "paperdoll/accessories/weapon-greatsword-sheet.png"
+    },
+    {
+      "id": "weapon-mace",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-mace-source.png",
+      "runtime": "paperdoll/accessories/weapon-mace-sheet.png"
+    },
+    {
+      "id": "weapon-rapier",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-rapier-source.png",
+      "runtime": "paperdoll/accessories/weapon-rapier-sheet.png"
+    },
+    {
+      "id": "weapon-scythe",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-scythe-source.png",
+      "runtime": "paperdoll/accessories/weapon-scythe-sheet.png"
+    },
+    {
+      "id": "weapon-spear",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-spear-source.png",
+      "runtime": "paperdoll/accessories/weapon-spear-sheet.png"
+    },
+    {
+      "id": "weapon-staff",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-staff-source.png",
+      "runtime": "paperdoll/accessories/weapon-staff-sheet.png"
+    },
+    {
+      "id": "weapon-sword",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-sword-source.png",
+      "runtime": "paperdoll/accessories/weapon-sword-sheet.png"
+    },
+    {
+      "id": "weapon-wand",
+      "source": "assets/generated/paperdoll-accessory-sources/weapon-wand-source.png",
+      "runtime": "paperdoll/accessories/weapon-wand-sheet.png"
+    }
+  ]
+}
