@@ -1,0 +1,21 @@
+{
+  "weapon_t1": "Swords/RPGSwords_Set2/RPGSwords_Set2_BLOOD_128x128.png",
+  "weapon_t2": "Swords/LegendaryMetals_Pack/LegendaryMetals_Pack_ADAMANTITE_128x128.png",
+  "weapon_t3": "Swords/BeastSlayer_Swords/BeastSlayer_Swords_DRAGON_128x128.png",
+  "weapon_t4": "Swords/CelestialArsenal_Pack/CelestialArsenal_Pack_EVENTIDE_128x128.png",
+  "weapon_t5": "Swords/ElementalTitans_Pack/ElementalTitans_Pack_ICE_128x128.png",
+  "armor_t1": "Armor/Armor_Antiquity_Reforged/Armor_Antiquity_Reforged_CARTHAGE_SACRED_128x128.png",
+  "armor_t2": "Armor/Armor_Exotic_Reforged/Armor_Exotic_Reforged_PLAGUE_COAT_128x128.png",
+  "armor_t3": "Armor/Armor_Arcane_Reforged/Armor_Arcane_Reforged_CHRONOS_PLATE_128x128.png",
+  "armor_t4": "Armor/Armor_Myths_Reforged/Armor_Myths_Reforged_DRAGON_SCALE_128x128.png",
+  "armor_t5": "Armor/Armor_Warlord_Reforged/Armor_Warlord_Reforged_JAGUAR_KNIGHT_128x128.png",
+  "trinket_t1": "Accessories/Accessories_Classic_Reforged/Accessories_Classic_Reforged_IRON_SIGNET_128x128.png",
+  "trinket_t2": "Accessories/Accessories_Amulets_Reforged/Accessories_Amulets_Reforged_GUARDIANS_CREST_128x128.png",
+  "trinket_t3": "Accessories/Accessories_Artifacts_Reforged/Accessories_Artifacts_Reforged_EYE_ANCIENT_128x128.png",
+  "trinket_t4": "Accessories/Accessories_Myths_Reforged/Accessories_Myths_Reforged_DRAGON_HEART_128x128.png",
+  "trinket_t5": "Accessories/Accessories_Relics_Reforged/Accessories_Relics_Reforged_SACRED_CHIME_128x128.png",
+  "potion_s": "Consumables/Potions/Potions2_Pack_BLACK_BLOOD_STATIC_128x128.png",
+  "potion_m": "Consumables/Potions/Potions2_Pack_CAT_STATIC_128x128.png",
+  "focus_tea": "Consumables/Potions/Potions2_Pack_RAFFARD_STATIC_128x128.png",
+  "guard_sigil": "Shields/ShieldWards_Pack/ShieldWards_Pack_BEHOLDER_128x128.png"
+}

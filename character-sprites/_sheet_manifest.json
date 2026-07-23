@@ -1,0 +1,34 @@
+{
+  "warrior_male": {
+    "fw": 78,
+    "fh": 162
+  },
+  "warrior_female": {
+    "fw": 71,
+    "fh": 160
+  },
+  "archer_male": {
+    "fw": 77,
+    "fh": 161
+  },
+  "archer_female": {
+    "fw": 74,
+    "fh": 161
+  },
+  "mage_male": {
+    "fw": 79,
+    "fh": 162
+  },
+  "mage_female": {
+    "fw": 78,
+    "fh": 157
+  },
+  "guardian_male": {
+    "fw": 90,
+    "fh": 162
+  },
+  "guardian_female": {
+    "fw": 84,
+    "fh": 162
+  }
+}
